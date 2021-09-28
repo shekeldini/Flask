@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<link type="text/css" href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet"  >
+	{% block title -%}
+	{% if title %}
+		<title> {{ title }}</title>
+	{% else %}
+		<title> Сайт </title>
+	{% endif %}
+	{% endblock %}
+<head>
+<body>
+	{% block content -%}
+		{%- block menu -%}
+			<ul class="menu">
+				{% for m in menu -%}
+					{% set id, title, url = m%}
+					<li> <a href="{{url}}">{{title}}</a> </li>					
+				{% endfor -%}
+			</ul>
+		{% endblock menu -%}
+	{% endblock -%}
+</body>
+</html>
