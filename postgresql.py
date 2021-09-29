@@ -374,7 +374,7 @@ class Postgresql:
     def get_id_classes(self, id_oo_parallels, liter):
         try:
             self._cur.execute(
-                f"SELECT id_classes FROM classes WHERE id_oo_parallels = {id_oo_parallels} AND liter = {liter}")
+                f"SELECT id_classes FROM classes WHERE id_oo_parallels = {id_oo_parallels} AND liter = '{liter}'")
             res, = self._cur.fetchone()
             if not res:
                 print("id_classes не был найден")
@@ -386,14 +386,19 @@ class Postgresql:
     def get_id_textbooks(self, id_subjects, name):
         try:
             self._cur.execute(
-                f"SELECT id_textbooks FROM textbooks WHERE id_subjects = {id_subjects} AND name = {name}")
-            res, = self._cur.fetchone()
+                f"SELECT id_textbooks FROM textbooks WHERE id_subjects = {id_subjects} AND name = '{name}'")
+            res = self._cur.fetchone()
             if not res:
                 print("id_textbooks не был найден")
-                return []
+                print(id_subjects, name)
+                self._cur.execute(
+                    f"SELECT id_textbooks FROM textbooks WHERE id_subjects = {id_subjects} AND name = '{'Нет данных'}'")
+                res = self._cur.fetchone()
+            res, = res
             return res
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
+
 
 class FillDb(Postgresql):
     def __init__(self, connection):
@@ -1112,12 +1117,12 @@ class FillDb(Postgresql):
                     if subj_key in book_key:
                         subj_name = subj_dict[subj_key]
                         id_subjects = self.get_id_subjects(subj_name)
-                        break
-                else:
-                    id_subjects = None
-                    print("Предмет не найден")
+
                 self._cur.execute(
-                    f"INSERT INTO textbooks (id_subjects, key, name) VALUES ({id_subjects}, '{book_key}', '{book_name}')")
+                    f"INSERT INTO textbooks (id_subjects, key, name) VALUES ({id_subjects}, '{book_key}', '{book_name.strip()}')")
+            for id_subjects_ in range(1, 13):
+                self._cur.execute(
+                    f"INSERT INTO textbooks (id_subjects, key, name) VALUES ({id_subjects_}, '{'nan'}', '{'Нет данных'}')")
             print("Таблица textbooks заполненна")
             books_data.close()
         except psycopg2.Error as e:
@@ -1132,9 +1137,8 @@ class FillDb(Postgresql):
                 subj_in_parallel = path.replace("\\", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
-                    print(file)
                     df = VPR(file)
-                    dict_schools_and_liters = df.get_schools_and_liters()
+                    dict_schools_and_liters = df.get_dict_schools_liters()
                     for school in dict_schools_and_liters:
                         if result_dict.get(school) is None:
                             result_dict[school] = dict_schools_and_liters[school]
@@ -1154,32 +1158,47 @@ class FillDb(Postgresql):
             print("Ошибка при заполнении БД " + str(e))
 
     def fill_classes_textbooks(self):
-        books_data = openpyxl.reader.excel.load_workbook(
-            filename="excel/books.xlsx", data_only=True)
-        books_sheet = books_data.active
-        all_parallels = glob("excel/vpr_results/*")
-        for path in all_parallels:
+        try:
+            all_parallels = glob("excel/vpr_results/*")
             result_dict = {}
-            parallel = int(path[path.index("\\") + 1:])
-            subj_in_parallel = path.replace("\\", "/") + "/*"
-            files = glob(subj_in_parallel)
-            for file in files:
-                print(file)
-                df = VPR(file)
-                dict_schools_and_liters = df.get_schools_and_liters()
-                for school in dict_schools_and_liters:
-                    if result_dict.get(school) is None:
-                        result_dict[school] = dict_schools_and_liters[school]
+            for path in all_parallels:
+                parallel = int(path[path.index("\\") + 1:])
+                subj_in_parallel = path.replace("\\", "/") + "/*"
+                files = glob(subj_in_parallel)
+                for file in files:
+                    print(file.replace("\\", "/"))
+                    df = VPR(file.replace("\\", "/"))
+                    id_subjects = self.get_id_subjects(df.get_subj_name())
+                    dict_books = df.get_books()
+                    if result_dict.get(parallel) is None:
+                        result_dict[parallel] = {id_subjects: dict_books}
                     else:
-                        for liter in dict_schools_and_liters[school]:
-                            if liter not in result_dict[school]:
-                                result_dict[school].append(liter)
-            for login in result_dict:
-                id_oo = self.get_id_oo(login)
-                id_oo_parallels = self.get_id_oo_parallels(parallel, id_oo)
-                for liter in result_dict[login]:
-                    id_classes = self.get_id_classes(id_oo_parallels, liter)
-psql = FillDb(psycopg2.connect(user=user, password=password, host=host, port=port))
+                        if result_dict[parallel].get(id_subjects) is None:
+                            result_dict[parallel][id_subjects] = dict_books
+                        else:
+                            for school in dict_books:
+                                if result_dict[parallel][id_subjects].get(school) is None:
+                                    result_dict[parallel][id_subjects][school] = dict_books[school]
+                                else:
+                                    for liter in dict_books[school]:
+                                        if result_dict[parallel][id_subjects][school].get(liter) is None:
+                                            result_dict[parallel][id_subjects][school][liter] = dict_books[school][liter]
+            for parallel in result_dict:
+                for id_subjects in result_dict[parallel]:
+                    for login_school in result_dict[parallel][id_subjects]:
+                        id_oo_parallels = self.get_id_oo_parallels(parallel, self.get_id_oo(login_school))
+                        for liter in result_dict[parallel][id_subjects][login_school]:
+                            book_name = result_dict[parallel][id_subjects][login_school][liter]
+                            id_classes = self.get_id_classes(id_oo_parallels, liter)
+                            id_textbooks = self.get_id_textbooks(id_subjects, book_name.strip())
+                            self._cur.execute(
+                                f"INSERT INTO classes_textbooks (id_classes, id_textbooks, id_oo_parallels) "
+                                f"VALUES ({id_classes}, {id_textbooks}, {id_oo_parallels})")
+            print("Таблица classes_textbooks заполненна")
+        except psycopg2.Error as e:
+            print("Ошибка при заполнении БД " + str(e))
+
+psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
 # psql.dropAllTables()
 # psql.createTables()
 # psql.create_menu()
@@ -1210,4 +1229,5 @@ psql = FillDb(psycopg2.connect(user=user, password=password, host=host, port=por
 # psql.fill_subjects()
 # psql.fill_textbooks()
 # psql.fill_classes()
+# psql.fill_classes_textbooks()
 

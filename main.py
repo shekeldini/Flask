@@ -29,10 +29,10 @@ def load_user(user_id):
 
 
 def connect_db():
-    conn = psycopg2.connect(user=user,
-                            password=password,
-                            host=host,
-                            port=port)
+    conn = psycopg2.connect(user=USER,
+                            password=PASSWORD,
+                            host=HOST,
+                            port=PORT)
     return conn
 
 
@@ -179,4 +179,4 @@ def upload():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=DEBUG)

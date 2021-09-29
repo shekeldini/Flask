@@ -1,4 +1,4 @@
-user = "admin"
-password = "1234"
-host = "172.30.50.82"
-port = "5432"
+USER = "admin"
+PASSWORD = "1234"
+HOST = "172.30.50.82"
+PORT = "5432"

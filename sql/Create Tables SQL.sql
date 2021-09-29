@@ -283,7 +283,7 @@ CREATE TABLE IF NOT EXISTS "classes_textbooks"(
 "id_classes" INTEGER NOT NULL,
 "id_textbooks" INTEGER NOT NULL,
 "id_oo_parallels" INTEGER NOT NULL,
-CONSTRAINT "K9" PRIMARY KEY ("id_classes","id_textbooks"),
+CONSTRAINT "K9" PRIMARY KEY ("id_classes","id_textbooks", "id_oo_parallels"),
 CONSTRAINT "C7" FOREIGN KEY ("id_classes","id_oo_parallels")
     REFERENCES "classes" ("id_classes","id_oo_parallels"),
 CONSTRAINT "C8" FOREIGN KEY ("id_textbooks")
