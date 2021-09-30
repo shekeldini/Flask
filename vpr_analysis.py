@@ -27,13 +27,26 @@ class VPR:
             self.__add_region()
             self.df = self.df[["всего баллов", "логин школы", "регион"]]
 
+    def get_dict_schools_liters_students(self):
+        dictionary = {}
+        for index, row in self.df[["логин школы", "класс", "номер обучающегося", "пол"]].iterrows():
+
+            if dictionary.get(row["логин школы"]) is None:
+                dictionary[row["логин школы"]] = {row["класс"]: {row["номер обучающегося"]: row["пол"]}}
+            else:
+                if dictionary[row["логин школы"]].get(row["класс"]) is None:
+                    dictionary[row["логин школы"]][row["класс"]] = {row["номер обучающегося"]: row["пол"]}
+                else:
+                    dictionary[row["логин школы"]][row["класс"]][row["номер обучающегося"]] = row["пол"]
+        return dictionary
+
     def get_subj_name(self):
         return self.subj_name
 
     def get_unic_schools(self):
         return [school for school in self.df["логин школы"].drop_duplicates()]
 
-    def get_books(self):
+    def get_dict_schools_liters_books(self):
         dictionary = {}
         for index, row in self.df[["логин школы", "класс", "Учебник"]].drop_duplicates().iterrows():
 

@@ -1169,7 +1169,7 @@ class FillDb(Postgresql):
                     print(file.replace("\\", "/"))
                     df = VPR(file.replace("\\", "/"))
                     id_subjects = self.get_id_subjects(df.get_subj_name())
-                    dict_books = df.get_books()
+                    dict_books = df.get_dict_schools_liters_books()
                     if result_dict.get(parallel) is None:
                         result_dict[parallel] = {id_subjects: dict_books}
                     else:
@@ -1182,7 +1182,8 @@ class FillDb(Postgresql):
                                 else:
                                     for liter in dict_books[school]:
                                         if result_dict[parallel][id_subjects][school].get(liter) is None:
-                                            result_dict[parallel][id_subjects][school][liter] = dict_books[school][liter]
+                                            result_dict[parallel][id_subjects][school][liter] = dict_books[school][
+                                                liter]
             for parallel in result_dict:
                 for id_subjects in result_dict[parallel]:
                     for login_school in result_dict[parallel][id_subjects]:
@@ -1198,36 +1199,81 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
-# psql.dropAllTables()
-# psql.createTables()
-# psql.create_menu()
-# psql.fill_district()
-# psql.fill_oo_location_type()
-# psql.fill_name_of_the_settlement()
-# psql.fill_organizational_and_legal_form()
-# psql.fill_oo_logins()
-# psql.fill_population_of_the_settlement()
-# psql.fill_internet_speed()
-# psql.fill_the_involvement_of_students_in_additional_education()
-# psql.fill_count_of_parents_attending_events()
-# psql.fill_count_of_parents_ready_to_help()
-# psql.fill_regular_transport_link()
-# psql.fill_frequency_of_regular_transport_link()
-# psql.fill_possibility_to_get_to_the_oo_by_public_transport()
-# psql.fill_oo()
-# psql.fill_duration_of_refresher_courses()
-# psql.fill_completed_advanced_training_courses_for_teachers()
-# psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
-# psql.fill_description_of_career_guidance()
-# psql.fill_oo_description_of_career_guidance()
-# psql.fill_levels_of_the_educational_program()
-# psql.fill_oo_levels_of_the_educational_program()
-# psql.fill_percentage_of_parents_attending_parentteacher_meeting()
-# psql.fill_parallels()
-# psql.fill_oo_parallels()
-# psql.fill_subjects()
-# psql.fill_textbooks()
-# psql.fill_classes()
-# psql.fill_classes_textbooks()
+    def fill_students(self):
+        try:
+            all_parallels = glob("excel/vpr_results/*")
+            result_dict = {}  # {parallel: {school: {liter: {students: gender}}}}
+            for path in all_parallels:
+                parallel = int(path[path.index("\\") + 1:])
+                subj_in_parallel = path.replace("\\", "/") + "/*"
+                files = glob(subj_in_parallel)
+                for file in files:
+                    print(file.replace("\\", "/"))
+                    df = VPR(file.replace("\\", "/"))
+                    dict_schools_liters_students = df.get_dict_schools_liters_students()  # {school: {liter: {students: gender}}}
+                    if result_dict.get(parallel) is None:
+                        result_dict[parallel] = dict_schools_liters_students
+                    else:
+                        for school in dict_schools_liters_students:
+                            if result_dict[parallel].get(school) is None:
+                                result_dict[parallel][school] = dict_schools_liters_students[school]
+                            else:
+                                for liter in dict_schools_liters_students[school]:
+                                    if result_dict[parallel][school].get(liter) is None:
+                                        result_dict[parallel][school][liter] = dict_schools_liters_students[school][liter]
+                                    else:
+                                        for student in dict_schools_liters_students[school][liter]:
+                                            if result_dict[parallel][school][liter].get(student) is None:
+                                                gender = dict_schools_liters_students[school][liter][student]
+                                                result_dict[parallel][school][liter][student] = gender
+            count = 0
+            for parallel in result_dict:
+                for school in result_dict[parallel]:
+                    id_oo_parallels = self.get_id_oo_parallels(parallel, self.get_id_oo(school))
+                    for liter in result_dict[parallel][school]:
+                        count += len(result_dict[parallel][school][liter])
+                        id_classes = self.get_id_classes(id_oo_parallels, liter)
+                        for student in result_dict[parallel][school][liter]:
+                            gender = result_dict[parallel][school][liter][student]
+                            self._cur.execute(
+                                f"INSERT INTO students (id_oo_parallels, id_classes, gender, student_number) "
+                                f"VALUES ({id_oo_parallels}, {id_classes}, '{gender}', '{student}')")
+            print(count)
+            print("Таблица classes_textbooks заполненна")
+        except psycopg2.Error as e:
+            print("Ошибка при заполнении БД " + str(e))
 
+
+psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
+psql.dropAllTables()
+psql.createTables()
+psql.create_menu()
+psql.fill_district()
+psql.fill_oo_location_type()
+psql.fill_name_of_the_settlement()
+psql.fill_organizational_and_legal_form()
+psql.fill_oo_logins()
+psql.fill_population_of_the_settlement()
+psql.fill_internet_speed()
+psql.fill_the_involvement_of_students_in_additional_education()
+psql.fill_count_of_parents_attending_events()
+psql.fill_count_of_parents_ready_to_help()
+psql.fill_regular_transport_link()
+psql.fill_frequency_of_regular_transport_link()
+psql.fill_possibility_to_get_to_the_oo_by_public_transport()
+psql.fill_oo()
+psql.fill_duration_of_refresher_courses()
+psql.fill_completed_advanced_training_courses_for_teachers()
+psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
+psql.fill_description_of_career_guidance()
+psql.fill_oo_description_of_career_guidance()
+psql.fill_levels_of_the_educational_program()
+psql.fill_oo_levels_of_the_educational_program()
+psql.fill_percentage_of_parents_attending_parentteacher_meeting()
+psql.fill_parallels()
+psql.fill_oo_parallels()
+psql.fill_subjects()
+psql.fill_textbooks()
+psql.fill_classes()
+psql.fill_classes_textbooks()
+psql.fill_students()
