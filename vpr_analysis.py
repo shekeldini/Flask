@@ -27,7 +27,11 @@ class VPR:
             self.__add_region()
             self.df = self.df[["всего баллов", "логин школы", "регион"]]
 
-    def get_dict_schools_liters_students(self):
+    def get_translation_scale(self) -> tuple:
+        # 3 [1] 4 [3] 5 [5]
+        return self.translation_scale[1], self.translation_scale[3], self.translation_scale[5]
+
+    def get_dict_schools_liters_students(self) -> dict:
         dictionary = {}
         for index, row in self.df[["логин школы", "класс", "номер обучающегося", "пол"]].iterrows():
 
@@ -43,10 +47,10 @@ class VPR:
     def get_subj_name(self):
         return self.subj_name
 
-    def get_unic_schools(self):
+    def get_unic_schools(self) -> list:
         return [school for school in self.df["логин школы"].drop_duplicates()]
 
-    def get_dict_schools_liters_books(self):
+    def get_dict_schools_liters_books(self) -> dict:
         dictionary = {}
         for index, row in self.df[["логин школы", "класс", "Учебник"]].drop_duplicates().iterrows():
 
@@ -56,7 +60,7 @@ class VPR:
                 dictionary[row["логин школы"]][row["класс"]] = row["Учебник"]
         return dictionary
 
-    def get_dict_schools_liters(self):
+    def get_dict_schools_liters(self) -> dict:
         dictionary = {}
         for index, row in self.df[["логин школы", "класс"]].drop_duplicates().iterrows():
 
@@ -66,10 +70,10 @@ class VPR:
                 dictionary[row["логин школы"]].append(row["класс"])
         return dictionary
 
-    def __add_region(self):
+    def __add_region(self) -> None:
         self.df["регион"] = self.df.apply(lambda x: self.__find_region(x['логин школы']), axis=1)
 
-    def __get_basemark(self, value):
+    def __get_basemark(self, value) -> int:
         if value - self.subtrahend <= self.translation_scale[0]:
             return 2
         elif (value - self.subtrahend >= self.translation_scale[1]) and (
@@ -78,7 +82,7 @@ class VPR:
         elif value - self.subtrahend >= self.translation_scale[5]:
             return 5
 
-    def __get_realmark(self, value):
+    def __get_realmark(self, value) -> int:
         if value <= self.translation_scale[0]:
             return 2
         elif value >= self.translation_scale[1] and value <= self.translation_scale[2]:
@@ -88,14 +92,14 @@ class VPR:
         elif value >= self.translation_scale[5]:
             return 5
 
-    def __get_school_count_for_region(self, region_name):
+    def __get_school_count_for_region(self, region_name) -> int:
         df = self.df[self.df["регион"] == region_name]
         return len(df["логин школы"].drop_duplicates())
 
-    def __convert_all_score_to_baseMarks(self):
+    def __convert_all_score_to_baseMarks(self) -> None:
         self.df["Оценка"] = self.df.apply(lambda x: self.__get_basemark(x['всего баллов']), axis=1)
 
-    def __convert_all_score_to_realMarks(self):
+    def __convert_all_score_to_realMarks(self) -> None:
         self.df["Оценка"] = self.df.apply(lambda x: self.__get_realmark(x['всего баллов']), axis=1)
 
     def __get_df_with_mark(self, mark):
@@ -144,10 +148,10 @@ class VPR:
         above_baseline = self.__convert_column(self.__get_df_with_mark(5), "логин школы", "Выше базового")
         school_logins_with_region = self.df[["логин школы", "регион"]].drop_duplicates()
         base_information_for_schools = self.__merge_data_frames(counts_for_schools,
-                                                              below_baseline,
-                                                              baseline,
-                                                              above_baseline,
-                                                              school_logins_with_region, "логин школы")
+                                                                below_baseline,
+                                                                baseline,
+                                                                above_baseline,
+                                                                school_logins_with_region, "логин школы")
         cols = ["Ниже базового", "Базовый", "Выше базового"]
         base_information_for_schools[cols] = round(
             base_information_for_schools[cols].div(base_information_for_schools[cols].sum(axis=1), axis=0).multiply(
@@ -163,11 +167,11 @@ class VPR:
         result_with_5 = self.__convert_column(self.__get_df_with_mark(5), "логин школы", "5")
         school_logins_with_region = self.df[["логин школы", "регион"]].drop_duplicates()
         real_information_for_schools = self.__merge_data_frames(counts_for_schools,
-                                                              result_with_2,
-                                                              result_with_3,
-                                                              result_with_4,
-                                                              result_with_5,
-                                                              school_logins_with_region, "логин школы")
+                                                                result_with_2,
+                                                                result_with_3,
+                                                                result_with_4,
+                                                                result_with_5,
+                                                                school_logins_with_region, "логин школы")
         cols = ["2", "3", "4", "5"]
         real_information_for_schools[cols] = round(
             real_information_for_schools[cols].div(real_information_for_schools[cols].sum(axis=1), axis=0).multiply(
@@ -181,9 +185,9 @@ class VPR:
         baseline = self.__convert_column(self.__get_df_with_mark(4), "регион", "Базовый")
         above_baseline = self.__convert_column(self.__get_df_with_mark(5), "регион", "Выше базового")
         base_information_for_regions = self.__merge_data_frames(counts_for_regions,
-                                                              below_baseline,
-                                                              baseline,
-                                                              above_baseline, "регион")
+                                                                below_baseline,
+                                                                baseline,
+                                                                above_baseline, "регион")
         cols = ["Ниже базового", "Базовый", "Выше базового"]
         base_information_for_regions[cols] = round(
             base_information_for_regions[cols].div(base_information_for_regions[cols].sum(axis=1), axis=0).multiply(
@@ -198,10 +202,10 @@ class VPR:
         result_with_4 = self.__convert_column(self.__get_df_with_mark(4), "регион", "4")
         result_with_5 = self.__convert_column(self.__get_df_with_mark(5), "регион", "5")
         real_information_for_regions = self.__merge_data_frames(counts_for_regions,
-                                                              result_with_2,
-                                                              result_with_3,
-                                                              result_with_4,
-                                                              result_with_5, "регион")
+                                                                result_with_2,
+                                                                result_with_3,
+                                                                result_with_4,
+                                                                result_with_5, "регион")
         cols = ["2", "3", "4", "5"]
         real_information_for_regions[cols] = round(
             real_information_for_regions[cols].div(real_information_for_regions[cols].sum(axis=1), axis=0).multiply(
@@ -264,7 +268,7 @@ class VPR:
             return "Химия"
 
     def __get_balls(self, name):
-        fullname = self.__find_subject_name(name)
+        subj_name = self.__find_subject_name(name)
         subtrahend = 0
         translation_scale = [1, 1, 1, 1, 1, 1]
 
@@ -452,4 +456,4 @@ class VPR:
         elif 'окру' in name:
             translation_scale = om4
 
-        return translation_scale, fullname, subtrahend
+        return translation_scale, subj_name, subtrahend

@@ -306,9 +306,9 @@ CREATE TABLE IF NOT EXISTS "oo_parallels_subjects"(
 "id_oo_parallels_subjects" SERIAL,
 "id_subjects" INTEGER NOT NULL,
 "id_oo_parallels" INTEGER NOT NULL,
-"3_from" INTEGER NOT NULL,
-"4_from" INTEGER NOT NULL,
-"5_from" INTEGER NOT NULL,
+"mark_three" INTEGER NOT NULL,
+"mark_four" INTEGER NOT NULL,
+"mark_five" INTEGER NOT NULL,
 CONSTRAINT "K8" PRIMARY KEY ("id_oo_parallels_subjects","id_subjects","id_oo_parallels"),
 CONSTRAINT "C6" FOREIGN KEY ("id_subjects")
     REFERENCES "subjects" ("id_subjects"),
@@ -324,7 +324,7 @@ CREATE TABLE IF NOT EXISTS "result_for_task"(
 "id_oo_parallels" INTEGER NOT NULL,
 "id_subjects" INTEGER NOT NULL,
 "variant" INTEGER NOT NULL,
-"grades_For_the_Previous_Semester" INTEGER NOT NULL,
+"mark_for_last_semester" INTEGER NOT NULL,
 "mark" INTEGER NOT NULL,
 CONSTRAINT "K14" PRIMARY KEY ("id_result_for_task","task_number"),
 CONSTRAINT "C13" FOREIGN KEY ("id_oo_parallels_subjects","id_oo_parallels","id_subjects")
