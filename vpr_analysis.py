@@ -17,8 +17,26 @@ class VPR:
 
     def __data_preprocessing(self):
         try:
+            index_books = self.df.columns.get_loc('Учебник')
+            index_first_task = self.df.columns.get_loc('балл за 1')
+            column_list = self.df.columns[index_first_task: index_books]
+
             self.df = self.df[self.df['вариант'] != 'отсутствовал']
+
+            self.df = self.df[self.df.columns[: index_books + 1]]
             self.df['Учебник'] = self.df['Учебник'].replace(np.nan, "Нет данных")
+
+            self.df[column_list] = self.df[column_list].apply(pd.to_numeric, errors='coerce')
+            self.df[column_list] = self.df[column_list].fillna(0)
+
+            self.df["отметка за предыдущую четверть/триместр"] = self.df[
+                "отметка за предыдущую четверть/триместр"].apply(pd.to_numeric, errors='coerce')
+            self.df["отметка за предыдущую четверть/триместр"] = self.df[
+                "отметка за предыдущую четверть/триместр"].fillna(0)
+
+            self.df["вариант"] = self.df["вариант"].apply(pd.to_numeric, errors='coerce')
+            self.df["вариант"] = self.df["вариант"].fillna(0)
+
             for char in ["0", "1", "2", "3", "4", "X"]:
                 self.df = self.df[self.df['Учебник'] != char]
         except Exception:
@@ -43,6 +61,10 @@ class VPR:
                 else:
                     dictionary[row["логин школы"]][row["класс"]][row["номер обучающегося"]] = row["пол"]
         return dictionary
+
+    def df_to_list(self):
+        index_books = self.df.columns.get_loc('Учебник')
+        return self.df[self.df.columns[:index_books]].values.tolist()
 
     def get_subj_name(self):
         return self.subj_name

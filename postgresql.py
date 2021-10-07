@@ -6,6 +6,9 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from glob import glob
 from config import *
 from vpr_analysis import VPR
+import threading
+from psycopg2.pool import ThreadedConnectionPool
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class Postgresql:
@@ -102,6 +105,41 @@ class Postgresql:
             print("Ошибка обновления аватара в БД: " + str(e))
             return False
         return True
+
+    def get_parallels_for_oo(self, id_oo):
+        try:
+            self._cur.execute(f"SELECT id_oo_parallels, parallel FROM oo_parallels WHERE id_oo = {id_oo}")
+            res = self._cur.fetchall()
+            if res:
+                return res
+        except psycopg2.Error as e:
+            print("Ошибка получения статей из БД " + str(e))
+        return []
+
+    def get_subject_name(self, id_subjects):
+        try:
+            if id_subjects:
+                self._cur.execute(f"SELECT subject_name FROM subjects"
+                                  f" WHERE id_subjects = {id_subjects}")
+                res = self._cur.fetchone()
+                if res:
+                    return res
+        except psycopg2.Error as e:
+            print("Ошибка получения статей из БД " + str(e))
+        return []
+
+    def get_subjects_for_oo_parallels(self, id_oo_parallels):
+        try:
+            if id_oo_parallels:
+                self._cur.execute(f"SELECT id_oo_parallels_subjects, id_subjects FROM oo_parallels_subjects"
+                                  f" WHERE id_oo_parallels = {id_oo_parallels}")
+                res = self._cur.fetchall()
+                if res:
+                    return [[x[0], self.get_subject_name(x[1])[0].replace("_", " ")] for x in res]
+
+        except psycopg2.Error as e:
+            print("Ошибка получения статей из БД " + str(e))
+        return []
 
     def get_list_users(self):
         try:
@@ -342,7 +380,15 @@ class Postgresql:
             res, = self._cur.fetchone()
             if not res:
                 print("id_oo не был найден")
-                return []
+                return None
+            return res
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_students(self, id_oo_parallels):
+        try:
+            self._cur.execute(f"")
+            res = self._cur.fetchall()
             return res
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -402,7 +448,26 @@ class Postgresql:
     def get_oo_login(self, id_oo):
         try:
             self._cur.execute(f" SELECT oo_login FROM oo WHERE id_oo = {id_oo}")
-            res = self._cur.fetchone()
+            res, = self._cur.fetchone()
+            return res
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_id_students(self, id_oo_parallels, id_classes, student_number):
+        try:
+            self._cur.execute(f" SELECT id_students FROM students WHERE id_oo_parallels = {id_oo_parallels} AND"
+                              f" id_classes = {id_classes} AND student_number = '{student_number}'")
+            res, = self._cur.fetchone()
+            return res
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_id_oo_parallels_subjects(self, id_subjects, id_oo_parallels):
+        try:
+            self._cur.execute(
+                f" SELECT id_oo_parallels_subjects FROM oo_parallels_subjects WHERE id_oo_parallels = {id_oo_parallels}"
+                f" AND id_subjects = {id_subjects}")
+            res, = self._cur.fetchone()
             return res
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1270,20 +1335,60 @@ class FillDb(Postgresql):
                         self._cur.execute(f"INSERT INTO oo_parallels_subjects "
                                           f"(id_subjects, id_oo_parallels, mark_three, mark_four, mark_five) "
                                           f"VALUES "
-                                          f"({id_subjects},"
-                                          f" {id_oo_parallels},"
-                                          f" {mark_three},"
-                                          f" {mark_four},"
-                                          f" {mark_five})")
+                                          f"({id_subjects}, {id_oo_parallels}, {mark_three},"
+                                          f" {mark_four}, {mark_five})")
             print("Таблица oo_parallels_subjects заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
+    def thread_fill_result_for_task(self, file, parallel):
+        try:
+
+            print(file.replace("\\", "/"))
+            df = VPR(file.replace("\\", "/"))
+            list_df = df.df_to_list()
+            for row in list_df:
+                school, student_number, liter, mark_for_last_semester, variant, marks = row[0], row[2], row[6], \
+                                                                                        row[4], row[7], row[9:]
+                id_oo = self.get_id_oo(school.strip())
+                id_oo_parallels = self.get_id_oo_parallels(parallel, id_oo)
+                id_classes = self.get_id_classes(id_oo_parallels, liter)
+                id_students = self.get_id_students(id_oo_parallels, id_classes, student_number)
+                id_subjects = self.get_id_subjects(df.get_subj_name())
+                id_oo_parallels_subjects = self.get_id_oo_parallels_subjects(id_subjects, id_oo_parallels)
+                for task_number, mark in enumerate(marks):
+                    self._cur.execute(f"INSERT INTO result_for_task "
+                                      f"(task_number, id_oo_parallels_subjects, id_students,"
+                                      f" id_oo_parallels, id_subjects, variant, mark_for_last_semester, mark) "
+                                      f"VALUES "
+                                      f"({task_number + 1}, {id_oo_parallels_subjects}, {id_students},"
+                                      f" {id_oo_parallels}, {id_subjects}, {int(variant)},"
+                                      f" {int(mark_for_last_semester)}, {int(mark)})")
+        except psycopg2.Error as e:
+            print("Ошибка при заполнении БД " + str(e))
+
     def fill_result_for_task(self):
-        pass
+        try:
+            all_parallels = glob("excel/vpr_results/*")
+            thread_list = []
+            for path in all_parallels:
+                parallel = int(path[path.index("\\") + 1:])
+                subj_in_parallel = path.replace("\\", "/") + "/*"
+                files = glob(subj_in_parallel)
 
+                for file in files:
+                    psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
+                    thread_list.append(
+                        threading.Thread(target=psql.thread_fill_result_for_task, args=(file, parallel,)))
+            for thread in thread_list:
+                thread.start()
 
-psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
+            if all(thread.is_alive() is False for thread in thread_list):
+                print("Таблица result_for_task заполненна")
+        except Exception as e:
+            print(e)
+
+# psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
 # psql.dropAllTables()
 # psql.createTables()
 # psql.create_menu()
@@ -1317,5 +1422,4 @@ psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=POR
 # psql.fill_classes_textbooks()
 # psql.fill_students()
 # psql.fill_oo_parallels_subjects()
-psql.test()
-
+# psql.fill_result_for_task()

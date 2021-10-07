@@ -296,7 +296,7 @@ CREATE TABLE IF NOT EXISTS "students"(
 "id_oo_parallels" INTEGER NOT NULL,
 "id_classes" INTEGER NOT NULL,
 "gender" VARCHAR(10) NOT NULL,
-"student_number" VARCHAR(10) NOT NULL,
+"student_number" INTEGER NOT NULL,
 CONSTRAINT "K13" PRIMARY KEY ("id_students","id_oo_parallels"),
 CONSTRAINT "C11" FOREIGN KEY ("id_oo_parallels","id_classes")
     REFERENCES "classes" ("id_oo_parallels","id_classes")

@@ -1,3 +1,6 @@
+select {
+	width: 300px;
+}
 .container {
   max-width: 720px;
   margin: 0 auto;

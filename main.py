@@ -67,8 +67,14 @@ def close_db(error):
 @login_required
 def vpr_analysis():
     form = VPRAnalysisForm()
-    form.name_of_the_settlement.choices = [(district[0], district[1].replace("_"," ")) for
+    form.name_of_the_settlement.choices = [(district[0], district[1].replace("_", " ")) for
                                            district in dbase.get_districts()]
+
+    if form.validate_on_submit():
+        print(f"id_district = {form.name_of_the_settlement.data}\n"
+              f"id_oo = {form.oo.data}\n"
+              f"id_oo_parallels = {form.parallel.data}\n"
+              f"id_oo_parallels_subjects = {form.subject.data}")
     return render_template('vpr_analysis.html', menu=dbase.get_logged_menu(), form=form, title="Аналитика ВПР")
 
 
@@ -76,14 +82,36 @@ def vpr_analysis():
 @login_required
 def oo_by_name_of_the_settlement(id_district):
     oo = dbase.get_oo_from_district(id_district)
-    ooArray = []
+    oo_array = []
     for list in oo:
         for school in list:
-            ooObj = {}
-            ooObj['id'] = school[0]
-            ooObj['name'] = school[1]
-            ooArray.append(ooObj)
-    return jsonify({'oo': ooArray})
+            oo_obj = {'id': school[0], 'name': school[1]}
+            oo_array.append(oo_obj)
+    return jsonify({'oo': oo_array})
+
+
+@app.route('/parallels/<id_oo>')
+@login_required
+def parallels_for_oo(id_oo):
+    parallels = dbase.get_parallels_for_oo(id_oo)
+    parallels_array = []
+    for parallel in sorted(parallels, key=lambda x: x[1]):
+        parallels_obj = {'id': parallel[0], 'name': parallel[1]}
+        parallels_array.append(parallels_obj)
+
+    return jsonify({'parallels': parallels_array})
+
+
+@app.route('/subjects/<id_oo_parallels>')
+@login_required
+def subjects_for_oo_parallels(id_oo_parallels):
+    subjects = dbase.get_subjects_for_oo_parallels(id_oo_parallels)
+    subjects_array = []
+    for subject in sorted(subjects, key=lambda x: x[1]):
+        subjects_obj = {'id': subject[0], 'name': subject[1]}
+        subjects_array.append(subjects_obj)
+
+    return jsonify({'subjects': subjects_array})
 
 
 @app.route("/")

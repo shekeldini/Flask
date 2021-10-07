@@ -25,23 +25,5 @@
 
 	<p class="steps">{{ form.submit() }}
 </form>
-<script>
-name_of_the_settlement_select = document.getElementById('name_of_the_settlement');
-oo_select = document.getElementById('oo');
-parallel_select = document.getElementById('parallel');
-subject_select = document.getElementById('subject');
-
-name_of_the_settlement_select.onchange = function(){
-	name_of_the_settlement = name_of_the_settlement_select.value;
-	fetch('oo/' + name_of_the_settlement).then(function(response){
-		response.json().then(function(data) {
-			optionHTML = '';
-			for (oo of data.oo) {
-				optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
-			}
-			oo_select.innerHTML = optionHTML;
-		});
-	});
-}
-</script>
+<script src="{{ url_for('static', filename='js/vpr_analysis.js')}}"></script>
 {% endblock %}
