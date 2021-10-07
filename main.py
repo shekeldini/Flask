@@ -75,6 +75,7 @@ def vpr_analysis():
               f"id_oo = {form.oo.data}\n"
               f"id_oo_parallels = {form.parallel.data}\n"
               f"id_oo_parallels_subjects = {form.subject.data}")
+        return redirect(url_for('vpr_analysis'))
     return render_template('vpr_analysis.html', menu=dbase.get_logged_menu(), form=form, title="Аналитика ВПР")
 
 
