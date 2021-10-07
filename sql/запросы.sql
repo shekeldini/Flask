@@ -1,0 +1,1 @@
+SELECT id_students, SUM(mark) FROM result_for_task WHERE id_oo_parallels_subjects = 7364 AND id_students IN (SELECT id_students FROM students WHERE id_classes IN(SELECT id_classes FROM classes WHERE id_oo_parallels = 1068)) GROUP BY id_students;
