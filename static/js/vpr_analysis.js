@@ -1,8 +1,20 @@
 name_of_the_settlement_select = document.getElementById('name_of_the_settlement');
-name_of_the_settlement_select.value = "";
 oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
+
+fetch('get_districts').then(function(response){
+		response.json().then(function(data) {
+			optionHTML = '';
+			for (district of data.districts) {
+				optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+			}
+			name_of_the_settlement_select.innerHTML = optionHTML;
+			name_of_the_settlement_select.value = "";
+		});
+});
+
+
 
 name_of_the_settlement_select.onchange = function(){
 	parallel_select.innerHTML = "";
@@ -19,7 +31,7 @@ name_of_the_settlement_select.onchange = function(){
 			oo_select.value = "";
 		});
 	});
-}
+};
 
 oo_select.onchange = function(){
 	
@@ -35,7 +47,7 @@ oo_select.onchange = function(){
 			parallel_select.value = "";
 		});
 	});
-}
+};
 
 parallel_select.onchange = function(){
 	
@@ -50,4 +62,21 @@ parallel_select.onchange = function(){
 			subject_select.value = "";
 		});
 	});
-}
+};
+
+$(document).ready(function(){
+	$("#submit_btn").click(function(){
+		var sendInfo = {
+			name_of_the_settlement : name_of_the_settlement_select.value,
+           	oo : oo_select.value,
+           	parallel : parallel_select.value,
+           	subject: subject_select.value
+       };
+		$.ajax({
+		  type : 'POST',
+		  url : "/vpr_analysis",
+		  contentType: "application/json; charset=utf-8",
+		  data: JSON.stringify(sendInfo)
+		});
+ 	});
+});

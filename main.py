@@ -66,17 +66,22 @@ def close_db(error):
 @app.route("/vpr_analysis", methods=["POST", "GET"])
 @login_required
 def vpr_analysis():
-    form = VPRAnalysisForm()
-    form.name_of_the_settlement.choices = [(district[0], district[1].replace("_", " ")) for
-                                           district in dbase.get_districts()]
-
-    if form.validate_on_submit():
-        print(f"id_district = {form.name_of_the_settlement.data}\n"
-              f"id_oo = {form.oo.data}\n"
-              f"id_oo_parallels = {form.parallel.data}\n"
-              f"id_oo_parallels_subjects = {form.subject.data}")
+    if request.method == "POST":
+        result = request.get_json()
+        print(result)
         return redirect(url_for('vpr_analysis'))
-    return render_template('vpr_analysis.html', menu=dbase.get_logged_menu(), form=form, title="Аналитика ВПР")
+    return render_template('vpr_analysis.html', menu=dbase.get_logged_menu(), title="Аналитика ВПР")
+
+
+@app.route("/get_districts")
+@login_required
+def get_districts():
+    districts = dbase.get_districts()
+    district_array = []
+    for district in districts:
+        district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
+        district_array.append(district_obj)
+    return jsonify({'districts': district_array})
 
 
 @app.route('/oo/<id_district>')
@@ -84,8 +89,8 @@ def vpr_analysis():
 def oo_by_name_of_the_settlement(id_district):
     oo = dbase.get_oo_from_district(id_district)
     oo_array = []
-    for list in oo:
-        for school in list:
+    for list_ in oo:
+        for school in list_:
             oo_obj = {'id': school[0], 'name': school[1]}
             oo_array.append(oo_obj)
     return jsonify({'oo': oo_array})
@@ -114,7 +119,6 @@ def subjects_for_oo_parallels(id_oo_parallels):
 
     return jsonify({'subjects': subjects_array})
 
-
 @app.route("/")
 def index():
     if current_user.is_authenticated:
@@ -126,8 +130,8 @@ def index():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        hash = generate_password_hash(form.psw.data)
-        res = dbase.add_user(form.name.data, form.email.data, hash)
+        hash_psw = generate_password_hash(form.psw.data)
+        res = dbase.add_user(form.name.data, form.email.data, hash_psw)
         if res:
             flash("Вы успешно зарегистрированы", "success")
             return redirect(url_for("login"))

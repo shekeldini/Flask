@@ -1,29 +1,35 @@
 {% extends 'base.html' %}
-
 {% block content %}
 {{ super() }}
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
-<form action="" method="post" class="form-contact">
-	{{ form.hidden_tag() }}
-	{% for field in form if field.name not in ['csrf_token', 'submit'] %}
+<form action="" method="post" class="form-contact" id="vpr_form">
+	<p class="steps">
+		<label for="name_of_the_settlement">Муниципалитет</label>
+		<select id="name_of_the_settlement" name="name_of_the_settlement" required></select>
+	</p>
 
-		<p class="steps">{{ field.label() }}
+	<p class="steps">
+		<label for="oo">Образовательная организация</label>
+		<select id="oo" name="oo" required></select>
+	</p>
 
-			{% if field.errors %}
-				{{field(class="invalid")}}
-				<span class="ivalid-feedback">
-					{% for e in field.errors %}
-					{{ e }}
-					{% endfor %}
-				</span>
-			{% else %}
-		 		{{ field() }}
-		 	{% endif %}
-	 {% endfor %}
+	<p class="steps">
+		<label for="parallel">Параллель</label>
+		<select id="parallel" name="parallel" required></select>
+	</p>
 
-	<p class="steps">{{ form.submit() }}
+	<p class="steps">
+		<label for="subject">Дисциплина</label>
+		<select id="subject" name="subject" required></select>
+	</p >
+
 </form>
+<p class="steps">
+	<input id="submit_btn" name="submit_btn" type="button" value="Показать">
+</p>
+
 <script src="{{ url_for('static', filename='js/vpr_analysis.js')}}"></script>
+
 {% endblock %}
