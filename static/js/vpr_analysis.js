@@ -10,15 +10,15 @@ fetch('get_districts').then(function(response){
 				optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
 			}
 			name_of_the_settlement_select.innerHTML = optionHTML;
-			name_of_the_settlement_select.value = "";
+			name_of_the_settlement_select.value = "Выбрать";
 		});
 });
 
 
 
 name_of_the_settlement_select.onchange = function(){
-	parallel_select.innerHTML = "";
-	subject_select.innerHTML = "";
+	parallel_select.innerHTML = "Выбрать";
+	subject_select.innerHTML = "Выбрать";
 
 	name_of_the_settlement = name_of_the_settlement_select.value;
 	fetch('oo/' + name_of_the_settlement).then(function(response){
@@ -28,14 +28,14 @@ name_of_the_settlement_select.onchange = function(){
 				optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
 			}
 			oo_select.innerHTML = optionHTML;
-			oo_select.value = "";
+			oo_select.value = "Выбрать";
 		});
 	});
 };
 
 oo_select.onchange = function(){
 	
-	subject_select.innerHTML = "";
+	subject_select.innerHTML = "Выбрать";
 	oo = oo_select.value;
 	fetch('parallels/' + oo).then(function(response){
 		response.json().then(function(data) {
@@ -44,7 +44,7 @@ oo_select.onchange = function(){
 				optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
 			}
 			parallel_select.innerHTML = optionHTML;
-			parallel_select.value = "";
+			parallel_select.value = "Выбрать";
 		});
 	});
 };
@@ -59,10 +59,12 @@ parallel_select.onchange = function(){
 				optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
 			}
 			subject_select.innerHTML = optionHTML;
-			subject_select.value = "";
+			subject_select.value = "Выбрать";
 		});
 	});
 };
+
+
 
 $(document).ready(function(){
 	$("#submit_btn").click(function(){
@@ -76,7 +78,11 @@ $(document).ready(function(){
 		  type : 'POST',
 		  url : "/vpr_analysis",
 		  contentType: "application/json; charset=utf-8",
-		  data: JSON.stringify(sendInfo)
+		  data: JSON.stringify(sendInfo),
+		  success: function(data){
+		  	marker = JSON.stringify(data);
+
+        	},
 		});
  	});
 });

@@ -68,8 +68,17 @@ def close_db(error):
 def vpr_analysis():
     if request.method == "POST":
         result = request.get_json()
-        print(result)
-        return redirect(url_for('vpr_analysis'))
+        id_name_of_the_settlement = result["name_of_the_settlement"]
+        id_oo = result["oo"]
+        id_oo_parallels = result["parallel"]
+        id_oo_parallels_subjects = result["subject"]
+        res = dbase.get_count_students_mark(id_oo_parallels_subjects, id_oo_parallels)
+        count_of_mark = sum(res.values())
+
+        return jsonify({"percents": {2: round((res[2] / count_of_mark) * 100, 2),
+                                     3: round((res[3] / count_of_mark) * 100, 2),
+                                     4: round((res[4] / count_of_mark) * 100, 2),
+                                     5: round((res[5] / count_of_mark) * 100, 2)}})
     return render_template('vpr_analysis.html', menu=dbase.get_logged_menu(), title="Аналитика ВПР")
 
 
@@ -118,6 +127,7 @@ def subjects_for_oo_parallels(id_oo_parallels):
         subjects_array.append(subjects_obj)
 
     return jsonify({'subjects': subjects_array})
+
 
 @app.route("/")
 def index():
