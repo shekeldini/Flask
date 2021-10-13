@@ -25,11 +25,20 @@
 		<select id="subject" name="subject" required></select>
 	</p >
 
+	<p class="steps">
+		<label for="report">Вид отчета</label>
+		<select id="report" name="report" required></select>
+	</p >
+
 </form>
 <p class="steps">
 	<input id="submit_btn" name="submit_btn" type="button" value="Показать">
 </p>
-
+<section id="report_place">
+	
+</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 <script src="{{ url_for('static', filename='js/vpr_analysis.js')}}"></script>
 
 {% endblock %}

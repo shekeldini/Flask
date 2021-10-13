@@ -68,18 +68,38 @@ def close_db(error):
 def vpr_analysis():
     if request.method == "POST":
         result = request.get_json()
-        id_name_of_the_settlement = result["name_of_the_settlement"]
-        id_oo = result["oo"]
-        id_oo_parallels = result["parallel"]
-        id_oo_parallels_subjects = result["subject"]
-        res = dbase.get_count_students_mark(id_oo_parallels_subjects, id_oo_parallels)
-        count_of_mark = sum(res.values())
+        name_of_the_settlement = result["name_of_the_settlement"]
+        oo = result["oo"]
+        oo_parallels = result["parallel"]
+        oo_parallels_subjects = result["subject"]
+        report_type = int(result["report"]["id"])
 
-        return jsonify({"percents": {2: round((res[2] / count_of_mark) * 100, 2),
-                                     3: round((res[3] / count_of_mark) * 100, 2),
-                                     4: round((res[4] / count_of_mark) * 100, 2),
-                                     5: round((res[5] / count_of_mark) * 100, 2)}})
+        if report_type == 0:
+            percents, count_of_students = dbase.get_count_students_mark(oo_parallels_subjects["id"], oo_parallels["id"])
+            return jsonify({"name_of_the_settlement": name_of_the_settlement,
+                            "oo": oo,
+                            "percents": percents,
+                            "count_of_all_students": count_of_students})
+
+        elif report_type == 1:
+            percents, count_of_students = dbase.get_comparison_of_ratings(oo_parallels_subjects["id"], oo_parallels["id"])
+            return jsonify({"name_of_the_settlement": name_of_the_settlement,
+                            "oo": oo,
+                            "percents": percents,
+                            "count_of_all_students": count_of_students})
+
     return render_template('vpr_analysis.html', menu=dbase.get_logged_menu(), title="Аналитика ВПР")
+
+
+@app.route("/get_reports")
+@login_required
+def get_reports():
+    reports = ["Статистика по отметкам", "Сравнение ответок с отметками по журналу"]
+    reports_array = []
+    for report_id, report in enumerate(reports):
+        reports_obj = {'id': report_id, 'name': report}
+        reports_array.append(reports_obj)
+    return jsonify({'reports': reports_array})
 
 
 @app.route("/get_districts")
