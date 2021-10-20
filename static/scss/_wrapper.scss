@@ -1,0 +1,196 @@
+.wrapper {
+        padding-left: 0;
+        padding-right: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+    &__left {
+        width: 250px;
+        // &_sidebar {
+        //     .nav {
+        //         list-style: none;
+        //         padding: 0;
+        //         margin: 0;
+        //         text-decoration: none;
+        //         &__link {
+        //             background: #F4F5F7;
+        //             padding: 10px 35px 10px 35px;
+        //             color: #484848;
+        //             border-radius: 0px 20px 20px 0px;
+        //             display: block;
+        //             text-decoration: none;
+        //             font-family: "Roboto", sans-serif;
+        //         }
+        //         &__arrow {
+        //             margin-left: auto;
+        //             margin-right: 0;
+        //             color: #bfccda;
+        //             &::before {
+        //                 content: "\F142";
+        //                 font-family: "Material Design Icons";
+        //                 font-style: normal;
+        //                 display: block;
+        //                 font-size: 0.687rem;
+        //                 line-height: 10px;
+        //                 width: 5px;
+        //                 height: 5px;
+        //             }
+        //         }
+        //     }
+        // }
+    }
+    &__center {
+        max-width: 1350px;
+        width: 100%;
+        margin: 0 auto;
+        margin-top: 50px;
+        &_top {
+            align-items: flex-start;
+            display: flex;
+            justify-content: space-between;
+            &_img {
+                box-shadow: 4px 6px 15px 1px rgba(104, 104, 104, 0.76);
+                border-radius: 25px;
+                overflow: hidden;
+                min-width: 650px;
+            }
+            &_blocks {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                margin-left: 50px;
+                &_item {
+                    width: 260px;
+                    height: 100px;
+                    background: #1F3BB3;
+                    border-radius: 20px;
+                    padding: 10px 20px 20px 20px;
+                    box-shadow: 4px 6px 15px 1px rgba(104, 104, 104, 0.76);
+                    margin-bottom: 50px;
+                    &:nth-child(1) {
+                        background: #7DA0FA;
+                    }
+                    &:nth-child(2) {
+                        background: #4747A1;
+                    }
+                    &:nth-child(3) {
+                        background: #7978E9;
+                    }
+                    &:nth-child(4) {
+                        background: #F3797E;
+                    }
+                    &_text {
+                        font-family: "Roboto", sans-serif;
+                        font-weight: 500;
+                        font-size: 20px;
+                        color: #FFFFFF;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        i {
+                            font-size: 30px;
+                        }
+                    }
+                    &_quantity {
+                        font-family: "Roboto", sans-serif;
+                        font-weight: 500;
+                        font-size: 35px;
+                        color: #FFFFFF;
+                    }
+                }
+            }      
+        }
+        &_low {
+            margin-top: 50px;
+            &_bar {
+                padding: 15px;
+                box-shadow: 4px 6px 15px 1px rgba(104, 104, 104, 0.4);
+                border-radius: 20px;
+                width: 650px;
+                box-sizing: border-box;
+                
+            }
+            &_title {
+                font-family: "Roboto", sans-serif;
+                font-weight: 800;
+                font-size: 20px;
+                color: #1F1F1F;
+            }
+            &_subtitle {
+                margin-top: 10px;
+                font-family: "Roboto", sans-serif;
+                font-weight: 800;
+                font-size: 15px;
+                color: #1F1F1F;
+            }
+        }
+    }
+    &__right {
+            margin-top: 190px;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        &_login {
+            width: 350px;
+            padding: 15px;
+            box-shadow: 4px 6px 15px 1px rgba(104, 104, 104, 0.4);
+            border-radius: 20px;
+            h4, h6 {
+                font-family: "Roboto", sans-serif;
+                font-weight: 800;
+                font-size: 25px;
+                color: #1F1F1F;
+                margin: 0;
+                padding: 0;
+            }
+            h6 {
+                font-size: 15px;
+                margin-bottom: 10px;
+            }
+            &_field {
+                margin-bottom: 10px;
+                input {
+                    border: 1px solid #dee2e6;
+                    padding: 7px;
+                    border-radius: 20px;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                &_last {
+                    margin-bottom: 40px;
+                }
+            }
+            &_btns {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                &_btn, &_forgot {
+                    background: #1F3BB3;
+                    color: #ffffff;
+                    text-decoration: none;
+                    text-align: center;
+                    cursor: pointer;
+                    padding: 14px 40px;
+                    border-radius: 10px;
+                    display: inline-block;
+                    font-family: "Roboto", sans-serif;
+                    font-weight: 400;
+                    font-size: 15px;
+                    &:hover, &:focus {
+                        background: #192f8f;
+                        transition: 0.2s all;
+                    }
+                }
+            }
+            
+        }
+    }
+}
+
+.chart__wrapper {
+    display: flex;
+    align-items:center;
+    justify-content: space-between;
+}

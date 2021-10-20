@@ -1,9 +1,9 @@
 import psycopg2
 from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from classUserLogin import UserLogin
-from forms import LoginForm, RegisterForm, VPRAnalysisForm
+from forms import LoginForm
 from admin.admin import admin
 from postgresql import Postgresql
 from config import *
@@ -82,7 +82,8 @@ def vpr_analysis():
                             "count_of_all_students": count_of_students})
 
         elif report_type == 1:
-            percents, count_of_students = dbase.get_comparison_of_ratings(oo_parallels_subjects["id"], oo_parallels["id"])
+            percents, count_of_students = dbase.get_comparison_of_ratings(oo_parallels_subjects["id"],
+                                                                          oo_parallels["id"])
             return jsonify({"name_of_the_settlement": name_of_the_settlement,
                             "oo": oo,
                             "percents": percents,
@@ -118,10 +119,9 @@ def get_districts():
 def oo_by_name_of_the_settlement(id_district):
     oo = dbase.get_oo_from_district(id_district)
     oo_array = []
-    for list_ in oo:
-        for school in list_:
-            oo_obj = {'id': school[0], 'name': school[1]}
-            oo_array.append(oo_obj)
+    for school in oo:
+        oo_obj = {'id': school[0], 'name': school[1]}
+        oo_array.append(oo_obj)
     return jsonify({'oo': oo_array})
 
 
@@ -152,23 +152,21 @@ def subjects_for_oo_parallels(id_oo_parallels):
 @app.route("/")
 def index():
     if current_user.is_authenticated:
-        return render_template('index.html', menu=dbase.get_logged_menu(), title="Главная страница")
-    return render_template('index.html', menu=dbase.get_guest_menu(), title="Главная страница")
+        return render_template('index.html',
+                               menu=dbase.get_logged_menu(),
+                               count_of_students=dbase.get_count_students(),
+                               count_of_oo=dbase.get_count_oo(),
+                               count_of_subject=dbase.get_count_of_subject(),
+                               count_of_parallels=dbase.get_count_of_parallels(),
+                               title="Главная страница")
 
-
-@app.route("/register", methods=["POST", "GET"])
-def register():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        hash_psw = generate_password_hash(form.psw.data)
-        res = dbase.add_user(form.name.data, form.email.data, hash_psw)
-        if res:
-            flash("Вы успешно зарегистрированы", "success")
-            return redirect(url_for("login"))
-        else:
-            flash("Ошибка при добавлении в БД", "error")
-
-    return render_template('register.html', title="Регистрация", menu=dbase.get_guest_menu(), form=form)
+    return render_template('index.html',
+                           menu=dbase.get_guest_menu(),
+                           count_of_students=dbase.get_count_students(),
+                           count_of_oo=dbase.get_count_oo(),
+                           count_of_subject=dbase.get_count_of_subject(),
+                           count_of_parallels=dbase.get_count_of_parallels(),
+                           title="Главная страница")
 
 
 @app.errorhandler(404)
@@ -183,31 +181,23 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = dbase.get_user_by_email(form.email.data)
+        user = dbase.get_user_by_login(form.login.data)
         if user:
-            user_psw = user[3]
-            if user and check_password_hash(user_psw, form.psw.data):
+            user_password = user[5]
+            if user and check_password_hash(user_password, form.password.data):
                 userLogin = UserLogin().create(user)
-                rm = form.remember.data
-                login_user(userLogin, remember=rm)
-                return redirect(request.args.get("next") or url_for("profile"))
+                login_user(userLogin)
+                return redirect(request.args.get("next") or url_for("index"))
 
         flash("Неверный логин или пароль", "error")
-    return render_template("login.html", title="Авторизация", menu=dbase.get_guest_menu(), form=form)
+    return render_template("login.html", title="Авторизация", form=form)
 
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash("Вы вышл из аккаунта", "success")
     return redirect(url_for('login'))
-
-
-@app.route('/profile')
-@login_required
-def profile():
-    return render_template("profile.html", title="Профиль", menu=dbase.get_logged_menu())
 
 
 @app.route('/userava')

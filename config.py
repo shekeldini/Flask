@@ -1,4 +1,5 @@
 USER = "admin"
 PASSWORD = "1234"
-HOST = "172.21.52.144"
+HOST = "172.29.31.13"
 PORT = "5432"
+

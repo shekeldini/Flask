@@ -1,0 +1,29 @@
+.header {
+    min-width: 250px;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 5px;
+    padding-left: 20px;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    &__logo {
+        margin-right: 30px;
+    }
+    &__title {
+        font-family: "Roboto", sans-serif;
+        font-weight: 400;
+        font-size: 28px;
+        color: #243964
+    }
+    &__profile {
+        margin-left: 600px;
+        i {
+            font-size: 40px;
+            color: #1F3BB3;
+            cursor: pointer;
+        }
+    }
+
+}

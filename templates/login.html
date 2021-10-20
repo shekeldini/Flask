@@ -2,29 +2,31 @@
 
 {% block content %}
 {{ super() }}
-{% for cat, msg in get_flashed_messages(True) %}
-<div class="flash {{cat}}">{{msg}}</div>
-{% endfor %}
-<form action="" method="post" class="form-contact">
-	{{ form.hidden_tag() }}
-	{% for field in form if field.name not in ['csrf_token', 'remember', 'submit'] %}
-
-		<p>{{ field.label() }}
-
-			{% if field.errors %}
-				{{field(class="invalid")}}
-				<span class="ivalid-feedback">
-					{% for e in field.errors %}
-					{{ e }}
-					{% endfor %}
-				</span>
-			{% else %}
-		 		{{ field() }}
-		 	{% endif %}
-	 {% endfor %}
-
-	<p>{{ form.remember.label() }} {{ form.remember() }}
-	<p>{{ form.submit() }}
-	<a href="{{url_for('register')}}"> Регистрация </a>
-</form>
-{% endblock %}
+<section class="login">
+    <div class="container__login">
+        <div class="wrapper__right">
+            <div class="wrapper__right_login">
+                <h4>Привет!</h4>
+                <h6>Войдите в систему, чтобы продолжить.</h6>
+                <form action="" method="post" class="form-contact">
+                    {{ form.hidden_tag() }}
+                    <div class="wrapper__right_login_field">
+                        {{form.login(placeholder= form.login.label.text, class_="form-control form-control-lg")}}
+                    </div>
+                    <div class="wrapper__right_login_field wrapper__right_login_field_last">
+                        {{form.password(placeholder= form.password.label.text, class_="form-control form-control-lg")}}
+                    </div>
+                    <div class="wrapper__right_login_btns">
+                        <div>
+                            {{ form.submit(class_="wrapper__right_login_btns_btn") }}
+                        </div>
+                        <div>
+                            <a href="#" class="wrapper__right_login_btns_forgot">Забыли пароль?</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}  

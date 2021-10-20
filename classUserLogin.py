@@ -13,11 +13,17 @@ class UserLogin(UserMixin):
     def get_id(self):
         return str(self.__user[0])
 
-    def getName(self):
-        return self.__user[1] if self.__user else "Без имени"
+    def get_name(self):
+        return self.__user[2]
 
-    def getLogin(self):
-        return self.__user[2] if self.__user else "Без email"
+    def get_login(self):
+        return self.__user[1]
+
+    def get_email(self):
+        return self.__user[3] if self.__user[3] else ""
+
+    def get_phone(self):
+        return self.__user[4] if self.__user[4] else ""
 
     def getAvatar(self, app):
         img = None

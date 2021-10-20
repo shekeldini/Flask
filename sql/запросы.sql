@@ -41,4 +41,17 @@ SELECT result, COUNT(result) FROM
 		(SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five 
 		FROM oo_parallels_subjects 
 		WHERE id_oo_parallels_subjects = 7364) AS t2
-		USING (id_oo_parallels_subjects)) AS t3) AS t4) AS t5 GROUP BY result;
+		USING (id_oo_parallels_subjects)) AS t3) AS t4) 
+	AS t5 GROUP BY result;
+
+
+	SELECT id_oo, oo_name 
+    FROM oo 
+    WHERE id_oo NOT IN 
+        (SELECT id_oo 
+        FROM oo_levels_of_the_educational_program 
+        WHERE id_levels_of_the_educational_program = 4 AND value = 'Да') 
+    AND id_name_of_the_settlement IN 
+        (SELECT id_name_of_the_settlement 
+        FROM name_of_the_settlement 
+        WHERE id_district = {id_district}) AND id_oo IN (SELECT id_oo FROM oo_parallels);

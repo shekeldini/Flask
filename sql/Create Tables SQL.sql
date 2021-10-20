@@ -438,19 +438,14 @@ title text NOT NULL,
 url text NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS posts(
-id  SERIAL PRIMARY KEY,
-title text NOT NULL,
-text text NOT NULL,
-time integer NOT NULL
-);
-
-
 CREATE TABLE IF NOT EXISTS users(
 id  SERIAL PRIMARY KEY,
+login text NOT NULL,
 name text NOT NULL,
-email text NOT NULL,
-psw text NOT NULL,
+email text DEFAULT NULL,
+phone VARCHAR(12) DEFAULT NULL,
+password text NOT NULL,
 avatar bytea DEFAULT NULL,
-time integer NOT NULL
+time integer NOT NULL,
+UNIQUE (login)
 );

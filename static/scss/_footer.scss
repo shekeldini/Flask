@@ -1,0 +1,16 @@
+.footer {
+    background: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &__text {
+        font-family: "Roboto",
+        sans-serif;
+        font-weight: 400;
+        font-size: 28px;
+        color: #8D8D8D;
+        margin-right: 30px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+}

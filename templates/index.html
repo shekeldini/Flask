@@ -1,7 +1,149 @@
 {% extends 'base.html' %}
+
 {% block content %}
 {{ super() }}
-{% for cat, msg in get_flashed_messages(True) %}
-<div class="flash {{cat}}">{{msg}}</div>
-{% endfor %}
-{% endblock %}
+<section class="header">
+        <div class="header__hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="header__logo">
+            <img src="{{ url_for('static', filename='images/logo.jpg')}}" alt="Логотип">
+        </div>
+        <div class="header__title">
+            Система аналитики Всероссийских проверочных работ в Алтайском крае
+        </div>
+        <div class="header__profile">
+            <a href="{{ url_for('logout') }}">
+                <i class="mdi mdi-account-circle"></i>
+                
+            </a>
+            
+        </div>
+    </section>
+    <div class="mainContent">
+        <section class="wrapper">
+        <div class="wrapper__left">
+            <section class="other">
+
+            <div class="other__wrapper">
+                <div class="accordion">
+                    {%- block menu -%}
+                        <ul class="accordion__wrapper">
+                        
+                            {% for m in menu -%}
+                                {% set id, title, url = m%}
+                                    <li  class="other__accordion accordion__wrapper_item">
+                                        <a class="accordion__wrapper_item_link" href="{{url}}">
+                                            <i class="mdi mdi-grid-large menu-icon"></i>
+                                            {{title}}
+                                        </a>
+                                    </li>
+                            {% endfor -%}
+                        </ul>
+                    {% endblock menu -%}
+                </div>
+            </div>
+        </section>
+        </div>
+            <div class="wrapper__center">
+                <div class="wrapper__center_top">
+                    <div class="wrapper__center_top_img">
+                        <img src="{{ url_for('static', filename='images/main-banner.jpg')}}" alt="main-banner">
+                    </div>
+                    <div class="wrapper__center_top_blocks">
+                        <div class="wrapper__center_top_blocks_item">
+                            <div class="wrapper__center_top_blocks_item_text">
+                                Количество участников
+                                <i class="mdi mdi-account-multiple"></i>
+                            </div>
+                            <div class="wrapper__center_top_blocks_item_quantity">
+                                {{count_of_students}}
+                            </div>
+                        </div>
+                        <div class="wrapper__center_top_blocks_item">
+                            <div class="wrapper__center_top_blocks_item_text">
+                                Количество ОО
+                                <i class="mdi mdi-city"></i>
+                            </div>
+                            <div class="wrapper__center_top_blocks_item_quantity">
+                                {{count_of_oo}}
+                            </div>
+                        </div>
+                        <div class="wrapper__center_top_blocks_item">
+                            <div class="wrapper__center_top_blocks_item_text">
+                                Количество предметов
+                                <i class="mdi mdi-book-open-page-variant"></i>
+                            </div>
+                            <div class="wrapper__center_top_blocks_item_quantity">
+                                {{count_of_subject}}
+                            </div>
+                        </div>
+                        <div class="wrapper__center_top_blocks_item">
+                            <div class="wrapper__center_top_blocks_item_text">
+                                Количество параллелей
+                                <i class="mdi mdi-book-open-page-variant"></i>
+                            </div>
+                            <div class="wrapper__center_top_blocks_item_quantity">
+                                {{count_of_parallels}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart__wrapper">
+                    <div class="wrapper__center_low">
+                        <div class="wrapper__center_low_bar">
+                            <div class="wrapper__center_low_title">
+                                Количество учащихся, принявших участие в ВПР
+                            </div>
+                            <div class="wrapper__center_low_subtitle">
+                                Здесь можно сдедать будущее описание
+                            </div>
+                            <canvas id="myCharts"></canvas>
+                        </div>
+                        <div class="wrapper__center_low_title">
+                        </div>
+                        <div>
+                            <canvas id="chartsThree"></canvas>
+                        </div>
+                        
+                    </div>
+                    <div class="wrapper__center_low">
+                        <div class="wrapper__center_low_bar">
+                            <div class="wrapper__center_low_title">
+                                Количество учащихся, принявших участие в ВПР
+                            </div>
+                            <div class="wrapper__center_low_subtitle">
+                                И тут тоже
+                            </div>
+                            <canvas id="myChartsTwo"></canvas>
+                        </div>
+                        <div class="wrapper__center_low_title">
+                        </div>
+                        <div>
+                            <canvas id="chartsThreeTwo"></canvas>
+                        </div>
+                        
+                    </div>
+                </div>
+               
+            </div>
+        </div>
+    </section>
+        
+    </div>
+    
+    <section class="footer">
+        <div class="footer__text">Место для текста</div>
+        <div class="footer__logo">
+            <img src="{{ url_for('static', filename='images/logo.jpg')}}" alt="Логотоип">
+        </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    </script>
+    <script src="{{ url_for('static', filename='js/script_1.js')}}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="{{ url_for('static', filename='js/script.js')}}"></script>
+{% endblock %}  
