@@ -9,7 +9,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Войти")
 
 
-
 class AdminForm(FlaskForm):
     email = StringField("Email: ", validators=[Email("Некорректный email")])
     psw = PasswordField("Пароль: ", validators=[DataRequired(), Length(min=4,
