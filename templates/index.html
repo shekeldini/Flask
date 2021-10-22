@@ -2,51 +2,7 @@
 
 {% block content %}
 {{ super() }}
-<section class="header">
-        <div class="header__hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="header__logo">
-            <img src="{{ url_for('static', filename='images/logo.jpg')}}" alt="Логотип">
-        </div>
-        <div class="header__title">
-            Система аналитики Всероссийских проверочных работ в Алтайском крае
-        </div>
-        <div class="header__profile">
-            <a href="{{ url_for('logout') }}">
-                <i class="mdi mdi-account-circle"></i>
-                
-            </a>
-            
-        </div>
-    </section>
-    <div class="mainContent">
-        <section class="wrapper">
-        <div class="wrapper__left">
-            <section class="other">
 
-            <div class="other__wrapper">
-                <div class="accordion">
-                    {%- block menu -%}
-                        <ul class="accordion__wrapper">
-                        
-                            {% for m in menu -%}
-                                {% set id, title, url = m%}
-                                    <li  class="other__accordion accordion__wrapper_item">
-                                        <a class="accordion__wrapper_item_link" href="{{url}}">
-                                            <i class="mdi mdi-grid-large menu-icon"></i>
-                                            {{title}}
-                                        </a>
-                                    </li>
-                            {% endfor -%}
-                        </ul>
-                    {% endblock menu -%}
-                </div>
-            </div>
-        </section>
-        </div>
             <div class="wrapper__center">
                 <div class="wrapper__center_top">
                     <div class="wrapper__center_top_img">
