@@ -1,5 +1,5 @@
 USER = "admin"
 PASSWORD = "1234"
-HOST = "172.29.23.213"
+HOST = "localhost"
 PORT = "5432"
 

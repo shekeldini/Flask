@@ -4,39 +4,47 @@
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
-<form action="" method="post" class="form-contact" id="vpr_form">
-	<p class="steps">
-		<label for="name_of_the_settlement">Муниципалитет</label>
-		<select id="name_of_the_settlement" name="name_of_the_settlement" required></select>
-	</p>
+<div class="wrapper__center">
+	<section class="onePage">
+            <div class="container">
+		<h1>Всероссийские проверочные работы</h1>
+			<form action="" method="post" class="form-contact" id="vpr_form">
+				<div class="steps">
+					<label for="name_of_the_settlement">Муниципалитет</label>
+					<select id="name_of_the_settlement" name="name_of_the_settlement" required></select>
+				</div>
 
-	<p class="steps">
-		<label for="oo">Образовательная организация</label>
-		<select id="oo" name="oo" required></select>
-	</p>
+				<div class="steps">
+					<label for="oo">Образовательная организация</label>
+					<select id="oo" name="oo" required></select>
+				</div>
 
-	<p class="steps">
-		<label for="parallel">Параллель</label>
-		<select id="parallel" name="parallel" required></select>
-	</p>
+				<div class="steps">
+					<label for="parallel">Параллель</label>
+					<select id="parallel" name="parallel" required></select>
+				</div>
 
-	<p class="steps">
-		<label for="subject">Дисциплина</label>
-		<select id="subject" name="subject" required></select>
-	</p >
+				<div class="steps">
+					<label for="subject">Дисциплина</label>
+					<select id="subject" name="subject" required></select>
+				</div>
 
-	<p class="steps">
-		<label for="report">Вид отчета</label>
-		<select id="report" name="report" required></select>
-	</p >
+				<div class="steps">
+					<label for="report">Вид отчета</label>
+					<select id="report" name="report" required></select>
+				</div >
 
-</form>
-<p class="steps">
-	<input id="submit_btn" name="submit_btn" type="button" value="Показать">
-</p>
-<section id="report_place">
-	
-</section>
+			</form>
+			<div class="steps__btns">
+				<input class="bnt" id="submit_btn" name="submit_btn" type="button" value="Показать">
+				<input class="btn" id="clear_btn" name="clear_btn" type="button" value="Сброс">
+			</div>
+		</div>
+	</section>
+	<section id="report_place">
+
+	</section>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 <script src="{{ url_for('static', filename='js/vpr_analysis.js')}}"></script>

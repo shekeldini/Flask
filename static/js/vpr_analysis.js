@@ -86,8 +86,14 @@ fetch('get_reports').then(function(response){
 
 function draw_report(report_type, json_data, lable_text){
   let body = document.getElementById('report_place');
+  let section = document.createElement('section');
+  section.className = "TwoPage";
+  section.id = "report_section";
+  let container = document.createElement('div');
+  container.className = "container";
+  container.id = "report_container";
+  let div =  document.createElement('div');
   let canvas = document.createElement('canvas');
-  canvas.className = "draw_report";
 	var plot = new Chart(canvas, {
 	  plugins: [ChartDataLabels],
 		type: 'bar',
@@ -130,8 +136,14 @@ function draw_report(report_type, json_data, lable_text){
 					text: 'Количество учащихся, принявших участие в ВПР'
 				}
 			},
+			layout: {
+			    padding: {
+			        top: 30
+			    }
+			},
 		}
-	});
+		
+		});
 	if (report_type == 0){
 		for(let key in json_data.percents) {
 	    let value = json_data.percents[key];
@@ -149,28 +161,30 @@ function draw_report(report_type, json_data, lable_text){
   	}
   }
   plot.update();
-  body.appendChild(canvas);
+  div.appendChild(canvas);
+  container.appendChild(div);
+  section.appendChild(container);
+  body.appendChild(section);
   return plot;
 };
 
 
 
 function createTable(objectArray, fields, fieldTitles) {
-  let body = document.getElementById('report_place');
+  let body = document.getElementById('report_container');
   let div = document.createElement('div');
-  div.className = "report";
+  div.className = "TwoPage__wrapper";
   let tbl = document.createElement('table');
-  let thead = document.createElement('thead');
   let thr = document.createElement('tr');
+  let tbdy = document.createElement('tbody');
+
   fieldTitles.forEach((fieldTitle) => {
-    let th = document.createElement('th');
+    let th = document.createElement('td');
     th.appendChild(document.createTextNode(fieldTitle));
     thr.appendChild(th);
   });
-  thead.appendChild(thr);
-  tbl.appendChild(thead);
+  tbdy.appendChild(thr);
 
-  let tbdy = document.createElement('tbody');
   let tr = document.createElement('tr');
   objectArray.forEach((object) => {
     let tr = document.createElement('tr');
@@ -179,7 +193,7 @@ function createTable(objectArray, fields, fieldTitles) {
       td.appendChild(document.createTextNode(object[field]));
       tr.appendChild(td);
     });
-    tbdy.appendChild(tr);    
+    tbdy.appendChild(tr);
   });
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
@@ -200,30 +214,30 @@ $(document).ready(function(){
 
 
 		var sendInfo = {
-						name_of_the_settlement: {
-																			'id': id_name_of_the_settlement,
-																			"name": $( "#name_of_the_settlement option:selected" ).text()
-																		},
+				name_of_the_settlement: {
+							'id': id_name_of_the_settlement,
+							"name": $( "#name_of_the_settlement option:selected" ).text()
+							},
 
-           	oo: {
-									'id': id_oo,
-									"name": $( "#oo option:selected" ).text()
-								},
+           	oo:	{
+			'id': id_oo,
+			"name": $( "#oo option:selected" ).text()
+			},
 
            	parallel: {
-	           						'id': id_oo_parallels,
-												"name": $( "#parallel option:selected" ).text()
-											},
+				'id': id_oo_parallels,
+				"name": $( "#parallel option:selected" ).text()
+			},
 
            	subject: {
-	         						'id': id_oo_parallels_subjects,
-											"name": $( "#subject option:selected" ).text()
-										 },
+	         	'id': id_oo_parallels_subjects,
+			"name": $( "#subject option:selected" ).text()
+			 },
            	report: {
-	         						'id': id_report,
-											"name": $( "#report option:selected" ).text()
-										}
-    };
+	         	'id': id_report,
+			"name": $( "#report option:selected" ).text()
+			}
+    		};
    	$(".error").remove();
    	if (id_name_of_the_settlement == null){
    		$('#name_of_the_settlement').after('<span class="error">Это поле не может быть пустым</span>');
@@ -251,8 +265,8 @@ $(document).ready(function(){
   		success: function(data){
   			marker = JSON.stringify(data);
   			var jsonObj = JSON.parse(marker);
-  			$(".report").remove();
-  			$(".draw_report").remove();
+  			$("#report_section").remove();
+  			
   			text_name_of_the_settlement_select = jsonObj["name_of_the_settlement"]["name"];
 				text_oo_select = jsonObj["oo"]["name"];
 				lable_text = text_name_of_the_settlement_select + " - " + text_oo_select

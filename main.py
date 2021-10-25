@@ -177,7 +177,7 @@ def pageNotFound(error):
 @app.route("/login", methods=["POST", "GET"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('profile'))
+        return redirect(url_for('index'))
 
     form = LoginForm()
     if form.validate_on_submit():

@@ -24,7 +24,9 @@
             <span></span>
         </div>
         <div class="header__logo">
-            <img src="{{ url_for('static', filename='images/logo.jpg')}}" alt="Логотип">
+		<a href="{{ url_for('index')}}">
+                 <img src="{{ url_for('static', filename='images/logo.jpg')}}" alt="Логотип">
+            </a>
         </div>
         <div class="header__title">
             Система аналитики Всероссийских проверочных работ в Алтайском крае
@@ -39,10 +41,11 @@
     </section>
     <div class="mainContent">
         <section class="wrapper">
+	{%if menu%}
         <div class="wrapper__left">
             <section class="other">
-
             <div class="other__wrapper">
+		
                 <div class="accordion">
                     {%- block menu -%}
                         <ul class="accordion__wrapper">
@@ -58,8 +61,13 @@
                             {% endfor -%}
                         </ul>
                     {% endblock menu -%}
+		
                 </div>
             </div>
+	{% else %}
+		{% block other -%}
+		{% endblock %}
+	{% endif %}
         </section>
         </div>
 	{% endblock -%}
