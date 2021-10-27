@@ -438,6 +438,12 @@ title text NOT NULL,
 url text NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS roles(
+id_role SERIAL PRIMARY KEY,
+role text NOT NULL,
+UNIQUE (role)
+);
+
 CREATE TABLE IF NOT EXISTS users(
 id  SERIAL PRIMARY KEY,
 login text NOT NULL,
@@ -446,6 +452,7 @@ email text DEFAULT NULL,
 phone VARCHAR(12) DEFAULT NULL,
 password text NOT NULL,
 avatar bytea DEFAULT NULL,
+id_role INTEGER NOT NULL,
 time integer NOT NULL,
 UNIQUE (login)
 );

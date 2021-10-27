@@ -6,8 +6,8 @@
     <div class="container__login">
         <div class="wrapper__right">
             <div class="wrapper__right_login">
-                <h4>Привет!</h4>
-                <h6>Войдите в систему, чтобы продолжить.</h6>
+                <h4>Вход в личный кабинет</h4>
+                <h6>Для работы в личном кабинете используйте свой текущий логин и пароль</h6>
                 <form action="" method="post" class="form-contact">
                     {{ form.hidden_tag() }}
                     <div class="wrapper__right_login_field">
@@ -16,12 +16,12 @@
                     <div class="wrapper__right_login_field wrapper__right_login_field_last">
                         {{form.password(placeholder= form.password.label.text, class_="form-control form-control-lg")}}
                     </div>
+		    {% for cat, msg in get_flashed_messages(True) %}
+                    <div class="{{cat}}">{{msg}}</div>
+                    {% endfor %}
                     <div class="wrapper__right_login_btns">
                         <div>
                             {{ form.submit(class_="wrapper__right_login_btns_btn") }}
-                        </div>
-                        <div>
-                            <a href="#" class="wrapper__right_login_btns_forgot">Забыли пароль?</a>
                         </div>
                     </div>
                 </form>

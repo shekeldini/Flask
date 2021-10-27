@@ -29,10 +29,7 @@ def load_user(user_id):
 
 
 def connect_db():
-    conn = psycopg2.connect(user=USER,
-                            password=PASSWORD,
-                            host=HOST,
-                            port=PORT)
+    conn = psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT)
     return conn
 
 
@@ -189,7 +186,8 @@ def login():
                 login_user(userLogin)
                 return redirect(request.args.get("next") or url_for("index"))
 
-        flash("Неверный логин или пароль", "error")
+        flash("Неверный логин или пароль", "invalid")
+        return redirect(url_for('login'))
     return render_template("login.html", title="Авторизация", form=form)
 
 

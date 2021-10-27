@@ -14,6 +14,8 @@ class FillDb(Postgresql):
     def __init__(self, connection):
         super().__init__(connection)
 
+    def create_index_on_result_for_task(self):
+	self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels );")
     def get_id_organizational_and_legal_form(self, type_of_organizational_and_legal_form):
         try:
             type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
@@ -272,6 +274,16 @@ class FillDb(Postgresql):
             return res
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
+    def create_roles(self):
+	try:
+		self._cur.execute(f"""INSERT INTO roles (role)
+                                    VALUES ('admin'),
+					   ('ministry'),
+					   ('municipality'),
+					   ('school)""")
+	except psycopg2.Error as e:
+            print("Ошибка: " + str(e))
+
 
     def create_user_admin(self):
         try:
@@ -292,8 +304,8 @@ class FillDb(Postgresql):
 
     def createTables(self):
         try:
-            self._cur.execute("CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION admin;")
-            self._cur.execute(open("sql\Create Tables SQL.sql", "r").read())
+            self._cur.execute("CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION vpr_user;")
+            self._cur.execute(open("sql/Create_Tables.sql", "r").read())
             print("Tables Created")
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
@@ -952,9 +964,9 @@ class FillDb(Postgresql):
             all_parallels = glob("excel/vpr_results/*")
             parallels_schools = {}
             for path in all_parallels:
-                parallel = path[path.index("\\") + 1:]
+                parallel = path[path.rindex("/") + 1:]
                 parallels_schools[int(parallel)] = set()
-                subj_in_parallel = path.replace("\\", "/") + "/*"
+                subj_in_parallel = path.replace("/", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
                     df = VPR(file)
@@ -1012,8 +1024,8 @@ class FillDb(Postgresql):
             all_parallels = glob("excel/vpr_results/*")
             for path in all_parallels:
                 result_dict = {}
-                parallel = int(path[path.index("\\") + 1:])
-                subj_in_parallel = path.replace("\\", "/") + "/*"
+                parallel = int(path[path.rindex("/") + 1:])
+                subj_in_parallel = path.replace("/", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
                     df = VPR(file)
@@ -1041,12 +1053,12 @@ class FillDb(Postgresql):
             all_parallels = glob("excel/vpr_results/*")
             result_dict = {}
             for path in all_parallels:
-                parallel = int(path[path.index("\\") + 1:])
-                subj_in_parallel = path.replace("\\", "/") + "/*"
+                parallel = int(path[path.rindex("/") + 1:])
+                subj_in_parallel = path.replace("/", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
-                    print(file.replace("\\", "/"))
-                    df = VPR(file.replace("\\", "/"))
+                    print(file.replace("/", "/"))
+                    df = VPR(file.replace("/", "/"))
                     id_subjects = self.get_id_subjects(df.get_subj_name())
                     dict_books = df.get_dict_schools_liters_books()
                     if result_dict.get(parallel) is None:
@@ -1083,12 +1095,12 @@ class FillDb(Postgresql):
             all_parallels = glob("excel/vpr_results/*")
             result_dict = {}  # {parallel: {school: {liter: {students: gender}}}}
             for path in all_parallels:
-                parallel = int(path[path.index("\\") + 1:])
-                subj_in_parallel = path.replace("\\", "/") + "/*"
+                parallel = int(path[path.rindex("/") + 1:])
+                subj_in_parallel = path.replace("/", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
-                    print(file.replace("\\", "/"))
-                    df = VPR(file.replace("\\", "/"))
+                    print(file.replace("/", "/"))
+                    df = VPR(file.replace("/", "/"))
                     dict_schools_liters_students = df.get_dict_schools_liters_students()  # {school: {liter: {students: gender}}}
                     if result_dict.get(parallel) is None:
                         result_dict[parallel] = dict_schools_liters_students
@@ -1126,12 +1138,12 @@ class FillDb(Postgresql):
         try:
             all_parallels = glob("excel/vpr_results/*")
             for path in all_parallels:
-                parallel = int(path[path.index("\\") + 1:])
-                subj_in_parallel = path.replace("\\", "/") + "/*"
+                parallel = int(path[path.rindex("/") + 1:])
+                subj_in_parallel = path.replace("/", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
-                    print(file.replace("\\", "/"))
-                    df = VPR(file.replace("\\", "/"))
+                    print(file.replace("/", "/"))
+                    df = VPR(file.replace("/", "/"))
                     mark_three, mark_four, mark_five = df.get_translation_scale()
                     id_subjects = self.get_id_subjects(df.get_subj_name())
                     unic_schools = df.get_unic_schools()
@@ -1150,8 +1162,8 @@ class FillDb(Postgresql):
     def thread_fill_result_for_task(self, file, parallel):
         try:
 
-            print(file.replace("\\", "/"))
-            df = VPR(file.replace("\\", "/"))
+            print(file.replace("/", "/"))
+            df = VPR(file.replace("/", "/"))
             list_df = df.df_to_list()
             for row in list_df:
                 school, student_number, liter, mark_for_last_semester, variant, marks = row[0], row[2], row[6], \
@@ -1178,12 +1190,12 @@ class FillDb(Postgresql):
             all_parallels = glob("excel/vpr_results/*")
             thread_list = []
             for path in all_parallels:
-                parallel = int(path[path.index("\\") + 1:])
-                subj_in_parallel = path.replace("\\", "/") + "/*"
+                parallel = int(path[path.rindex("/") + 1:])
+                subj_in_parallel = path.replace("/", "/") + "/*"
                 files = glob(subj_in_parallel)
 
                 for file in files:
-                    psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
+                    psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
                     thread_list.append(
                         threading.Thread(target=psql.thread_fill_result_for_task, args=(file, parallel,)))
             for thread in thread_list:
@@ -1194,39 +1206,41 @@ class FillDb(Postgresql):
         except Exception as e:
             print(e)
 
-# psql = FillDb(psycopg2.connect(user=USER, password=PASSWORD, host=HOST, port=PORT))
-# psql.dropAllTables()
-# psql.createTables()
-# psql.create_menu()
-# psql.fill_district()
-# psql.fill_oo_location_type()
-# psql.fill_name_of_the_settlement()
-# psql.fill_organizational_and_legal_form()
-# psql.fill_oo_logins()
-# psql.fill_population_of_the_settlement()
-# psql.fill_internet_speed()
-# psql.fill_the_involvement_of_students_in_additional_education()
-# psql.fill_count_of_parents_attending_events()
-# psql.fill_count_of_parents_ready_to_help()
-# psql.fill_regular_transport_link()
-# psql.fill_frequency_of_regular_transport_link()
-# psql.fill_possibility_to_get_to_the_oo_by_public_transport()
-# psql.fill_oo()
-# psql.fill_duration_of_refresher_courses()
-# psql.fill_completed_advanced_training_courses_for_teachers()
-# psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
-# psql.fill_description_of_career_guidance()
-# psql.fill_oo_description_of_career_guidance()
-# psql.fill_levels_of_the_educational_program()
-# psql.fill_oo_levels_of_the_educational_program()
-# psql.fill_percentage_of_parents_attending_parentteacher_meeting()
-# psql.fill_parallels()
-# psql.fill_oo_parallels()
-# psql.fill_subjects()
-# psql.fill_textbooks()
-# psql.fill_classes()
-# psql.fill_classes_textbooks()
-# psql.fill_students()
-# psql.fill_oo_parallels_subjects()
-# psql.fill_result_for_task()
-# psql.create_user_admin()
+psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
+#psql.dropAllTables()
+#psql.createTables()
+#psql.create_menu()
+#psql.fill_district()
+#psql.fill_oo_location_type()
+#psql.fill_name_of_the_settlement()
+#psql.fill_organizational_and_legal_form()
+#psql.fill_oo_logins()
+#psql.fill_population_of_the_settlement()
+#psql.fill_internet_speed()
+#psql.fill_the_involvement_of_students_in_additional_education()
+#psql.fill_count_of_parents_attending_events()
+#psql.fill_count_of_parents_ready_to_help()
+#psql.fill_regular_transport_link()
+#psql.fill_frequency_of_regular_transport_link()
+#psql.fill_possibility_to_get_to_the_oo_by_public_transport()
+#psql.fill_oo()
+#psql.fill_duration_of_refresher_courses()
+#psql.fill_completed_advanced_training_courses_for_teachers()
+#psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
+#psql.fill_description_of_career_guidance()
+#psql.fill_oo_description_of_career_guidance()
+#psql.fill_levels_of_the_educational_program()
+#psql.fill_oo_levels_of_the_educational_program()
+#psql.fill_percentage_of_parents_attending_parentteacher_meeting()
+#psql.fill_parallels()
+#psql.fill_oo_parallels()
+#psql.fill_subjects()
+#psql.fill_textbooks()
+#psql.fill_classes()
+#psql.fill_classes_textbooks()
+#psql.fill_students()
+#psql.fill_oo_parallels_subjects()
+#psql.fill_result_for_task()
+#psql.create_index_on_result_for_task()
+psql.create_roles()
+psql.create_user_admin()
