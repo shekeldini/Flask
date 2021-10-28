@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block other %}
+{{ super() }}
+{%- block menu -%}
+<div class="wrapper__left">
+
+        <div class="other__wrapper">
+
+                <div class="accordion">
+                        <ul class="accordion__wrapper">
+                                <li  class="other__accordion accordion__wrapper_item">
+                                        <a class="accordion__wrapper_item_link" href="{{url_for('index')}}">
+                                                <i class="mdi mdi-grid-large menu-icon"></i>
+                                                Главная
+                                        </a>
+                                </li>
+                                {% if current_user.is_authenticated %}
+                                        <li class="other__accordion accordion__wrapper_item">
+                                                <a class="accordion__wrapper_item_link" href="{{url_for('vpr_analysis')}}">
+                                                        <i class="mdi mdi-file-document"></i>
+                                                        Создать отчет
+                                                </a>
+                                        </li>
+                                {% else %}
+                                        <li class="other__accordion accordion__wrapper_item">
+                                                <a class="accordion__wrapper_item_link" href="{{url_for('login')}}">
+                                                        <i class="mdi mdi-account-key"></i>
+                                                        Авторизация
+                                                </a>
+                                        </li>
+
+                                {% endif %}
+                        </ul>
+                </div>
+        </div>
+</div>
+{% endblock menu -%}
+{%- block main -%}
+
+{% endblock -%}
+{% endblock -%}

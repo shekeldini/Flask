@@ -1,8 +1,8 @@
 import os
 
-USER = "vpr_user"
-DB_NAME = "vpr"
-PASSWORD = "LxgxWSWA3VwbGKi9NoNQ"
+USER = "admin"
+DB_NAME = "admin"
+PASSWORD = "1234"
 HOST = "localhost"
 PORT = "5432"
 
