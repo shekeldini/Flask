@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
 body {
   margin: 0 auto;
   min-height: 100vh;
@@ -31,7 +32,8 @@ body {
   padding-top: 5px;
   padding-left: 20px;
   padding-bottom: 5px;
-  margin-bottom: 20px;
+  box-shadow: 0px 5px 21px -5px #cdd1e1;
+  z-index: 200;
 }
 
 .header__logo {
@@ -65,14 +67,17 @@ body {
 }
 
 .wrapper__left {
-  width: 250px;
+  padding-top: 40px;
+  background: #ffffff;
+  min-height: 130vh;
+  width: 260px;
 }
 
 .wrapper__center {
-  max-width: 1350px;
+  max-width: 1550px;
   width: 100%;
   margin: 0 auto;
-  margin-top: 50px;
+  margin-top: 40px;
 }
 
 .wrapper__center_top {
@@ -85,7 +90,12 @@ body {
   box-shadow: 4px 6px 15px 1px rgba(104, 104, 104, 0.76);
   border-radius: 25px;
   overflow: hidden;
-  min-width: 650px;
+  min-width: 750px;
+  display: flex;
+  justify-content: center;
+  min-height: 450px;
+  align-items: center;
+  background: #ffffff;
 }
 
 .wrapper__center_top_blocks {
@@ -97,8 +107,8 @@ body {
 }
 
 .wrapper__center_top_blocks_item {
-  width: 260px;
-  height: 100px;
+  width: 320px;
+  height: 140px;
   background: #1F3BB3;
   border-radius: 20px;
   padding: 10px 20px 20px 20px;
@@ -151,23 +161,25 @@ body {
   padding: 15px;
   box-shadow: 4px 6px 15px 1px rgba(104, 104, 104, 0.4);
   border-radius: 20px;
-  width: 650px;
+  width: 750px;
   box-sizing: border-box;
+  background: #ffffff;
 }
 
 .wrapper__center_low_title {
   font-family: "Roboto", sans-serif;
-  font-weight: 800;
   font-size: 20px;
   color: #1F1F1F;
+  font-weight: 400;
+  color: #243964;
 }
 
 .wrapper__center_low_subtitle {
   margin-top: 10px;
   font-family: "Roboto", sans-serif;
-  font-weight: 800;
   font-size: 15px;
-  color: #1F1F1F;
+  font-weight: 400;
+  color: #243964;
 }
 
 .wrapper__right {
@@ -180,13 +192,14 @@ body {
 
 .wrapper__right_login {
   width: 100%;
-background: #ffffff;
-  padding:40px 45px;
+  background: #ffffff;
+  padding: 40px 45px;
   box-shadow: 4px 6px 15px 1px rgba(104, 104, 104, 0.4);
   border-radius: 5px;
 }
 
-.wrapper__right_login h4, .wrapper__right_login h6 {
+.wrapper__right_login h4,
+.wrapper__right_login h6 {
   font-family: "Roboto", sans-serif;
   text-align: center;
   font-weight: 700;
@@ -198,7 +211,7 @@ background: #ffffff;
 }
 
 .wrapper__right_login h6 {
-  font-size:14px;
+  font-size: 14px;
   max-width: 300px;
   margin-bottom: 10px;
   font-weight: 500;
@@ -224,16 +237,17 @@ background: #ffffff;
 
 .wrapper__right_login_btns {
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
-  
+
 }
 
 .wrapper__right_login_btns div {
- width: 100%;
+  width: 100%;
 }
 
-.wrapper__right_login_btns_btn, .wrapper__right_login_btns_forgot {
+.wrapper__right_login_btns_btn,
+.wrapper__right_login_btns_forgot {
   background: #4B49AC;
   color: #ffffff;
   text-decoration: none;
@@ -249,7 +263,10 @@ background: #ffffff;
   width: 100%;
 }
 
-.wrapper__right_login_btns_btn:hover, .wrapper__right_login_btns_btn:focus, .wrapper__right_login_btns_forgot:hover, .wrapper__right_login_btns_forgot:focus {
+.wrapper__right_login_btns_btn:hover,
+.wrapper__right_login_btns_btn:focus,
+.wrapper__right_login_btns_forgot:hover,
+.wrapper__right_login_btns_forgot:focus {
   background: #192f8f;
   transition: 0.2s all;
 }
@@ -273,10 +290,12 @@ background: #ffffff;
 .other__wrapper .accordion__wrapper_item {
   width: 250px;
   box-sizing: border-box;
+  background: #ffffff;
 }
 
-.other__wrapper .accordion__wrapper_item:hover, .other__wrapper .accordion__wrapper_item:focus {
-  background: #4f41f0;
+.other__wrapper .accordion__wrapper_item:hover,
+.other__wrapper .accordion__wrapper_item:focus {
+  background: #4747A1;
 }
 
 .other__wrapper .accordion__wrapper_item_link {
@@ -287,7 +306,7 @@ background: #ffffff;
   line-height: 18px;
   text-align: left;
   text-transform: uppercase;
-  font-family: "Roboto",sans-serif;
+  font-family: "Roboto", sans-serif;
   display: block;
   width: 250px;
   box-sizing: border-box;
@@ -296,7 +315,8 @@ background: #ffffff;
   padding-left: 30px;
 }
 
-.other__wrapper .accordion__wrapper_item_link:hover, .other__wrapper .accordion__wrapper_item_link:focus {
+.other__wrapper .accordion__wrapper_item_link:hover,
+.other__wrapper .accordion__wrapper_item_link:focus {
   color: #FFFFFF;
 }
 
@@ -308,11 +328,17 @@ background: #ffffff;
 .other__wrapper .accordion__wrapper button {
   padding-top: 5px;
   padding-left: 30px;
+  background: #ffffff;
 }
 
 .other__wrapper .accordion__wrapper button i {
   font-size: 15px;
   margin-right: 10px;
+}
+
+.other__wrapper .accordion__wrapper button:hover,
+.other__wrapper .accordion__wrapper button:focus {
+  background: #4747A1;
 }
 
 .other__accordion {
@@ -333,7 +359,8 @@ background: #ffffff;
   height: 48px;
 }
 
-.other__accordion:hover, .other__accordion:focus {
+.other__accordion:hover,
+.other__accordion:focus {
   background: #FFFFFF;
 }
 
@@ -354,7 +381,8 @@ background: #ffffff;
   color: #FFFFFF;
 }
 
-.other__accordion_plus:hover, .other__accordion_plus:focus {
+.other__accordion_plus:hover,
+.other__accordion_plus:focus {
   background: #4f41f0;
   color: #FFFFFF;
 }
@@ -380,8 +408,9 @@ background: #ffffff;
   padding-left: 10px;
 }
 
-.other__accordion_info ul li:hover, .other__accordion_info ul li:focus {
-  background: #4032d9;
+.other__accordion_info ul li:hover,
+.other__accordion_info ul li:focus {
+  background: #4747A1;
 }
 
 .other__accordion_info ul li a {
@@ -391,14 +420,16 @@ background: #ffffff;
   font-weight: 700;
   text-align: left;
   text-transform: uppercase;
-  font-family: "Roboto", sans-serif;
+  font-family: "Roboto",
+    sans-serif;
   display: block;
   width: 100%;
   height: 100%;
   padding: 10px;
 }
 
-.other__accordion_info ul li a:hover, .other__accordion_info ul li a:focus {
+.other__accordion_info ul li a:hover,
+.other__accordion_info ul li a:focus {
   color: #FFFFFF;
 }
 
@@ -442,7 +473,8 @@ background: #ffffff;
   background: #a0aeb8;
 }
 
-.onePage__low_right table tr:hover, .onePage__low_right table tr:focus {
+.onePage__low_right table tr:hover,
+.onePage__low_right table tr:focus {
   background: #d6d6d6;
 }
 
@@ -499,7 +531,8 @@ h1 {
   margin-right: 0;
 }
 
-.steps__btns input:hover, .steps__btns button:focus {
+.steps__btns input:hover,
+.steps__btns button:focus {
   background: #4747A1;
 }
 
@@ -560,7 +593,8 @@ form label {
   text-align: left;
 }
 
-.TwoPage__wrapper table tr:hover, .TwoPage__wrapper table tr:focus {
+.TwoPage__wrapper table tr:hover,
+.TwoPage__wrapper table tr:focus {
   background: #d6d6d6;
 }
 
@@ -638,19 +672,21 @@ form label {
   text-align: center;
 }
 
-.ThreePage table tr:hover, .ThreePage table tr:focus {
+.ThreePage table tr:hover,
+.ThreePage table tr:focus {
   background: #d6d6d6;
 }
 
 .footer {
-  background: #FFFFFF;
+  background: #e6ecec;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .footer__text {
-  font-family: "Roboto", sans-serif;
+  font-family: "Roboto",
+    sans-serif;
   font-weight: 400;
   font-size: 28px;
   color: #8D8D8D;
@@ -658,15 +694,17 @@ form label {
   padding-top: 5px;
   padding-bottom: 5px;
 }
+
 .invalid {
-	       border: 1px solid #cebbbd;
-    		padding: 7px 7px 7px 15px;
-		background: #fff6f5;
-   		color: #af341c;
-    		border-radius: 5px;
-    		margin-bottom: 20px;
-    		font-size: 15px;
-    		font-family: "Roboto", sans-serif;
-    		font-weight: 400;
-           }
+  border: 1px solid #cebbbd;
+  padding: 7px 7px 7px 15px;
+  background: #fff6f5;
+  color: #af341c;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 15px;
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+}
+
 /*# sourceMappingURL=style.css.map */
