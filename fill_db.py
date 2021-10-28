@@ -15,8 +15,12 @@ class FillDb(Postgresql):
         super().__init__(connection)
 
     def create_index_on_result_for_task(self):
+<<<<<<< HEAD
         self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels)")
 
+=======
+        self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels );")
+>>>>>>> c5b5bf16c565069ff429c34ec7a2ad5747efadd0
     def get_id_organizational_and_legal_form(self, type_of_organizational_and_legal_form):
         try:
             type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
@@ -277,7 +281,12 @@ class FillDb(Postgresql):
             print("Ошибка получения данных из ДБ " + str(e))
     def create_roles(self):
         try:
+<<<<<<< HEAD
             self._cur.execute(f"""INSERT INTO roles (role) VALUES ('admin'), ('ministry'), ('municipality'), ('school')""")
+=======
+            self._cur.execute(f"""INSERT INTO roles (role) VALUES ('admin'),('ministry'),('municipality'),('school')""")
+            print("Roles created")
+>>>>>>> c5b5bf16c565069ff429c34ec7a2ad5747efadd0
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
 
@@ -286,7 +295,11 @@ class FillDb(Postgresql):
         try:
             hash_psw = generate_password_hash("687980@rA")
             tm = math.floor(time.time())
+<<<<<<< HEAD
             self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time)
+=======
+            self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time) 
+>>>>>>> c5b5bf16c565069ff429c34ec7a2ad5747efadd0
                                     VALUES ('{'admin'}', '{'admin'}', '{hash_psw}', 1, {tm})""")
             print("User_admin created")
         except psycopg2.Error as e:
@@ -1239,5 +1252,5 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 #psql.fill_oo_parallels_subjects()
 #psql.fill_result_for_task()
 #psql.create_index_on_result_for_task()
-psql.create_roles()
+#psql.create_roles()
 psql.create_user_admin()

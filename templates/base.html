@@ -46,33 +46,8 @@
     </section>
     <div class="mainContent">
         <section class="wrapper">
-	{%if menu%}
-        <div class="wrapper__left">
-            <section class="other">
-            <div class="other__wrapper">
-		
-                <div class="accordion">
-                    {%- block menu -%}
-                        <ul class="accordion__wrapper">
-                        
-                            {% for m in menu -%}
-                                {% set id, title, url = m%}
-                                    <li  class="other__accordion accordion__wrapper_item">
-                                        <a class="accordion__wrapper_item_link" href="{{url}}">
-                                            <i class="mdi mdi-grid-large menu-icon"></i>
-                                            {{title}}
-                                        </a>
-                                    </li>
-                            {% endfor -%}
-                        </ul>
-                    {% endblock menu -%}
-		
-                </div>
-            </div>
-	{% else %}
 		{% block other -%}
 		{% endblock %}
-	{% endif %}
         </section>
         </div>
 	{% endblock -%}

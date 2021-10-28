@@ -86,7 +86,7 @@ def vpr_analysis():
                             "percents": percents,
                             "count_of_all_students": count_of_students})
 
-    return render_template('vpr_analysis.html', menu=dbase.get_logged_menu(), title="Аналитика ВПР")
+    return render_template('vpr_analysis.html', title="Аналитика ВПР")
 
 
 @app.route("/get_reports")
@@ -150,7 +150,6 @@ def subjects_for_oo_parallels(id_oo_parallels):
 def index():
     if current_user.is_authenticated:
         return render_template('index.html',
-                               menu=dbase.get_logged_menu(),
                                count_of_students=dbase.get_count_students(),
                                count_of_oo=dbase.get_count_oo(),
                                count_of_subject=dbase.get_count_of_subject(),
@@ -158,7 +157,6 @@ def index():
                                title="Главная страница")
 
     return render_template('index.html',
-                           menu=dbase.get_guest_menu(),
                            count_of_students=dbase.get_count_students(),
                            count_of_oo=dbase.get_count_oo(),
                            count_of_subject=dbase.get_count_of_subject(),
@@ -168,7 +166,7 @@ def index():
 
 @app.errorhandler(404)
 def pageNotFound(error):
-    return render_template("page404.html", title="Страница не найдена", menu=dbase.get_guest_menu()), 404
+    return render_template("page404.html", title="Страница не найдена"), 404
 
 
 @app.route("/login", methods=["POST", "GET"])

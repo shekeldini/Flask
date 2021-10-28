@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_with_menu.html' %}
 
-{% block content %}
+{% block main %}
 {{ super() }}
 <p> Страница не найдена, вернуться на <a href="{{url_for('index')}}">главную</a> страницу.
 {% endblock %}
