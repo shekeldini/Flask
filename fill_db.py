@@ -15,7 +15,8 @@ class FillDb(Postgresql):
         super().__init__(connection)
 
     def create_index_on_result_for_task(self):
-	self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels );")
+        self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels)")
+
     def get_id_organizational_and_legal_form(self, type_of_organizational_and_legal_form):
         try:
             type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
@@ -275,13 +276,9 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
     def create_roles(self):
-	try:
-		self._cur.execute(f"""INSERT INTO roles (role)
-                                    VALUES ('admin'),
-					   ('ministry'),
-					   ('municipality'),
-					   ('school)""")
-	except psycopg2.Error as e:
+        try:
+            self._cur.execute(f"""INSERT INTO roles (role) VALUES ('admin'), ('ministry'), ('municipality'), ('school')""")
+        except psycopg2.Error as e:
             print("Ошибка: " + str(e))
 
 
@@ -289,8 +286,8 @@ class FillDb(Postgresql):
         try:
             hash_psw = generate_password_hash("687980@rA")
             tm = math.floor(time.time())
-            self._cur.execute(f"""INSERT INTO users (login, name, password, time) 
-                                    VALUES ('{'admin'}', '{'admin'}', '{hash_psw}', {tm})""")
+            self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time)
+                                    VALUES ('{'admin'}', '{'admin'}', '{hash_psw}', 1, {tm})""")
             print("User_admin created")
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
