@@ -181,7 +181,7 @@ def login():
             user_password = user[5]
             if user and check_password_hash(user_password, form.password.data):
                 userLogin = UserLogin().create(user)
-                login_user(userLogin)
+                login_user(userLogin, remember=True)
                 return redirect(request.args.get("next") or url_for("index"))
 
         flash("Неверный логин или пароль", "invalid")

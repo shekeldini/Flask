@@ -292,7 +292,6 @@ class VPR:
     def __get_balls(self, name):
         subj_name = self.__find_subject_name(name)
         subtrahend = 0
-        translation_scale = [1, 1, 1, 1, 1, 1]
 
         mat4 = [5, 6, 9, 10, 14, 15]
         mat5 = [6, 7, 10, 11, 14, 15]
@@ -448,10 +447,10 @@ class VPR:
         elif 'географии, 11' in name:
             translation_scale = geo11
 
-        elif 'Eng8' in name or "английскому языку, 7 класс" in name:
+        elif 'Eng8' in name or "по английскому языку, 7 класс" in name:
             translation_scale = eng7
 
-        elif 'английскому языку, 11' in name:
+        elif 'по английскому языку, 11 класс' in name:
             translation_scale = eng11
 
         elif 'Him9' in name or 'химии, 8' in name:

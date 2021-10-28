@@ -15,12 +15,7 @@ class FillDb(Postgresql):
         super().__init__(connection)
 
     def create_index_on_result_for_task(self):
-<<<<<<< HEAD
-        self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels)")
-
-=======
         self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels );")
->>>>>>> c5b5bf16c565069ff429c34ec7a2ad5747efadd0
     def get_id_organizational_and_legal_form(self, type_of_organizational_and_legal_form):
         try:
             type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
@@ -281,12 +276,8 @@ class FillDb(Postgresql):
             print("Ошибка получения данных из ДБ " + str(e))
     def create_roles(self):
         try:
-<<<<<<< HEAD
-            self._cur.execute(f"""INSERT INTO roles (role) VALUES ('admin'), ('ministry'), ('municipality'), ('school')""")
-=======
             self._cur.execute(f"""INSERT INTO roles (role) VALUES ('admin'),('ministry'),('municipality'),('school')""")
             print("Roles created")
->>>>>>> c5b5bf16c565069ff429c34ec7a2ad5747efadd0
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
 
@@ -295,11 +286,7 @@ class FillDb(Postgresql):
         try:
             hash_psw = generate_password_hash("687980@rA")
             tm = math.floor(time.time())
-<<<<<<< HEAD
-            self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time)
-=======
             self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time) 
->>>>>>> c5b5bf16c565069ff429c34ec7a2ad5747efadd0
                                     VALUES ('{'admin'}', '{'admin'}', '{hash_psw}', 1, {tm})""")
             print("User_admin created")
         except psycopg2.Error as e:
@@ -1217,40 +1204,40 @@ class FillDb(Postgresql):
             print(e)
 
 psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
-#psql.dropAllTables()
-#psql.createTables()
-#psql.create_menu()
-#psql.fill_district()
-#psql.fill_oo_location_type()
-#psql.fill_name_of_the_settlement()
-#psql.fill_organizational_and_legal_form()
-#psql.fill_oo_logins()
-#psql.fill_population_of_the_settlement()
-#psql.fill_internet_speed()
-#psql.fill_the_involvement_of_students_in_additional_education()
-#psql.fill_count_of_parents_attending_events()
-#psql.fill_count_of_parents_ready_to_help()
-#psql.fill_regular_transport_link()
-#psql.fill_frequency_of_regular_transport_link()
-#psql.fill_possibility_to_get_to_the_oo_by_public_transport()
-#psql.fill_oo()
-#psql.fill_duration_of_refresher_courses()
-#psql.fill_completed_advanced_training_courses_for_teachers()
-#psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
-#psql.fill_description_of_career_guidance()
-#psql.fill_oo_description_of_career_guidance()
-#psql.fill_levels_of_the_educational_program()
-#psql.fill_oo_levels_of_the_educational_program()
-#psql.fill_percentage_of_parents_attending_parentteacher_meeting()
-#psql.fill_parallels()
-#psql.fill_oo_parallels()
-#psql.fill_subjects()
-#psql.fill_textbooks()
-#psql.fill_classes()
-#psql.fill_classes_textbooks()
-#psql.fill_students()
-#psql.fill_oo_parallels_subjects()
-#psql.fill_result_for_task()
-#psql.create_index_on_result_for_task()
-#psql.create_roles()
+psql.dropAllTables()
+psql.createTables()
+psql.create_menu()
+psql.fill_district()
+psql.fill_oo_location_type()
+psql.fill_name_of_the_settlement()
+psql.fill_organizational_and_legal_form()
+psql.fill_oo_logins()
+psql.fill_population_of_the_settlement()
+psql.fill_internet_speed()
+psql.fill_the_involvement_of_students_in_additional_education()
+psql.fill_count_of_parents_attending_events()
+psql.fill_count_of_parents_ready_to_help()
+psql.fill_regular_transport_link()
+psql.fill_frequency_of_regular_transport_link()
+psql.fill_possibility_to_get_to_the_oo_by_public_transport()
+psql.fill_oo()
+psql.fill_duration_of_refresher_courses()
+psql.fill_completed_advanced_training_courses_for_teachers()
+psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
+psql.fill_description_of_career_guidance()
+psql.fill_oo_description_of_career_guidance()
+psql.fill_levels_of_the_educational_program()
+psql.fill_oo_levels_of_the_educational_program()
+psql.fill_percentage_of_parents_attending_parentteacher_meeting()
+psql.fill_parallels()
+psql.fill_oo_parallels()
+psql.fill_subjects()
+psql.fill_textbooks()
+psql.fill_classes()
+psql.fill_classes_textbooks()
+psql.fill_students()
+psql.fill_oo_parallels_subjects()
+psql.fill_result_for_task()
+psql.create_index_on_result_for_task()
+psql.create_roles()
 psql.create_user_admin()
