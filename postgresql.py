@@ -41,9 +41,9 @@ class Postgresql:
             print("Ошибка чтения из БД")
         return []
 
-    def get_user(self, user_id):
+    def get_user(self, id_user):
         try:
-            self._cur.execute(f"SELECT * FROM users WHERE id = {user_id} LIMIT 1")
+            self._cur.execute(f"SELECT * FROM users WHERE id_user = {id_user} LIMIT 1")
             res = self._cur.fetchone()
             if not res:
                 print("Пользователь не найден")
@@ -76,7 +76,7 @@ class Postgresql:
 
         try:
             binary = psycopg2.Binary(avatar)
-            self._cur.execute(f"UPDATE users SET avatar = {binary} WHERE id = {user_id}")
+            self._cur.execute(f"UPDATE users SET avatar = {binary} WHERE id_user = {user_id}")
         except psycopg2.Error as e:
             print("Ошибка обновления аватара в БД: " + str(e))
             return False
@@ -117,10 +117,15 @@ class Postgresql:
             print("Ошибка получения статей из БД " + str(e))
         return []
 
-    def get_districts(self):
+    def get_districts(self, id_user):
         try:
             self._cur.execute(
-                f'SELECT id_district, district_name FROM district ORDER BY id_district')
+                f"""SELECT id_district, district_name FROM district WHERE id_district IN (SELECT DISTINCT id_district FROM name_of_the_settlement 
+                        WHERE id_name_of_the_settlement IN 
+                            (SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                                WHERE oo_login in 
+                                    (SELECT oo_login FROM users_oo_logins 
+                                        WHERE id_user = {id_user})));""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -128,20 +133,21 @@ class Postgresql:
             print("Ошибка получения муниципалитетов из БД " + str(e))
         return []
 
-    def get_oo_from_district(self, id_district):
+    def get_oo_from_district(self, id_district, id_user):
         try:
             self._cur.execute(f"""
-            SELECT id_oo, oo_name 
-            FROM oo 
-            WHERE id_oo NOT IN 
-                (SELECT id_oo 
-                FROM oo_levels_of_the_educational_program 
-                WHERE id_levels_of_the_educational_program = 4 AND value = 'Да') 
+            SELECT id_oo, oo_name FROM oo 
+                WHERE id_oo NOT IN 
+                (SELECT id_oo FROM oo_levels_of_the_educational_program 
+                    WHERE id_levels_of_the_educational_program = 4 AND value = 'Да') 
             AND id_name_of_the_settlement IN 
-                (SELECT id_name_of_the_settlement 
-                FROM name_of_the_settlement 
-                WHERE id_district = {id_district}) 
-            AND id_oo IN (SELECT id_oo FROM oo_parallels);""")
+                (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                    WHERE id_district = {id_district}) 
+            AND id_oo IN 
+                (SELECT id_oo FROM oo_parallels)
+            AND oo_login in 
+                (SELECT oo_login FROM users_oo_logins 
+                    WHERE id_user = {id_user});""")
             res = self._cur.fetchall()
             if res:
                 return res

@@ -103,7 +103,7 @@ def get_reports():
 @app.route("/get_districts")
 @login_required
 def get_districts():
-    districts = dbase.get_districts()
+    districts = dbase.get_districts(current_user.get_id())
     district_array = []
     for district in districts:
         district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
@@ -114,7 +114,7 @@ def get_districts():
 @app.route('/oo/<id_district>')
 @login_required
 def oo_by_name_of_the_settlement(id_district):
-    oo = dbase.get_oo_from_district(id_district)
+    oo = dbase.get_oo_from_district(id_district, current_user.get_id())
     oo_array = []
     for school in oo:
         oo_obj = {'id': school[0], 'name': school[1]}

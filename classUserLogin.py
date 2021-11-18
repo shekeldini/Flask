@@ -11,7 +11,7 @@ class UserLogin(UserMixin):
         return self
 
     def get_id(self):
-        return str(self.__user[0])
+        return self.__user[0]
 
     def get_name(self):
         return self.__user[2]
@@ -24,6 +24,9 @@ class UserLogin(UserMixin):
 
     def get_phone(self):
         return self.__user[4] if self.__user[4] else ""
+
+    def get_id_role(self):
+        return self.__user[7]
 
     def getAvatar(self, app):
         img = None

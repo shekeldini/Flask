@@ -1258,5 +1258,5 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 #psql.fill_result_for_task()
 #psql.create_index_on_result_for_task()
 #psql.create_roles()
-#psql.create_users()
+psql.create_users()
 psql.fill_users_oo_logins()
