@@ -135,7 +135,7 @@ body {
 .wrapper__center_top_blocks_item_text {
   font-family: "Roboto", sans-serif;
   font-weight: 500;
-  font-size: 20px;
+  font-size: 19px;
   color: #FFFFFF;
   display: flex;
   justify-content: space-between;
@@ -151,6 +151,7 @@ body {
   font-weight: 500;
   font-size: 35px;
   color: #FFFFFF;
+  padding-top: 10px;
 }
 
 .wrapper__center_low {
@@ -706,5 +707,13 @@ form label {
   font-family: "Roboto", sans-serif;
   font-weight: 400;
 }
+.report_place_border {
 
+    background: #ffffff;
+    margin-bottom: 20px;
+    padding: 15px;
+    box-shadow: 4px 6px 15px 1px rgb(104 104 104 / 40%);
+    border-radius: 20px;
+
+}
 /*# sourceMappingURL=style.css.map */

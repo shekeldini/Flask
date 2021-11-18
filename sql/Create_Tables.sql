@@ -250,7 +250,7 @@ CREATE TABLE IF NOT EXISTS "oo_parallels"(
 CONSTRAINT "K3" PRIMARY KEY ("id_oo_parallels"),
 CONSTRAINT "C4" FOREIGN KEY ("id_oo")
     REFERENCES "oo" ("id_oo"),
-CONSTRAINT "C26" FOREIGN KEY ("parallel")
+CONSTRAINT "C9" FOREIGN KEY ("parallel")
     REFERENCES "parallels" ("parallel")
 );
 
@@ -420,24 +420,6 @@ CONSTRAINT "C16" FOREIGN KEY ("id_oo_parallels")
     REFERENCES "oo_parallels" ("id_oo_parallels")
 );
 
-CREATE TABLE IF NOT EXISTS guestmenu(
-id  SERIAL PRIMARY KEY ,
-title text NOT NULL,
-url text NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS loggedmenu(
-id  SERIAL PRIMARY KEY ,
-title text NOT NULL,
-url text NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS adminmenu(
-id  SERIAL PRIMARY KEY ,
-title text NOT NULL,
-url text NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS roles(
 id_role SERIAL PRIMARY KEY,
 role text NOT NULL,
@@ -454,5 +436,8 @@ password text NOT NULL,
 avatar bytea DEFAULT NULL,
 id_role INTEGER NOT NULL,
 time integer NOT NULL,
-UNIQUE (login)
+UNIQUE (login),
+CONSTRAINT "C10" FOREIGN KEY (id_role)
+    REFERENCES roles (id_role)
+
 );

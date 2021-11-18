@@ -93,6 +93,12 @@ function draw_report(report_type, json_data, lable_text){
   container.className = "container";
   container.id = "report_container";
   let div =  document.createElement('div');
+  div.className = "report_place_border";
+  let div_title = document.createElement('div');
+  div_title.className = "wrapper__center_low_title";
+  let div_subtitle = document.createElement('div');
+  div_subtitle.className = "wrapper__center_low_subtitle";
+
   let canvas = document.createElement('canvas');
 	var plot = new Chart(canvas, {
 	  plugins: [ChartDataLabels],
@@ -103,10 +109,10 @@ function draw_report(report_type, json_data, lable_text){
 	            label: lable_text,
 	            data: [],
 	            backgroundColor: [
-	                'rgba(64, 152, 214, 1)',
-	                'rgba(64, 152, 214, 1)',
-	                'rgba(64, 152, 214, 1)',
-	                'rgba(64, 152, 214, 1)',
+	                'rgba(71, 71, 161, 1)',
+			'rgba(71, 71, 161, 1)',
+			'rgba(71, 71, 161, 1)',
+			'rgba(71, 71, 161, 1)'
 	            ],
 	            borderColor: [],
 	            borderWidth: 0
@@ -161,6 +167,10 @@ function draw_report(report_type, json_data, lable_text){
   	}
   }
   plot.update();
+  div_title.innerHTML += 'content';
+  div_subtitle.innerHTML += 'sub_content';
+  div.appendChild(div_title);
+  div.appendChild(div_subtitle);
   div.appendChild(canvas);
   container.appendChild(div);
   section.appendChild(container);
