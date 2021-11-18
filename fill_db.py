@@ -405,17 +405,6 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def create_menu(self):
-        try:
-            self._cur.execute(f"INSERT INTO guestmenu (title,url) VALUES ('Главная', '/')")
-            self._cur.execute(f"INSERT INTO guestmenu (title,url) VALUES ('Авторизация', '/login')")
-            self._cur.execute(f"INSERT INTO loggedmenu (title,url) VALUES ('Главная', '/')")
-            self._cur.execute(f"INSERT INTO loggedmenu (title,url) VALUES ('Создать отчет', '/vpr_analysis')")
-
-            print("Меню созданно")
-        except psycopg2.Error as e:
-            print("Ошибка при создании меню " + str(e))
-        return False
 
     def fill_organizational_and_legal_form(self):
         try:
@@ -1206,7 +1195,6 @@ class FillDb(Postgresql):
 psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
 #psql.dropAllTables()
 #psql.createTables()
-#psql.create_menu()
 #psql.fill_district()
 #psql.fill_oo_location_type()
 #psql.fill_name_of_the_settlement()
@@ -1239,5 +1227,5 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 #psql.fill_oo_parallels_subjects()
 #psql.fill_result_for_task()
 #psql.create_index_on_result_for_task()
-psql.create_roles()
+#psql.create_roles()
 psql.create_user_admin()

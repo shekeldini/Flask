@@ -411,23 +411,16 @@ CONSTRAINT "C51" FOREIGN KEY ("id_oo_parallels")
     REFERENCES "oo_parallels" ("id_oo_parallels")
 );
 
-CREATE TABLE IF NOT EXISTS "the_count_of_classes_in_parallel_and_the_count_of_students_in_each_parallel"(
-"id_oo_parallels" INTEGER NOT NULL,
-"count_of_classes" INTEGER NOT NULL,
-"count_of_students" INTEGER NOT NULL,
-CONSTRAINT "K15" PRIMARY KEY ("id_oo_parallels"),
-CONSTRAINT "C16" FOREIGN KEY ("id_oo_parallels")
-    REFERENCES "oo_parallels" ("id_oo_parallels")
-);
 
 CREATE TABLE IF NOT EXISTS roles(
-id_role SERIAL PRIMARY KEY,
+id_role SERIAL,
 role text NOT NULL,
-UNIQUE (role)
+UNIQUE (role),
+CONSTRAINT "K11" PRIMARY KEY (id_role)
 );
 
 CREATE TABLE IF NOT EXISTS users(
-id  SERIAL PRIMARY KEY,
+id_user  SERIAL,
 login text NOT NULL,
 name text NOT NULL,
 email text DEFAULT NULL,
@@ -437,7 +430,17 @@ avatar bytea DEFAULT NULL,
 id_role INTEGER NOT NULL,
 time integer NOT NULL,
 UNIQUE (login),
+CONSTRAINT "K12" PRIMARY KEY (id_user),
 CONSTRAINT "C10" FOREIGN KEY (id_role)
     REFERENCES roles (id_role)
+);
 
+CREATE TABLE IF NOT EXISTS users_oo_logins(
+id_user INTEGER NOT NULL,
+oo_login VARCHAR(20) NOT NULL,
+CONSTRAINT "K28" PRIMARY KEY (id_user, oo_login),
+CONSTRAINT "C16" FOREIGN KEY (id_user)
+    REFERENCES users (id_user),
+CONSTRAINT "C17" FOREIGN KEY (oo_login)
+    REFERENCES oo_logins (oo_login)
 );
