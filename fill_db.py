@@ -188,13 +188,6 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_students(self, id_oo_parallels):
-        try:
-            self._cur.execute(f"")
-            res = self._cur.fetchall()
-            return res
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
 
     def get_id_subjects(self, subject_name):
         try:
@@ -1198,6 +1191,37 @@ class FillDb(Postgresql):
         except Exception as e:
             print(e)
 
+    def fill_users_oo_logins(self):
+        try:
+            self._cur.execute("SELECT id_user, login, name, id_role FROM users")
+            users = self._cur.fetchall()
+            self._cur.execute("SELECT oo_login FROM oo_logins")
+            all_oo_logins = self._cur.fetchall()
+            for user in users:
+                id_user, user_login, name, id_role = user
+                if id_role in {1, 2}:  # admin and ministry
+                    for oo_login in all_oo_logins:
+                        oo_login, = oo_login
+                        self._cur.execute(
+                            f"INSERT INTO users_oo_logins (id_user, oo_login) VALUES ({id_user}, '{oo_login}')")
+                elif id_role == 3:  # municipality
+                    self._cur.execute(f"""SELECT DISTINCT oo_login FROM oo 
+                        WHERE id_name_of_the_settlement in 
+                            (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                WHERE id_district in 
+                                    (SELECT id_district FROM district 
+                                        WHERE district_name = '{name.replace(' ', '_')}'))""")
+                    logins = self._cur.fetchall()
+                    for oo_login in logins:
+                        oo_login, = oo_login
+                        self._cur.execute(
+                            f"INSERT INTO users_oo_logins (id_user, oo_login) VALUES ({id_user}, '{oo_login}')")
+                elif id_role == 4:  # school
+                    self._cur.execute(
+                        f"INSERT INTO users_oo_logins (id_user, oo_login) VALUES ({id_user}, '{user_login}')")
+        except psycopg2.Error as e:
+            print("Ошибка при заполнении БД " + str(e))
+
 psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
 #psql.dropAllTables()
 #psql.createTables()
@@ -1234,4 +1258,5 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 #psql.fill_result_for_task()
 #psql.create_index_on_result_for_task()
 #psql.create_roles()
-psql.create_users()
+#psql.create_users()
+psql.fill_users_oo_logins()
