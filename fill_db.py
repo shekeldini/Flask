@@ -281,14 +281,20 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
 
-
-    def create_user_admin(self):
+    def create_users(self):
         try:
-            hash_psw = generate_password_hash("687980@rA")
-            tm = math.floor(time.time())
-            self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time) 
-                                    VALUES ('{'admin'}', '{'admin'}', '{hash_psw}', 1, {tm})""")
-            print("User_admin created")
+            users_wb = openpyxl.reader.excel.load_workbook(
+                filename="excel/users.xlsx", data_only=True)
+            users_sheet = users_wb.active
+            for row in range(2, users_sheet.max_row + 1):
+                login = users_sheet["B" + str(row)].value
+                name = users_sheet["C" + str(row)].value
+                hash_psw = generate_password_hash(users_sheet["F" + str(row)].value)
+                tm = math.floor(time.time())
+                id_role = int(users_sheet["H" + str(row)].value)
+                self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time) 
+                                        VALUES ('{login}', '{name}', '{hash_psw}', {id_role}, {tm})""")
+            print("Users created")
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
 
@@ -1228,4 +1234,4 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 #psql.fill_result_for_task()
 #psql.create_index_on_result_for_task()
 #psql.create_roles()
-psql.create_user_admin()
+psql.create_users()
