@@ -29,17 +29,17 @@ var chart_1 = new Chart(test, {
             label: 'Алтайский край',
             data: [],
             backgroundColor: [
-                'rgba(64, 152, 214, 1)',
-                'rgba(64, 152, 214, 1)',
-                'rgba(64, 152, 214, 1)',
-                'rgba(64, 152, 214, 1)',
+                'rgba(64, 152, 214, 0.5)',
+                'rgba(64, 152, 214, 0.5)',
+                'rgba(64, 152, 214, 0.5)',
+                'rgba(64, 152, 214, 0.5)',
             ],
             borderColor: [
-                // 'rgba(255, 99, 132, 1)',
+                 'rgba(102, 133, 255, 1)',
                 // 'rgba(54, 162, 235, 1)',
                 // 'rgba(255, 206, 86, 1)',
             ],
-            borderWidth: 0
+            borderWidth: 1
         }
         ],
 	},
@@ -73,8 +73,6 @@ var chart_1 = new Chart(test, {
                 color: "#000000",
                 anchor: "end",
                 align: "end"
-
-                
             },
 			title: {
 				display: false,
@@ -93,17 +91,17 @@ var chart_2 = new Chart(testTwo, {
             label: 'Алтайский край',
             data: [],
             backgroundColor: [
-                'rgba(64, 152, 214, 1)',
-                'rgba(64, 152, 214, 1)',
-                'rgba(64, 152, 214, 1)',
-                'rgba(64, 152, 214, 1)',
+                'rgba(64, 152, 214, 0.5)',
+                'rgba(64, 152, 214, 0.5)',
+                'rgba(64, 152, 214, 0.5)',
+                'rgba(64, 152, 214, 0.5)',
             ],
             borderColor: [
-                // 'rgba(255, 99, 132, 1)',
+                 'rgba(102, 133, 255, 1)',
                 // 'rgba(54, 162, 235, 1)',
                 // 'rgba(255, 206, 86, 1)',
             ],
-            borderWidth: 0
+            borderWidth: 1
         }
         ],
 	},
@@ -137,8 +135,6 @@ var chart_2 = new Chart(testTwo, {
                 color: "#000000",
                 anchor: "end",
                 align: "end"
-
-                
             },
 			title: {
 				display: false,
@@ -152,7 +148,6 @@ xhr_chart_1.onreadystatechange = function() {
   	if (xhr_chart_1.readyState != 4) return;
 
   	if (xhr_chart_1.status != 200) {
-		  
   } else {
         let data = xhr_chart_1.responseText;
         data = {count_of_students: 106, percents: {4: 16.04, 5: 40.57, 6: 32.08, 7: 11.32}};
@@ -169,7 +164,6 @@ xhr_chart_2.onreadystatechange = function() {
     if (xhr_chart_2.readyState != 4) return;
 
     if (xhr_chart_2.status != 200) {
-        
 } else {
       let data = xhr_chart_2.responseText;
       data = {count_of_students: 106, percents: {4: 20.04, 5: 15.57, 6: 60.08, 7: 11.32}};

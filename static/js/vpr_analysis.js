@@ -57,16 +57,29 @@ parallel_select.onchange = function(){
 	report_select.innerHTML = "";
 
 	parallel = parallel_select.value;
-	fetch('subjects/' + parallel).then(function(response){
-		response.json().then(function(data) {
-			optionHTML = '';
-			for (subject of data.subjects) {
-				optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-			}
-			subject_select.innerHTML = optionHTML;
-			subject_select.value = "";
+	if (name_of_the_settlement_select.value == "all" || oo_select.value == "all"){
+		 fetch('all_subjects/' + parallel).then(function(response){
+                        response.json().then(function(data) {
+                                optionHTML = '';
+                                for (subject of data.subjects) {
+                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
+                                }
+                                subject_select.innerHTML = optionHTML;
+                                subject_select.value = "";
+			});
 		});
-	});
+	}else{
+		fetch('subjects/' + parallel).then(function(response){
+			response.json().then(function(data) {
+				optionHTML = '';
+				for (subject of data.subjects) {
+					optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
+				}
+				subject_select.innerHTML = optionHTML;
+				subject_select.value = "";
+			});
+		});
+	};
 };
 
 
@@ -84,7 +97,7 @@ fetch('get_reports').then(function(response){
 };
 
 
-function draw_report(report_type, json_data, lable_text){
+function draw_report(report_type, json_data, lable_text, content_text){
   let body = document.getElementById('report_place');
   let section = document.createElement('section');
   section.className = "TwoPage";
@@ -109,13 +122,16 @@ function draw_report(report_type, json_data, lable_text){
 	            label: lable_text,
 	            data: [],
 	            backgroundColor: [
-	                'rgba(71, 71, 161, 1)',
-			'rgba(71, 71, 161, 1)',
-			'rgba(71, 71, 161, 1)',
-			'rgba(71, 71, 161, 1)'
+	                'rgba(71, 71, 161, 0.7)',
+			'rgba(71, 71, 161, 0.7)',
+			'rgba(71, 71, 161, 0.7)',
+			'rgba(71, 71, 161, 0.7)'
 	            ],
-	            borderColor: [],
-	            borderWidth: 0
+	            borderColor: [
+	         	'rgba(255, 0, 0, 1);'
+
+                    ],
+	            borderWidth: 1
 	        }],
 		},
 		options: {
@@ -167,7 +183,7 @@ function draw_report(report_type, json_data, lable_text){
   	}
   }
   plot.update();
-  div_title.innerHTML += 'content';
+  div_title.innerHTML += content_text;
   div_subtitle.innerHTML += 'sub_content';
   div.appendChild(div_title);
   div.appendChild(div_subtitle);
@@ -224,10 +240,10 @@ $(document).ready(function(){
 
 
 		var sendInfo = {
-				name_of_the_settlement: {
-							'id': id_name_of_the_settlement,
-							"name": $( "#name_of_the_settlement option:selected" ).text()
-							},
+		name_of_the_settlement: {
+			'id': id_name_of_the_settlement,
+			"name": $( "#name_of_the_settlement option:selected" ).text()
+			},
 
            	oo:	{
 			'id': id_oo,
@@ -276,13 +292,12 @@ $(document).ready(function(){
   			marker = JSON.stringify(data);
   			var jsonObj = JSON.parse(marker);
   			$("#report_section").remove();
-  			
   			text_name_of_the_settlement_select = jsonObj["name_of_the_settlement"]["name"];
-				text_oo_select = jsonObj["oo"]["name"];
-				lable_text = text_name_of_the_settlement_select + " - " + text_oo_select
+			text_oo_select = jsonObj["oo"]["name"];
+			lable_text = text_name_of_the_settlement_select + " - " + text_oo_select;
+			content_text = jsonObj["oo"]["name"];
   			if (id_report == 0){
-					
-  				draw_report(id_report, jsonObj, lable_text);
+  				draw_report(id_report, jsonObj, lable_text, content_text);
   				createTable([
 						  {	count_of_all_students: jsonObj['count_of_all_students'],
 						   	'2': jsonObj['percents']['2'],
@@ -294,7 +309,7 @@ $(document).ready(function(){
 					);
   			}
   			if (id_report == 1){
-  				draw_report(id_report, jsonObj, lable_text);
+  				draw_report(id_report, jsonObj, lable_text, content_text);
   				//'Понизили (Отметка < Отметка по журналу)'
   				createTable([
 						  {	'Группы участников': 'Понизили (Отметка < Отметка по журналу)',

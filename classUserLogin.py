@@ -14,7 +14,7 @@ class UserLogin(UserMixin):
         return self.__user[0]
 
     def get_name(self):
-        return self.__user[2]
+        return self.__user[2] if self.__user[2] else "Гость"
 
     def get_login(self):
         return self.__user[1]

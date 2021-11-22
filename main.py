@@ -19,7 +19,7 @@ app.register_blueprint(admin, url_prefix='/admin')
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = "Авторизируйтесь для доступа к закрытым страницам"
-login_manager.login_message_category = "success"
+login_manager.login_message_category = "invalid"
 dbase: Postgresql
 
 
@@ -65,34 +65,57 @@ def close_db(error):
 def vpr_analysis():
     if request.method == "POST":
         result = request.get_json()
-        name_of_the_settlement = result["name_of_the_settlement"]
+        district = result["name_of_the_settlement"]
         oo = result["oo"]
-        oo_parallels = result["parallel"]
-        oo_parallels_subjects = result["subject"]
+        parallel = result["parallel"]
+        subjects = result["subject"]
         report_type = int(result["report"]["id"])
+        if district["id"] != "all":
+            if oo["id"] != "all":
+                if report_type == 0:
+                    percents, count_of_students = dbase.get_count_students_mark(subjects["id"], parallel["id"])
+                    return jsonify({"name_of_the_settlement": district,
+                                    "oo": oo,
+                                    "percents": percents,
+                                    "count_of_all_students": count_of_students})
 
-        if report_type == 0:
-            percents, count_of_students = dbase.get_count_students_mark(oo_parallels_subjects["id"], oo_parallels["id"])
-            return jsonify({"name_of_the_settlement": name_of_the_settlement,
-                            "oo": oo,
-                            "percents": percents,
-                            "count_of_all_students": count_of_students})
+                elif report_type == 1:
+                    percents, count_of_students = dbase.get_comparison_of_ratings(subjects["id"],
+                                                                                  parallel["id"])
+                    return jsonify({"name_of_the_settlement": district,
+                                    "oo": oo,
+                                    "percents": percents,
+                                    "count_of_all_students": count_of_students})
+            else:
+                percents, count_of_students = dbase.get_count_students_mark_for_all_school_in_district(
+                    id_user=current_user.get_id(),
+                    id_district=district["id"],
+                    id_subjects=subjects["id"],
+                    parallel=parallel["id"])
 
-        elif report_type == 1:
-            percents, count_of_students = dbase.get_comparison_of_ratings(oo_parallels_subjects["id"],
-                                                                          oo_parallels["id"])
-            return jsonify({"name_of_the_settlement": name_of_the_settlement,
-                            "oo": oo,
-                            "percents": percents,
-                            "count_of_all_students": count_of_students})
+                return jsonify({"name_of_the_settlement": district,
+                                "oo": oo,
+                                "percents": percents,
+                                "count_of_all_students": count_of_students})
 
+        elif district["id"] == "all":
+            if oo["id"] == "all":
+                if report_type == 0:
+                    percents, count_of_students = dbase.get_count_students_mark_for_all_districts(
+                        id_user=current_user.get_id(),
+                        id_subjects=subjects["id"],
+                        parallel=parallel["id"])
+
+                    return jsonify({"name_of_the_settlement": district,
+                                    "oo": oo,
+                                    "percents": percents,
+                                    "count_of_all_students": count_of_students})
     return render_template('vpr_analysis.html', title="Аналитика ВПР")
-
 
 @app.route("/get_reports")
 @login_required
 def get_reports():
-    reports = ["Статистика по отметкам", "Сравнение ответок с отметками по журналу"]
+    reports = ["Статистика по отметкам", "Сравнение отметок с отметками по журналу"]
     reports_array = []
     for report_id, report in enumerate(reports):
         reports_obj = {'id': report_id, 'name': report}
@@ -105,34 +128,58 @@ def get_reports():
 def get_districts():
     districts = dbase.get_districts(current_user.get_id())
     district_array = []
+    if current_user.get_id_role() in {1, 2}:
+        district_array.append({'id': "all", 'name': "Вся выборка"})
+
     for district in districts:
         district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
         district_array.append(district_obj)
     return jsonify({'districts': district_array})
 
-
 @app.route('/oo/<id_district>')
 @login_required
 def oo_by_name_of_the_settlement(id_district):
-    oo = dbase.get_oo_from_district(id_district, current_user.get_id())
     oo_array = []
+    if id_district == "all":
+        oo_array.append({'id': "all", 'name': "Вся выборка"})
+        return jsonify({'oo': oo_array})
+    oo = dbase.get_oo_from_district(id_district, current_user.get_id())
+    if current_user.get_id_role() in {1, 2, 3}:
+        oo_array.append({'id': "all", 'name': "Вся выборка"})
+
     for school in oo:
         oo_obj = {'id': school[0], 'name': school[1]}
         oo_array.append(oo_obj)
     return jsonify({'oo': oo_array})
 
-
 @app.route('/parallels/<id_oo>')
 @login_required
 def parallels_for_oo(id_oo):
-    parallels = dbase.get_parallels_for_oo(id_oo)
-    parallels_array = []
-    for parallel in sorted(parallels, key=lambda x: x[1]):
-        parallels_obj = {'id': parallel[0], 'name': parallel[1]}
-        parallels_array.append(parallels_obj)
+    if id_oo == "all":
+        parallels = dbase.get_parallels()
+        parallels_array = []
+        for parallel in sorted(parallels, key=lambda x: x[0]):
+            parallels_obj = {'id': parallel, 'name': parallel}
+            parallels_array.append(parallels_obj)
+    else:
+        parallels = dbase.get_parallels_for_oo(id_oo)
+        parallels_array = []
+        for parallel in sorted(parallels, key=lambda x: x[1]):
+            parallels_obj = {'id': parallel[0], 'name': parallel[1]}
+            parallels_array.append(parallels_obj)
 
     return jsonify({'parallels': parallels_array})
 
+@app.route('/all_subjects/<parallel>')
+@login_required
+def all_subjects(parallel):
+    subjects = dbase.get_subjects(parallel, current_user.get_id())
+    subjects_array = []
+    for subject in sorted(subjects, key=lambda x: x[1]):
+        subjects_obj = {'id': subject[0], 'name': subject[1]}
+        subjects_array.append(subjects_obj)
+
+    return jsonify({'subjects': subjects_array})
 
 @app.route('/subjects/<id_oo_parallels>')
 @login_required
