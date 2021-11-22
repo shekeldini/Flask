@@ -346,3 +346,24 @@ $(document).ready(function(){
     };
  	});
 });
+
+$(document).ready(function(){
+	$("#clear_btn").click(function(){
+		$("#report_section").remove();
+		parallel_select.innerHTML = "";
+		subject_select.innerHTML = "";
+		report_select.innerHTML = "";
+
+		name_of_the_settlement = name_of_the_settlement_select.value;
+		fetch('oo/' + name_of_the_settlement).then(function(response){
+			response.json().then(function(data) {
+				optionHTML = '';
+				for (oo of data.oo) {
+					optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
+				}
+				oo_select.innerHTML = optionHTML;
+				oo_select.value = "";
+			});
+		});
+	});
+});
