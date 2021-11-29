@@ -29,10 +29,10 @@ var chart_1 = new Chart(test, {
             label: 'Алтайский край',
             data: [],
             backgroundColor: [
-                'rgba(64, 152, 214, 0.5)',
-                'rgba(64, 152, 214, 0.5)',
-                'rgba(64, 152, 214, 0.5)',
-                'rgba(64, 152, 214, 0.5)',
+		'rgba(71, 71, 161, 0.7)',
+		'rgba(71, 71, 161, 0.7)',
+		'rgba(71, 71, 161, 0.7)',
+		'rgba(71, 71, 161, 0.7)',
             ],
             borderColor: [
                  'rgba(102, 133, 255, 1)',
@@ -44,25 +44,30 @@ var chart_1 = new Chart(test, {
         ],
 	},
 	options: {
-		scales: {
-			y: {
-				display: true,
-				// ticks: {
-				//     display: false,
-				// },
-				// grid: {
-				//     display: false
-				// }
-			},
-			x: {
-				display: true,
-				// ticks: {
-				//     display: false,
-				// },
-				// grid: {
-				//     display: false
-				// }
-			},
+                scales: {
+		  x: {
+                    title: {
+                       color: '#1F1F1F',
+                       display: true,
+                       text: 'Классы',
+                       font: {
+                         size: 15
+                       },
+	               align: 'center'
+                    }
+                  },
+		  y: {
+                    title: {
+                       color: '#1F1F1F',
+                       display: true,
+                       text: 'Соотношение в процентах, %',
+                       font: {
+                         size: 15
+                       },
+                       align: 'center'
+                    }
+                  },
+
 		},
 		plugins: {
 			legend: {
@@ -91,10 +96,10 @@ var chart_2 = new Chart(testTwo, {
             label: 'Алтайский край',
             data: [],
             backgroundColor: [
-                'rgba(64, 152, 214, 0.5)',
-                'rgba(64, 152, 214, 0.5)',
-                'rgba(64, 152, 214, 0.5)',
-                'rgba(64, 152, 214, 0.5)',
+		'rgba(71, 71, 161, 0.7)',
+		'rgba(71, 71, 161, 0.7)',
+		'rgba(71, 71, 161, 0.7)',
+		'rgba(71, 71, 161, 0.7)',
             ],
             borderColor: [
                  'rgba(102, 133, 255, 1)',
@@ -107,24 +112,28 @@ var chart_2 = new Chart(testTwo, {
 	},
 	options: {
 		scales: {
-			y: {
-				display: true,
-				// ticks: {
-				//     display: false,
-				// },
-				// grid: {
-				//     display: false
-				// }
-			},
-			x: {
-				display: true,
-				// ticks: {
-				//     display: false,
-				// },
-				// grid: {
-				//     display: false
-				// }
-			},
+		  x: {
+                    title: {
+                       color: '#1F1F1F',
+                       display: true,
+                       text: 'Классы',
+                       font: {
+                         size: 15
+                       },
+                       align: 'center'
+                    }
+                  },
+		  y: {
+                    title: {
+                       color: '#1F1F1F',
+                       display: true,
+                       text: 'Соотношение в процентах, %',
+                       font: {
+                         size: 15
+                       },
+                       align: 'center'
+                    }
+                  },
 		},
 		plugins: {
 			legend: {

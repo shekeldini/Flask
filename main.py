@@ -6,6 +6,7 @@ from classUserLogin import UserLogin
 from forms import LoginForm
 from admin.admin import admin
 from postgresql import Postgresql
+from classReport import Report
 from config import *
 
 DEBUG = True
@@ -64,52 +65,10 @@ def close_db(error):
 @login_required
 def vpr_analysis():
     if request.method == "POST":
-        result = request.get_json()
-        district = result["name_of_the_settlement"]
-        oo = result["oo"]
-        parallel = result["parallel"]
-        subjects = result["subject"]
-        report_type = int(result["report"]["id"])
-        if district["id"] != "all":
-            if oo["id"] != "all":
-                if report_type == 0:
-                    percents, count_of_students = dbase.get_count_students_mark(subjects["id"], parallel["id"])
-                    return jsonify({"name_of_the_settlement": district,
-                                    "oo": oo,
-                                    "percents": percents,
-                                    "count_of_all_students": count_of_students})
 
-                elif report_type == 1:
-                    percents, count_of_students = dbase.get_comparison_of_ratings(subjects["id"],
-                                                                                  parallel["id"])
-                    return jsonify({"name_of_the_settlement": district,
-                                    "oo": oo,
-                                    "percents": percents,
-                                    "count_of_all_students": count_of_students})
-            else:
-                percents, count_of_students = dbase.get_count_students_mark_for_all_school_in_district(
-                    id_user=current_user.get_id(),
-                    id_district=district["id"],
-                    id_subjects=subjects["id"],
-                    parallel=parallel["id"])
+        report = Report(request=request.get_json(), dbase=dbase, user=current_user)
+        return jsonify(report.get_report())
 
-                return jsonify({"name_of_the_settlement": district,
-                                "oo": oo,
-                                "percents": percents,
-                                "count_of_all_students": count_of_students})
-
-        elif district["id"] == "all":
-            if oo["id"] == "all":
-                if report_type == 0:
-                    percents, count_of_students = dbase.get_count_students_mark_for_all_districts(
-                        id_user=current_user.get_id(),
-                        id_subjects=subjects["id"],
-                        parallel=parallel["id"])
-
-                    return jsonify({"name_of_the_settlement": district,
-                                    "oo": oo,
-                                    "percents": percents,
-                                    "count_of_all_students": count_of_students})
     return render_template('vpr_analysis.html', title="Аналитика ВПР")
 
 @app.route("/get_reports")

@@ -1,4 +1,4 @@
-name_of_the_settlement_select = document.getElementById('name_of_the_settlement');
+district_select = document.getElementById('district');
 oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
@@ -10,20 +10,20 @@ fetch('get_districts').then(function(response){
 			for (district of data.districts) {
 				optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
 			}
-			name_of_the_settlement_select.innerHTML = optionHTML;
-			name_of_the_settlement_select.value = "";	
+			district_select.innerHTML = optionHTML;
+			district_select.value = "";
 		});
 });
 
 
 
-name_of_the_settlement_select.onchange = function(){
+district_select.onchange = function(){
 	parallel_select.innerHTML = "";
 	subject_select.innerHTML = "";
 	report_select.innerHTML = "";
 
-	name_of_the_settlement = name_of_the_settlement_select.value;
-	fetch('oo/' + name_of_the_settlement).then(function(response){
+	district = district_select.value;
+	fetch('oo/' + district).then(function(response){
 		response.json().then(function(data) {
 			optionHTML = '';
 			for (oo of data.oo) {
@@ -36,7 +36,7 @@ name_of_the_settlement_select.onchange = function(){
 };
 
 oo_select.onchange = function(){
-	
+
 	subject_select.innerHTML = "";
 	report_select.innerHTML = "";
 
@@ -57,7 +57,7 @@ parallel_select.onchange = function(){
 	report_select.innerHTML = "";
 
 	parallel = parallel_select.value;
-	if (name_of_the_settlement_select.value == "all" || oo_select.value == "all"){
+	if (district_select.value == "all" || oo_select.value == "all"){
 		 fetch('all_subjects/' + parallel).then(function(response){
                         response.json().then(function(data) {
                                 optionHTML = '';
@@ -136,13 +136,30 @@ function draw_report(report_type, json_data, lable_text, content_text){
 		},
 		options: {
 			scales: {
-				y: {
-					display: true,
-				},
-				x: {
-					display: true,
-				},
-			},
+  			   x: {
+                               title: {
+                                   color: '#1F1F1F',
+                                   display: true,
+                                   text: 'Классы',
+                                   font: {
+               		               size: 15
+                                   },
+                                   align: 'center'
+                               }
+                           },
+                           y: {
+                               title: {
+                                   color: '#1F1F1F',
+                                   display: true,
+                                   text: 'Соотношение в процентах, %',
+                                   font: {
+                                       size: 15
+                                   },
+                                   align: 'center'
+                               }
+                           },
+
+                        },
 			plugins: {
 				legend: {
 					display: true,
@@ -164,7 +181,7 @@ function draw_report(report_type, json_data, lable_text, content_text){
 			    }
 			},
 		}
-		
+
 		});
 	if (report_type == 0){
 		for(let key in json_data.percents) {
@@ -200,6 +217,9 @@ function createTable(objectArray, fields, fieldTitles) {
   let body = document.getElementById('report_container');
   let div = document.createElement('div');
   div.className = "TwoPage__wrapper";
+  let title = document.createElement('h3');
+  title.className = "TwoPage__wrapper_title";
+  let text = document.createTextNode('Таблица результатов:');
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');
   let tbdy = document.createElement('tbody');
@@ -221,6 +241,8 @@ function createTable(objectArray, fields, fieldTitles) {
     });
     tbdy.appendChild(tr);
   });
+  title.appendChild(text);
+  div.appendChild(title);
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
   body.appendChild(div);
@@ -232,7 +254,7 @@ function createTable(objectArray, fields, fieldTitles) {
 $(document).ready(function(){
 	$("#submit_btn").click(function(){
 
-		var id_name_of_the_settlement = $('#name_of_the_settlement').val();
+		var id_district = $('#district').val();
 		var id_oo = $('#oo').val();
 		var id_oo_parallels = $('#parallel').val();
 		var id_oo_parallels_subjects = $('#subject').val();
@@ -240,9 +262,9 @@ $(document).ready(function(){
 
 
 		var sendInfo = {
-		name_of_the_settlement: {
-			'id': id_name_of_the_settlement,
-			"name": $( "#name_of_the_settlement option:selected" ).text()
+		district: {
+			'id': id_district,
+			"name": $( "#district option:selected" ).text()
 			},
 
            	oo:	{
@@ -265,8 +287,8 @@ $(document).ready(function(){
 			}
     		};
    	$(".error").remove();
-   	if (id_name_of_the_settlement == null){
-   		$('#name_of_the_settlement').after('<span class="error">Это поле не может быть пустым</span>');
+   	if (id_district == null){
+   		$('#district').after('<span class="error">Это поле не может быть пустым</span>');
    	}
    	if (id_oo == null){
    		$('#oo').after('<span class="error">Это поле не может быть пустым</span>');
@@ -292,9 +314,8 @@ $(document).ready(function(){
   			marker = JSON.stringify(data);
   			var jsonObj = JSON.parse(marker);
   			$("#report_section").remove();
-  			text_name_of_the_settlement_select = jsonObj["name_of_the_settlement"]["name"];
 			text_oo_select = jsonObj["oo"]["name"];
-			lable_text = text_name_of_the_settlement_select + " - " + text_oo_select;
+			lable_text = text_oo_select;
 			content_text = jsonObj["oo"]["name"];
   			if (id_report == 0){
   				draw_report(id_report, jsonObj, lable_text, content_text);
@@ -349,13 +370,14 @@ $(document).ready(function(){
 
 $(document).ready(function(){
 	$("#clear_btn").click(function(){
+		$(".error").remove();
 		$("#report_section").remove();
 		parallel_select.innerHTML = "";
 		subject_select.innerHTML = "";
 		report_select.innerHTML = "";
 
-		name_of_the_settlement = name_of_the_settlement_select.value;
-		fetch('oo/' + name_of_the_settlement).then(function(response){
+		district = district_select.value;
+		fetch('oo/' + district).then(function(response){
 			response.json().then(function(data) {
 				optionHTML = '';
 				for (oo of data.oo) {

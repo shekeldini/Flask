@@ -31,15 +31,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 5px;
-  padding-left: 20px;
-  padding-bottom: 5px;
+  padding: 5px 20px;
   box-shadow: 0px 5px 21px -5px #cdd1e1;
   z-index: 200;
 }
 
 .header__logo {
-  margin-right: 30px;
+  margin-right: 40px;
 }
 
 .header__title {
@@ -49,20 +47,29 @@ body {
   color: #243964;
 }
 
+.header__title_subtitle {
+  font-size: 13px;
+  color: #9f9f9f;
+
+}
+
 .header__profile {
-  margin-left: 500px;
   display: flex;
   align-items: center;
-	
 
 }
 
 .header__profile i {
   font-size: 40px;
   color: #1F3BB3;
-  cursor: pointer;
-  margin-right: 20px;
- 
+  cursor: pointer; 
+}
+
+.header__wrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+
 }
 
 
@@ -70,6 +77,8 @@ body {
 .header__profile_name {
   margin-right: 20px;
   font-family: "Roboto", sans-serif;
+  max-width: 500px;
+  word-break: break-word;
 }
 .wrapper {
   padding-left: 0;
@@ -84,7 +93,7 @@ body {
   padding-top: 40px;
   background: #ffffff;
   min-height: 130vh;
-  width: 260px;
+  width: 215px;
 }
 
 .wrapper__center {
@@ -165,7 +174,7 @@ body {
   font-weight: 500;
   font-size: 35px;
   color: #FFFFFF;
-  padding-top: 10px;
+  padding-top: 30px;
 }
 
 .wrapper__center_low {
@@ -304,7 +313,7 @@ body {
 }
 
 .other__wrapper .accordion__wrapper_item {
-  width: 250px;
+  width: 215px;
   box-sizing: border-box;
   background: #ffffff;
 }
@@ -512,6 +521,7 @@ h1 {
   color: #243964;
   margin: 0;
   margin-bottom: 20px;
+  font-weight: 400;
 }
 
 .steps {
@@ -534,8 +544,8 @@ h1 {
   margin-right: 20px;
   width: 175px;
   height: 45px;
-  border-radius: 20px;
-  background-color: #1F3BB3;
+  border-radius: 5px;
+  background-color: #4B49AC;
   border: none;
   font-size: 18px;
   font-family: 'Roboto', sans-serif;
@@ -549,13 +559,14 @@ h1 {
 
 .steps__btns input:hover,
 .steps__btns button:focus {
-  background: #4747A1;
+  background: #192f8f;
+  transition: 0.2s all;
 }
 
 .steps select {
   width: 240px;
   height: 40px;
-  border-radius: 15px;
+  border-radius: 5px;
   padding-left: 5px;
   font-size: 15px;
 }
@@ -583,6 +594,14 @@ form label {
  background: white;
  box-shadow: 3px 4px 20px 4px rgba(47, 47, 47, 0.1);
  border-radius: 20px;
+}
+
+.TwoPage__wrapper_title {
+  margin: 0;
+  padding: 0;
+  font-family: 'Manrope', sans-serif;
+  padding-left: 20px;
+  font-weight: 400;
 }
 
 .TwoPage__wrapper table tr:nth-child(even) {
