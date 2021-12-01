@@ -1,15 +1,14 @@
 var test = document.getElementById('myCharts').getContext('2d');
 var test = document.getElementById('myCharts');
 
-var three = document.getElementById('chartsThree').getContext('2d');
-var three = document.getElementById('chartsThree');
 //Второй график
 var testTwo = document.getElementById('myChartsTwo').getContext('2d');
 var testTwo = document.getElementById('myChartsTwo');
-
-var threeTwo = document.getElementById('chartsThreeTwo').getContext('2d');
-var threeTwo = document.getElementById('chartsThreeTwo');
 //
+
+var round = document.getElementById('roundlet').getContext('2d');
+var round = document.getElementById('roundlet');
+
 var xhr_chart_1 = new XMLHttpRequest();
 var url_chart_1 = "https://jsonplaceholder.typicode.com/posts";
 xhr_chart_1.open('GET', url_chart_1, true);
@@ -19,6 +18,42 @@ var xhr_chart_2 = new XMLHttpRequest();
 var url_chart_2 = "https://jsonplaceholder.typicode.com/posts";
 xhr_chart_2.open('GET', url_chart_2, true);
 xhr_chart_2.send();
+
+const roundlet = new Chart(round, {
+	type: 'pie',
+	data: {
+	   labels: ['ОО 1', 'ОО 2', 'ОО 3'],
+	   datasets: [{
+		  label: '# of Votes',
+		  data: [300, 50, 100],
+		  backgroundColor: [
+		          'rgb(255, 99, 132, 0.7)',
+			  'rgb(54, 162, 235, 0.7)',
+			  'rgb(255, 205, 86, 0.7)'
+	          ],
+		  hoverOffset: 4
+	   }]
+	},
+	options: {
+	    scales: {
+
+	    },
+	    radius: '90%',
+	    maintainAspectRatio: false,           
+            responsive: true,
+
+
+	    plugins: {
+	       legend: {
+		display: true,
+		position: "bottom"
+	       }
+
+	    }
+        }
+});
+
+
 
 var chart_1 = new Chart(test, {
     plugins: [ChartDataLabels],
@@ -80,8 +115,12 @@ var chart_1 = new Chart(test, {
                 align: "end"
             },
 			title: {
-				display: false,
-				text: 'Количество учащихся, принявших участие в ВПР'
+				display: true,
+				text: 'Заголовок',
+				color: '#1F1F1F',
+				font: {
+				  size: 15
+				}
 			}
 		},
 	}
@@ -146,8 +185,14 @@ var chart_2 = new Chart(testTwo, {
                 align: "end"
             },
 			title: {
-				display: false,
-				text: 'Количество учащихся, принявших участие в ВПР'
+
+
+			   display: true,
+        		   text: 'Заголовок',
+        		   color: '#1F1F1F',
+       			   font: {
+            	             size: 15
+        	           }
 			}
 		},
 	}
@@ -171,7 +216,7 @@ xhr_chart_1.onreadystatechange = function() {
 
 xhr_chart_2.onreadystatechange = function() { 
     if (xhr_chart_2.readyState != 4) return;
-
+	
     if (xhr_chart_2.status != 200) {
 } else {
       let data = xhr_chart_2.responseText;

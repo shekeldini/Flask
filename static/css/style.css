@@ -91,8 +91,8 @@ body {
 
 .wrapper__left {
   padding-top: 40px;
+  align-self: stretch;
   background: #ffffff;
-  min-height: 130vh;
   width: 215px;
 }
 
@@ -297,6 +297,7 @@ body {
 }
 
 .chart__wrapper {
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -684,4 +685,16 @@ padding-left: 20px;
     border-radius: 20px;
 
 }
+
+.rounds {
+    height: 520px;
+    margin-bottom: 50px;
+    padding-bottom: 60px;
+}
+
+.roundsCanvas {
+    min-height: 430px !important;
+}
+
+
 /*# sourceMappingURL=style.css.map */

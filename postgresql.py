@@ -59,6 +59,16 @@ class Postgresql:
             print("Ошибка получения статей из БД " + str(e))
         return []
 
+    def get_subject_id(self, subject_name):
+        try:
+            self._cur.execute(f"SELECT id_subjects FROM subjects WHERE subject_name = '{subject_name.replace(' ', '_')}'")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+        except psycopg2.Error as e:
+            print("Ошибка получения статей из БД " + str(e))
+            return []
+
     def get_subject_name(self, id_subjects):
         try:
             if id_subjects:
@@ -179,9 +189,9 @@ class Postgresql:
                                         "%": round((confirmed / count_of_all_students) * 100, 2)},
                         "Повысили": {"count_of_students": increased,
                                      "%": round((increased / count_of_all_students) * 100,
-                                                2)}}, count_of_all_students
-
-            return {},
+                                                2)},
+                        "Всего": {"count_of_students": count_of_all_students, "%": 100}}
+            return {}
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -242,16 +252,15 @@ class Postgresql:
                     elif row[0] == "понизил":
                         downgraded = row[1]
                     count_of_all_students += int(row[1])
-
                 return {"Понизили": {"count_of_students": downgraded,
                                      "%": round((downgraded / count_of_all_students) * 100, 2)},
                         "Подтвердили": {"count_of_students": confirmed,
                                         "%": round((confirmed / count_of_all_students) * 100, 2)},
                         "Повысили": {"count_of_students": increased,
                                      "%": round((increased / count_of_all_students) * 100,
-                                                2)}}, count_of_all_students
-
-            return {},
+                                                2)},
+                        "Всего": {"count_of_students": count_of_all_students, "%": 100}}
+            return {}
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -403,9 +412,10 @@ class Postgresql:
                                         "%": round((confirmed / count_of_all_students) * 100, 2)},
                         "Повысили": {"count_of_students": increased,
                                      "%": round((increased / count_of_all_students) * 100,
-                                                2)}}, count_of_all_students
+                                                2)},
+                        "Всего": {"count_of_students": count_of_all_students, "%": 100}}
 
-            return {},
+            return {}
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
