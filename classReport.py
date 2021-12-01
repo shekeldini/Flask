@@ -168,7 +168,11 @@ class Report:
                                           f"Предмет: {self.__subject['name']}"],
                                "oo": [f"{self.__oo['name']}",
                                           f"ВПР 2021. {self.__parallel['name']} класс",
-                                          f"Предмет: {self.__subject['name']}"]}
+                                          f"Предмет: {self.__subject['name']}"],
+                               "all": [f"Сравнительный анализ",
+                                       f"ВПР 2021. {self.__parallel['name']} класс",
+                                       f"Предмет: {self.__subject['name']}"
+                                       ]}
 
                 percents = {"all_districts": {},
                             "district": {},
@@ -219,7 +223,11 @@ class Report:
                                           f"Предмет: {self.__subject['name']}"],
                                "district": [f"{self.__district['name']}",
                                           f"ВПР 2021. {self.__parallel['name']} класс",
-                                          f"Предмет: {self.__subject['name']}"]}
+                                          f"Предмет: {self.__subject['name']}"],
+                               "all": [f"Сравнительный анализ",
+                                       f"ВПР 2021. {self.__parallel['name']} класс",
+                                       f"Предмет: {self.__subject['name']}"
+                                       ]}
                 percents = {"all_districts": {},
                             "district": {}}
 

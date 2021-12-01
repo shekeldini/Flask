@@ -264,21 +264,147 @@ function createTable_type_0(jsonObj) {
   return tbl;
 };
 
-function draw_report_type_1(json_data){
+function draw_report(json_data){
         let content_text = json_data.plot_settings.content;
         let title_text = json_data.plot_settings.title;
         let x_axis = json_data.plot_settings.x_axis;
         let y_axis = json_data.plot_settings.y_axis;
 	let index = 0;
+	if (Object.keys(json_data.percents).length > 1){
+		draw_report_type_1_all(json_data, content_text, title_text, x_axis, y_axis);
+        	index += 1;
+	}
         for([key, sub_content_list] of Object.entries(json_data.plot_settings.sub_content)){
-                draw_report(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
+		if( key != "all"){
+                draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
 		createTable_type_1(json_data, key, index);
 		index += 1;
+		}
         }
 }
 
+function draw_report_type_1_all(json_data, content_text, title_text, x_axis, y_axis){
+  let sub_content_list = json_data.plot_settings.sub_content.all
+  let body = document.getElementById('report_place');
+  let section = document.createElement('section');
+  section.className = "TwoPage";
+  section.id = "report_section";
+  let container = document.createElement('div');
+  container.className = "container";
+  container.id = "report_container";
+  let div =  document.createElement('div');
+  div.className = "report_place_border";
+  let div_title = document.createElement('div');
+  div_title.className = "wrapper__center_low_title";
+  let div_subtitle = document.createElement('div');
+  div_subtitle.className = "wrapper__center_low_subtitle";
 
-function draw_report(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index){
+  let canvas = document.createElement('canvas');
+        var plot = new Chart(canvas, {
+          plugins: [ChartDataLabels],
+                type: 'bar',
+                data: {
+                  labels: [],
+                  datasets: [],
+                },
+                options: {
+                        scales: {
+                           x: {
+                               title: {
+                                   color: '#1F1F1F',
+                                   display: true,
+                                   text: x_axis,
+                                   font: {
+                                       size: 15
+                                   },
+                                   align: 'center'
+                               }
+                           },
+                           y: {
+                               title: {
+                                   color: '#1F1F1F',
+                                   display: true,
+                                   text: y_axis,
+                                   font: {
+                                       size: 15
+                                   },
+                                   align: 'center'
+                               }
+                           },
+
+                        },
+                        plugins: {
+                                legend: {
+                                        display: true,
+                        position: "bottom"
+                                },
+                    datalabels: {
+                        color: "#000000",
+                        anchor: "end",
+                        align: "end"
+                    },
+                                title: {
+                                    display: true,
+                                    text: title_text,
+                                    color: '#1F1F1F',
+                                    font: {
+                                      size: 15
+                                    }
+                                }
+                        },
+                        layout: {
+                            padding: {
+                                top: 30
+                            }
+                        },
+                }
+
+                });
+                let colors = [  'rgba(243, 121, 126, 0.7)',
+                                'rgba(237, 216, 26, 0.7)',
+                                'rgba(125, 160, 250, 0.7)'];
+                let lables_list = json_data.plot_settings.lables;
+                for (let lable in lables_list){
+                        plot.data.labels.push(lables_list[lable]);
+                }
+          for(let i = 0; i < Object.keys(json_data.percents).length; i++) {
+                let keys = Object.keys(json_data.percents);
+                key = json_data.percents[keys[i]];
+                plot.data.datasets[i] = {};
+                plot.data.datasets[i].data = [];
+                plot.data.datasets[i].backgroundColor = [];
+                plot.data.datasets[i].label = key.name;
+                let col_names = ["Понизили", "Подтвердили", "Повысили"]
+                for (let col of col_names){
+                        plot.data.datasets[i].data.push(key.value[col]["%"]);
+                        plot.data.datasets[i].backgroundColor.push(colors[i]);
+
+                }
+
+                plot.data.datasets[i].borderColor = [
+                    'rgba(255, 0, 0, 1);'
+                    ];
+                 plot.data.datasets[i].borderWidth = 1
+                }
+  plot.update();
+  div_title.innerHTML += content_text;
+  for(let i in sub_content_list){
+        sub_content = sub_content_list[i];
+        let h3 = document.createElement('h3');
+        let text = document.createTextNode(sub_content);
+        h3.appendChild(text);
+        div_subtitle.appendChild(h3);
+  }
+  div.appendChild(div_title);
+  div.appendChild(div_subtitle);
+  div.appendChild(canvas);
+  container.appendChild(div);
+  section.appendChild(container);
+  body.appendChild(section);
+  return plot;
+};
+
+function draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index){
 
         let body = document.getElementById('report_place');
         let section = document.createElement('section');
@@ -508,7 +634,7 @@ $(document).ready(function(){
                         	createTable_type_0(jsonObj);
 			}
 			if (id_report == 1){
-				 draw_report_type_1(jsonObj);
+				 draw_report(jsonObj);
 			}
                         $("#submit_btn").attr("disabled", false);
 
