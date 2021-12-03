@@ -9,6 +9,9 @@ var testTwo = document.getElementById('myChartsTwo');
 var round = document.getElementById('roundlet').getContext('2d');
 var round = document.getElementById('roundlet');
 
+var roundTwo = document.getElementById('roundletTwo').getContext('2d');
+var roundTwo = document.getElementById('roundletTwo');
+
 var xhr_chart_1 = new XMLHttpRequest();
 var url_chart_1 = "https://jsonplaceholder.typicode.com/posts";
 xhr_chart_1.open('GET', url_chart_1, true);
@@ -22,14 +25,14 @@ xhr_chart_2.send();
 const roundlet = new Chart(round, {
 	type: 'pie',
 	data: {
-	   labels: ['ОО 1', 'ОО 2', 'ОО 3'],
+	   labels: ['Краевые', 'Муниципальные', 'Частные'],
 	   datasets: [{
 		  label: '# of Votes',
-		  data: [300, 50, 100],
+		  data: [87, 639, 7],
 		  backgroundColor: [
-		          'rgb(255, 99, 132, 0.7)',
-			  'rgb(54, 162, 235, 0.7)',
-			  'rgb(255, 205, 86, 0.7)'
+		          'rgb(125, 160, 250, 0.7)',
+			  'rgb(71, 71, 161, 0.7)',
+			  'rgb(121, 120, 233, 0.7)'
 	          ],
 		  hoverOffset: 4
 	   }]
@@ -52,6 +55,41 @@ const roundlet = new Chart(round, {
 	    }
         }
 });
+
+const roundletTwo = new Chart(roundTwo, {
+        type: 'pie',
+        data: {
+           labels: ['Городские', 'Сельские', 'Столица'],
+           datasets: [{
+                  label: '# of Votes',
+                  data: [222, 472, 39],
+                  backgroundColor: [
+                          'rgb(125, 160, 250, 0.7)',
+                          'rgb(71, 71, 161, 0.7)',
+                          'rgb(121, 120, 233, 0.7)',
+                  ],
+                  hoverOffset: 4
+           }]
+        },
+        options: {
+            scales: {
+
+            },
+            radius: '90%',
+            maintainAspectRatio: false,
+            responsive: true,
+
+
+            plugins: {
+               legend: {
+                display: true,
+                position: "bottom"
+               }
+
+            }
+        }
+});
+
 
 
 
@@ -95,7 +133,7 @@ var chart_1 = new Chart(test, {
                     title: {
                        color: '#1F1F1F',
                        display: true,
-                       text: 'Соотношение в процентах, %',
+                       text: 'Количество учеников',
                        font: {
                          size: 15
                        },
@@ -116,7 +154,7 @@ var chart_1 = new Chart(test, {
             },
 			title: {
 				display: true,
-				text: 'Заголовок',
+				text: 'Распределение участников по классам',
 				color: '#1F1F1F',
 				font: {
 				  size: 15
@@ -166,7 +204,7 @@ var chart_2 = new Chart(testTwo, {
                     title: {
                        color: '#1F1F1F',
                        display: true,
-                       text: 'Соотношение в процентах, %',
+                       text: 'Количество учеников',
                        font: {
                          size: 15
                        },
@@ -188,7 +226,7 @@ var chart_2 = new Chart(testTwo, {
 
 
 			   display: true,
-        		   text: 'Заголовок',
+        		   text: 'Распределение участников по классам',
         		   color: '#1F1F1F',
        			   font: {
             	             size: 15
@@ -204,7 +242,7 @@ xhr_chart_1.onreadystatechange = function() {
   	if (xhr_chart_1.status != 200) {
   } else {
         let data = xhr_chart_1.responseText;
-        data = {count_of_students: 106, percents: {4: 16.04, 5: 40.57, 6: 32.08, 7: 11.32}};
+        data = {count_of_students: 106, percents: {4: 29479, 5: 34760, 6: 35473, 7: 36181, 8: 29393, '10-11': 17796}};
         for(let key in data.percents) {
             let value = data.percents[key];
             chart_1.data.labels.push(key);
@@ -220,7 +258,7 @@ xhr_chart_2.onreadystatechange = function() {
     if (xhr_chart_2.status != 200) {
 } else {
       let data = xhr_chart_2.responseText;
-      data = {count_of_students: 106, percents: {4: 20.04, 5: 15.57, 6: 60.08, 7: 11.32}};
+      data = {count_of_students: 106, percents: {4: 972, 5: 960}};
       for(let key in data.percents) {
           let value = data.percents[key];
           chart_2.data.labels.push(key);

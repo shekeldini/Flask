@@ -74,7 +74,7 @@ def vpr_analysis():
 @app.route("/get_reports")
 @login_required
 def get_reports():
-    reports = ["Статистика по отметкам", "Сравнение отметок с отметками по журналу"]
+    reports = ["Статистика по отметкам", "Сравнение отметок с отметками по журналу", "Результаты ВПР"]
     reports_array = []
     for report_id, report in enumerate(reports):
         reports_obj = {'id': report_id, 'name': report}
@@ -111,15 +111,29 @@ def oo_by_name_of_the_settlement(id_district):
         oo_array.append(oo_obj)
     return jsonify({'oo': oo_array})
 
+@app.route('/parallels_for_district/<id_district>')
+@login_required
+def parallels_for_district(id_district):
+    parallels = dbase.get_parallels(id_user=current_user.get_id(),
+                                    id_district=id_district)
+    parallels_array = []
+    for parallel in sorted(parallels, key=lambda x: x[0]):
+        parallels_obj = {'id': parallel, 'name': parallel}
+        parallels_array.append(parallels_obj)
+    return jsonify({'parallels': parallels_array})
+
+
+
 @app.route('/parallels/<id_oo>')
 @login_required
 def parallels_for_oo(id_oo):
     if id_oo == "all":
-        parallels = dbase.get_parallels()
+        parallels = dbase.get_all_parallels()
         parallels_array = []
         for parallel in sorted(parallels, key=lambda x: x[0]):
             parallels_obj = {'id': parallel, 'name': parallel}
             parallels_array.append(parallels_obj)
+        return jsonify({'parallels': parallels_array})
     else:
         parallels = dbase.get_parallels_for_oo(id_oo)
         parallels_array = []
@@ -127,7 +141,7 @@ def parallels_for_oo(id_oo):
             parallels_obj = {'id': parallel[0], 'name': parallel[1]}
             parallels_array.append(parallels_obj)
 
-    return jsonify({'parallels': parallels_array})
+        return jsonify({'parallels': parallels_array})
 
 @app.route('/all_subjects/<parallel>')
 @login_required

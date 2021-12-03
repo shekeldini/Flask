@@ -34,24 +34,38 @@ district_select.onchange = function(){
                 });
         });
 };
-
 oo_select.onchange = function(){
 
         subject_select.innerHTML = "";
         report_select.innerHTML = "";
 
         oo = oo_select.value;
-        fetch('parallels/' + oo).then(function(response){
-                response.json().then(function(data) {
-                        optionHTML = '';
-                        for (parallel of data.parallels) {
-                                optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                        }
-                        parallel_select.innerHTML = optionHTML;
-                        parallel_select.value = "";
+        if (oo == "all" && district_select.value != "all"){
+               fetch('parallels_for_district/' + district_select.value).then(function(response){
+                        response.json().then(function(data) {
+                                optionHTML = '';
+                                for (parallel of data.parallels) {
+                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
+                                }
+                                parallel_select.innerHTML = optionHTML;
+                                parallel_select.value = "";
+                        });
+                }); 
+        }else{
+                fetch('parallels/' + oo).then(function(response){
+                        response.json().then(function(data) {
+                                optionHTML = '';
+                                for (parallel of data.parallels) {
+                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
+                                }
+                                parallel_select.innerHTML = optionHTML;
+                                parallel_select.value = "";
+                        });
                 });
-        });
+        }
+
 };
+
 
 parallel_select.onchange = function(){
         report_select.innerHTML = "";
@@ -98,11 +112,11 @@ fetch('get_reports').then(function(response){
 
 
 function draw_report_type_0(json_data){
-	let content_text = json_data.plot_settings.content;
-	let sub_content_list = json_data.plot_settings.sub_content;
-	let title_text = json_data.plot_settings.title;
-	let x_axis = json_data.plot_settings.x_axis;
-	let y_axis = json_data.plot_settings.y_axis;
+        let content_text = json_data.plot_settings.content;
+        let sub_content_list = json_data.plot_settings.sub_content;
+        let title_text = json_data.plot_settings.title;
+        let x_axis = json_data.plot_settings.x_axis;
+        let y_axis = json_data.plot_settings.y_axis;
 
   let body = document.getElementById('report_place');
   let section = document.createElement('section');
@@ -179,40 +193,40 @@ function draw_report_type_0(json_data){
                 }
 
                 });
-		let colors = [	'rgba(243, 121, 126, 0.7)',
-				'rgba(237, 216, 26, 0.7)',
-				'rgba(125, 160, 250, 0.7)'];
-		let lables_list = json_data.plot_settings.lables;
-        	for (let lable in lables_list){
-        		plot.data.labels.push(lables_list[lable]);
-		}
+                let colors = [  'rgba(243, 121, 126, 0.7)',
+                                'rgba(237, 216, 26, 0.7)',
+                                'rgba(125, 160, 250, 0.7)'];
+                let lables_list = json_data.plot_settings.lables;
+                for (let lable in lables_list){
+                        plot.data.labels.push(lables_list[lable]);
+                }
           for(let i = 0; i < Object.keys(json_data.percents).length; i++) {
-          	let keys = Object.keys(json_data.percents);
-		key = json_data.percents[keys[i]];
-          	plot.data.datasets[i] = {};
-		plot.data.datasets[i].data = [];
-		plot.data.datasets[i].backgroundColor = [];
-		plot.data.datasets[i].label = key.name;
+                let keys = Object.keys(json_data.percents);
+                key = json_data.percents[keys[i]];
+                plot.data.datasets[i] = {};
+                plot.data.datasets[i].data = [];
+                plot.data.datasets[i].backgroundColor = [];
+                plot.data.datasets[i].label = key.name;
 
-          	for (let mark in key.value){
-          		plot.data.datasets[i].data.push(key.value[mark]);
-			plot.data.datasets[i].backgroundColor.push(colors[i]);
+                for (let mark in key.value){
+                        plot.data.datasets[i].data.push(key.value[mark]);
+                        plot.data.datasets[i].backgroundColor.push(colors[i]);
 
-          	}
+                }
 
-          	plot.data.datasets[i].borderColor = [
-	            'rgba(255, 0, 0, 1);'
-        	    ];
-           	 plot.data.datasets[i].borderWidth = 1
-        	}
+                plot.data.datasets[i].borderColor = [
+                    'rgba(255, 0, 0, 1);'
+                    ];
+                 plot.data.datasets[i].borderWidth = 1
+                }
   plot.update();
   div_title.innerHTML += content_text;
   for(let i in sub_content_list){
-  	sub_content = sub_content_list[i];
-  	let h3 = document.createElement('h3');
-  	let text = document.createTextNode(sub_content);
-  	h3.appendChild(text);
-  	div_subtitle.appendChild(h3);
+        sub_content = sub_content_list[i];
+        let h3 = document.createElement('h3');
+        let text = document.createTextNode(sub_content);
+        h3.appendChild(text);
+        div_subtitle.appendChild(h3);
   }
   div.appendChild(div_title);
   div.appendChild(div_subtitle);
@@ -264,22 +278,32 @@ function createTable_type_0(jsonObj) {
   return tbl;
 };
 
-function draw_report(json_data){
-        let content_text = json_data.plot_settings.content;
-        let title_text = json_data.plot_settings.title;
-        let x_axis = json_data.plot_settings.x_axis;
-        let y_axis = json_data.plot_settings.y_axis;
-	let index = 0;
-	if (Object.keys(json_data.percents).length > 1){
-		draw_report_type_1_all(json_data, content_text, title_text, x_axis, y_axis);
-        	index += 1;
-	}
-        for([key, sub_content_list] of Object.entries(json_data.plot_settings.sub_content)){
-		if( key != "all"){
-                draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
-		createTable_type_1(json_data, key, index);
-		index += 1;
-		}
+function draw_report(report_type, json_data){
+        if (report_type == 0){
+                draw_report_type_0(json_data);
+                createTable_type_0(json_data);
+        }
+        if (report_type == 1){
+	        let content_text = json_data.plot_settings.content;
+	       	let title_text = json_data.plot_settings.title;
+	        let x_axis = json_data.plot_settings.x_axis;
+	        let y_axis = json_data.plot_settings.y_axis;
+
+                let index = 0;
+                if (Object.keys(json_data.percents).length > 1){
+                        draw_report_type_1_all(json_data, content_text, title_text, x_axis, y_axis);
+                        index += 1;
+                }
+                for([key, sub_content_list] of Object.entries(json_data.plot_settings.sub_content)){
+                        if( key != "all"){
+                        draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
+                        createTable_type_1(json_data, key, index);
+                        index += 1;
+                        }
+                }
+        }
+        if (report_type == 2){
+		createTable_type_2(json_data);
         }
 }
 
@@ -419,7 +443,7 @@ function draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis,
         div_title.className = "wrapper__center_low_title";
         let div_subtitle = document.createElement('div');
         div_subtitle.className = "wrapper__center_low_subtitle";
-        
+
         let canvas = document.createElement('canvas');
         var plot = new Chart(canvas, {
           plugins: [ChartDataLabels],
@@ -482,8 +506,8 @@ function draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis,
 
                 });
                 let colors = [  'rgba(192, 0, 0, 0.7)',
-				'rgba(245, 200, 0, 0.7)',
-				'rgba(0, 153, 0, 0.7)']
+                                'rgba(245, 200, 0, 0.7)',
+                                'rgba(0, 153, 0, 0.7)']
                 let lables_list = json_data.plot_settings.lables;
 
                 for (let lable in lables_list){
@@ -546,7 +570,7 @@ function createTable_type_1(jsonObj, key, index){
   let row_names = ["Понизили", "Подтвердили", "Повысили", "Всего"];
   for (row in row_names){
         let tr = document.createElement('tr');
-	var td = document.createElement('td');
+        var td = document.createElement('td');
         td.appendChild(document.createTextNode(jsonObj.table_settings.groups[row]));
         tr.appendChild(td);
 
@@ -562,6 +586,112 @@ function createTable_type_1(jsonObj, key, index){
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
   body.appendChild(div);
+  return tbl;
+};
+
+function createTable_type_2(jsonObj){
+
+  let fieldTitles = jsonObj.table_settings.titles;
+  let fields = jsonObj.table_settings.fields;
+  let body = document.getElementById('report_place');
+  let section = document.createElement('section');
+  section.className = "TwoPage";
+  section.id = "report_section";
+  let container = document.createElement('div');
+  container.className = "container";
+  container.id = "report_container";
+
+  let div = document.createElement('div');
+  div.className = "TwoPage__wrapper";
+  let title = document.createElement('h3');
+  title.className = "TwoPage__wrapper_title";
+  let text = document.createTextNode(jsonObj.content);
+  let tbl = document.createElement('table');
+  let thr = document.createElement('tr');
+  let tbdy = document.createElement('tbody');
+  fieldTitles.forEach((fieldTitle) => {
+    let th = document.createElement('td');
+    th.appendChild(document.createTextNode(fieldTitle));
+    thr.appendChild(th);
+  });
+  tbdy.appendChild(thr);
+  if (Object.keys(jsonObj.table_settings.values).length == 3){
+        let keys = ["all_districts", "district", "oo"];
+        for (key of keys){
+                let tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].name));
+                tr.appendChild(td);
+                for (field of fields){
+                        var td = document.createElement('td');
+                        td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].value[field]));
+                        tr.appendChild(td);
+			}
+                tbdy.appendChild(tr);
+        }
+  }
+
+  if (Object.keys(jsonObj.table_settings.values).length == 2){
+        let keys = ["all_districts", "district"];
+        for (key of keys){
+                let tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].name));
+                tr.appendChild(td);
+                for (field of fields){
+                        var td = document.createElement('td');
+                        td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].value[field]));
+                        tr.appendChild(td);
+                }
+                tbdy.appendChild(tr);
+        }
+        for ([key, dict_values] of Object.entries(jsonObj.table_settings.values.district.schools)){
+                let tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(key));
+                tr.appendChild(td);
+                for (field of fields){
+                        var td = document.createElement('td');
+                        td.appendChild(document.createTextNode(dict_values[field]));
+                        tr.appendChild(td);
+                }
+                tbdy.appendChild(tr);
+        }
+  }
+  if (Object.keys(jsonObj.table_settings.values).length == 1){
+        let keys = ["all_districts"];
+        for (key of keys){
+                let tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].name));
+                tr.appendChild(td);
+                for (field of fields){
+                        var td = document.createElement('td');
+                        td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].value[field]));
+                        tr.appendChild(td);
+                }
+                tbdy.appendChild(tr);
+        }
+        for ([key, dict_values] of Object.entries(jsonObj.table_settings.values.all_districts.districts)){
+                let tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(key));
+                tr.appendChild(td);
+                for (field of fields){
+                        var td = document.createElement('td');
+                        td.appendChild(document.createTextNode(dict_values[field]));
+                        tr.appendChild(td);
+                }
+                tbdy.appendChild(tr);
+        }
+  }
+  title.appendChild(text);
+  div.appendChild(title);
+  tbl.appendChild(tbdy);
+  div.appendChild(tbl);
+  container.appendChild(div);
+  section.appendChild(container);
+  body.appendChild(section);
   return tbl;
 };
 
@@ -628,14 +758,8 @@ $(document).ready(function(){
                 success: function(data){
                         marker = JSON.stringify(data);
                         var jsonObj = JSON.parse(marker);
-			$(".TwoPage").remove();
-			if (id_report == 0){
-                        	draw_report_type_0(jsonObj);
-                        	createTable_type_0(jsonObj);
-			}
-			if (id_report == 1){
-				 draw_report(jsonObj);
-			}
+                        $(".TwoPage").remove();
+                        draw_report(id_report, jsonObj);
                         $("#submit_btn").attr("disabled", false);
 
         },
@@ -670,4 +794,3 @@ $(document).ready(function(){
                 });
         });
 });
-

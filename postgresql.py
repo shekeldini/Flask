@@ -34,7 +34,6 @@ class Postgresql:
             return res
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
-
         return False
 
     def update_user_avatar(self, avatar, user_id):
@@ -48,6 +47,17 @@ class Postgresql:
             print("Ошибка обновления аватара в БД: " + str(e))
             return False
         return True
+
+    def get_all_parallels(self):
+        try:
+            self._cur.execute(f"""SELECT parallel FROM parallels""")
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
 
     def get_parallels_for_oo(self, id_oo):
         try:
@@ -93,6 +103,46 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения статей из БД " + str(e))
         return []
+
+    def get_id_oo_parallels(self, parallel, id_oo):
+        try:
+            self._cur.execute(
+                f"SELECT id_oo_parallels FROM oo_parallels WHERE parallel = {parallel} AND id_oo = {id_oo}")
+            res, = self._cur.fetchone()
+            if not res:
+                print("id_oo_parallels не был найден")
+                return []
+            return res
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_id_oo_parallels_subjects(self, id_subjects, id_oo_parallels):
+        try:
+            self._cur.execute(
+                f" SELECT id_oo_parallels_subjects FROM oo_parallels_subjects WHERE id_oo_parallels = {id_oo_parallels}"
+                f" AND id_subjects = {id_subjects}")
+            res, = self._cur.fetchone()
+            return res
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_district_for_report_type_2(self, id_user, parallel, id_subjects):
+        try:
+            self._cur.execute(f"""SELECT id_district, district_name FROM district WHERE id_district IN (SELECT DISTINCT id_district FROM name_of_the_settlement 
+                                    WHERE id_name_of_the_settlement IN 
+                                        (SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                                            WHERE oo_login in 
+                                                (SELECT oo_login FROM users_oo_logins 
+                                                    WHERE id_user = {id_user})
+                                            AND id_oo in (SELECT id_oo FROM oo_parallels WHERE parallel = {parallel} AND id_oo_parallels in 
+                                                        (SELECT id_oo_parallels FROM oo_parallels_subjects WHERE id_subjects = {id_subjects})))) ORDER BY (id_district);""")
+
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения муниципалитетов из БД " + str(e))
 
     def get_districts(self, id_user):
         try:
@@ -330,10 +380,15 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-
-    def get_parallels(self):
+    def get_parallels(self, id_user, id_district):
         try:
-            self._cur.execute("SELECT parallel FROM parallels")
+            self._cur.execute(f"""SELECT DISTINCT parallel FROM oo_parallels WHERE id_oo in 
+                                    (SELECT id_oo FROM oo WHERE oo_login in 
+                                        (SELECT oo_login FROM users_oo_logins 
+                                                    WHERE id_user = {id_user})
+                                        AND id_name_of_the_settlement IN 
+                                                (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                                    WHERE id_district = {id_district}));""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -361,6 +416,43 @@ class Postgresql:
                 return res
             return []
 
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_oo_from_id_oo_parallels_subjects(self,  id_district, id_user, parallel, id_subjects):
+        try:
+            self._cur.execute(f"""
+            SELECT id_oo_parallels_subjects, id_oo_parallels FROM oo_parallels_subjects 
+                WHERE id_oo_parallels in 
+                    (SELECT id_oo_parallels FROM oo_parallels 
+                        WHERE id_oo in (SELECT id_oo FROM oo 
+                            WHERE id_oo NOT IN 
+                            (SELECT id_oo FROM oo_levels_of_the_educational_program 
+                                WHERE id_levels_of_the_educational_program = 4 AND value = 'Да') 
+                        AND id_name_of_the_settlement IN 
+                            (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                WHERE id_district = {id_district}) 
+                        AND parallel = {parallel}
+                        AND oo_login in 
+                            (SELECT oo_login FROM users_oo_logins 
+                                WHERE id_user = {id_user}))) 
+                AND id_subjects = {id_subjects};""")
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_oo_name_from_oo_parallels(self, id_oo_parallels):
+        try:
+            self._cur.execute(f"""SELECT oo_name FROM oo WHERE id_oo in 
+                                    (SELECT id_oo FROM oo_parallels WHERE id_oo_parallels = {id_oo_parallels})""")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+            return ""
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -543,6 +635,229 @@ class Postgresql:
             return {},
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_result_vpr(self, id_oo_parallels_subjects, id_oo_parallels):
+        try:
+            self._cur.execute(f"""
+                    SELECT value, COUNT(value) FROM
+                        (SELECT id_students,sum_marks,
+                                CASE WHEN sum_marks<mark_three THEN 2
+                                    WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+                                WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+                                WHEN sum_marks>=mark_five THEN 5
+                                    ELSE 0
+                                END AS value
+                                FROM (SELECT id_students, sum_marks, mark_three, mark_four, mark_five  
+                                FROM (SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks 
+                                    FROM result_for_task 
+                                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} AND id_oo_parallels = {id_oo_parallels}
+                                    GROUP BY id_students, id_oo_parallels_subjects) AS t1
+                                LEFT JOIN 
+                                    (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five 
+                                    FROM oo_parallels_subjects 
+                                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}) AS t2
+                                    USING (id_oo_parallels_subjects)) AS t3)
+                        AS t4 GROUP BY value ORDER BY (value);""")
+            res = self._cur.fetchall()
+            if res:
+                mark_dict = {x[0]: x[1] for x in res}
+                count_of_all_mark = sum(mark_dict.values())
+                if mark_dict.get(2) is None:
+                    count_of_mark_two = 0
+                else:
+                    count_of_mark_two = mark_dict[2]
+
+                if mark_dict.get(3) is None:
+                    count_of_mark_three = 0
+                else:
+                    count_of_mark_three = mark_dict[3]
+
+                if mark_dict.get(4) is None:
+                    count_of_mark_four = 0
+                else:
+                    count_of_mark_four = mark_dict[4]
+
+                if mark_dict.get(5) is None:
+                    count_of_mark_five = 0
+                else:
+                    count_of_mark_five = mark_dict[5]
+
+                mean = round(((2 * count_of_mark_two + 3 * count_of_mark_three + 4 * count_of_mark_four + 5 * count_of_mark_five) / count_of_all_mark), 2)
+                two = round((count_of_mark_two / count_of_all_mark) * 100, 1)
+                three = round((count_of_mark_three / count_of_all_mark) * 100, 1)
+                four = round((count_of_mark_four / count_of_all_mark) * 100, 1)
+                five = round((count_of_mark_five / count_of_all_mark) * 100, 1)
+
+                return {"2": two,
+                        "3": three,
+                        "4": four,
+                        "5": five,
+                        "mean_mark": mean,
+                        "count_of_students": count_of_all_mark,
+                        "quality": round(four + five, 1),
+                        "performance": round(three + four + five, 1)}
+            return {}
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_result_vpr_for_all_school_in_district(self, id_user, id_district, id_subjects, parallel):
+        try:
+            self._cur.execute(f"""SELECT value, COUNT(value) FROM
+                                                (SELECT id_students,sum_marks,
+                                                        CASE WHEN sum_marks<mark_three THEN 2
+                                                            WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+                                                            WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+                                                            WHEN sum_marks>=mark_five THEN 5
+                                                            ELSE 0
+                                                        END AS value FROM 
+                                            (SELECT id_students, sum_marks, mark_three, mark_four, mark_five FROM 
+                                                ((SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
+                                                    WHERE id_oo_parallels_subjects IN 
+                                                        (SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+                                                            WHERE id_oo_parallels IN 
+                                                                (SELECT id_oo_parallels FROM oo_parallels 
+                                                                    WHERE parallel={parallel} AND id_oo in 
+                                                                        (SELECT id_oo FROM oo 
+                                                                            WHERE year='2021' AND oo_login in 
+                                                                                (SELECT oo_login FROM users_oo_logins 
+                                                                                    WHERE id_user = {id_user})
+                                                                                AND id_name_of_the_settlement in 
+                                                                                    (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                                                                        WHERE id_district = {id_district})))
+                                                            AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects) AS t1
+
+                                                    LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
+                                                            WHERE id_oo_parallels IN 
+                                                                (SELECT id_oo_parallels FROM oo_parallels 
+                                                                    WHERE parallel={parallel} AND id_oo in 
+                                                                        (SELECT id_oo FROM oo 
+                                                                            WHERE year='2021' AND oo_login in 
+                                                                                (SELECT oo_login FROM users_oo_logins 
+                                                                                    WHERE id_user = {id_user})
+                                                                                AND id_name_of_the_settlement in 
+                                                                                    (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                                                                        WHERE id_district = {id_district})))
+                                                            AND id_subjects={id_subjects}) AS t2 
+                                                    USING (id_oo_parallels_subjects))) AS t3) AS t4 GROUP BY value ORDER BY (value);""")
+            res = self._cur.fetchall()
+            if res:
+                mark_dict = {x[0]: x[1] for x in res}
+                count_of_all_mark = sum(mark_dict.values())
+                if mark_dict.get(2) is None:
+                    count_of_mark_two = 0
+                else:
+                    count_of_mark_two = mark_dict[2]
+
+                if mark_dict.get(3) is None:
+                    count_of_mark_three = 0
+                else:
+                    count_of_mark_three = mark_dict[3]
+
+                if mark_dict.get(4) is None:
+                    count_of_mark_four = 0
+                else:
+                    count_of_mark_four = mark_dict[4]
+
+                if mark_dict.get(5) is None:
+                    count_of_mark_five = 0
+                else:
+                    count_of_mark_five = mark_dict[5]
+
+                mean = round(((2 * count_of_mark_two + 3 * count_of_mark_three + 4 * count_of_mark_four + 5 * count_of_mark_five) / count_of_all_mark), 2)
+                two = round((count_of_mark_two / count_of_all_mark) * 100, 1)
+                three = round((count_of_mark_three / count_of_all_mark) * 100, 1)
+                four = round((count_of_mark_four / count_of_all_mark) * 100, 1)
+                five = round((count_of_mark_five / count_of_all_mark) * 100, 1)
+
+                return {"2": two,
+                        "3": three,
+                        "4": four,
+                        "5": five,
+                        "mean_mark": mean,
+                        "count_of_students": count_of_all_mark,
+                        "quality": round(four + five, 1),
+                        "performance": round(three + four + five, 1)}
+            return {}
+
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_result_vpr_for_all_districts(self, id_user, id_subjects, parallel):
+        try:
+            self._cur.execute(f"""SELECT value, COUNT(value) FROM
+                                    (SELECT id_students,sum_marks,
+                                            CASE WHEN sum_marks<mark_three THEN 2
+                                                WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+                                                WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+                                                WHEN sum_marks>=mark_five THEN 5
+                                                ELSE 0
+                                            END AS value FROM 
+                                (SELECT id_students, sum_marks, mark_three, mark_four, mark_five FROM 
+                                    ((SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
+                                        WHERE id_oo_parallels_subjects IN 
+                                            (SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+                                                WHERE id_oo_parallels IN 
+                                                    (SELECT id_oo_parallels FROM oo_parallels 
+                                                        WHERE parallel={parallel} AND id_oo in 
+                                                            (SELECT id_oo FROM oo 
+                                                                WHERE year='2021' AND oo_login in 
+                                                                    (SELECT oo_login FROM users_oo_logins 
+                                                                        WHERE id_user = {id_user})))
+                                                AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects) AS t1
+
+                                        LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
+                                                WHERE id_oo_parallels IN 
+                                                    (SELECT id_oo_parallels FROM oo_parallels 
+                                                        WHERE parallel={parallel} AND id_oo in 
+                                                            (SELECT id_oo FROM oo 
+                                                                WHERE year='2021' AND oo_login in 
+                                                                    (SELECT oo_login FROM users_oo_logins 
+                                                                        WHERE id_user = {id_user})))
+                                                AND id_subjects={id_subjects}) AS t2 
+                                        USING (id_oo_parallels_subjects))) AS t3) AS t4 GROUP BY value ORDER BY (value);""")
+            res = self._cur.fetchall()
+            if res:
+                mark_dict = {x[0]: x[1] for x in res}
+                count_of_all_mark = sum(mark_dict.values())
+                if mark_dict.get(2) is None:
+                    count_of_mark_two = 0
+                else:
+                    count_of_mark_two = mark_dict[2]
+
+                if mark_dict.get(3) is None:
+                    count_of_mark_three = 0
+                else:
+                    count_of_mark_three = mark_dict[3]
+
+                if mark_dict.get(4) is None:
+                    count_of_mark_four = 0
+                else:
+                    count_of_mark_four = mark_dict[4]
+
+                if mark_dict.get(5) is None:
+                    count_of_mark_five = 0
+                else:
+                    count_of_mark_five = mark_dict[5]
+
+                mean = round(((2 * count_of_mark_two + 3 * count_of_mark_three + 4 * count_of_mark_four + 5 * count_of_mark_five) / count_of_all_mark), 2)
+                two = round((count_of_mark_two / count_of_all_mark) * 100, 1)
+                three = round((count_of_mark_three / count_of_all_mark) * 100, 1)
+                four = round((count_of_mark_four / count_of_all_mark) * 100, 1)
+                five = round((count_of_mark_five / count_of_all_mark) * 100, 1)
+
+                return {"2": two,
+                        "3": three,
+                        "4": four,
+                        "5": five,
+                        "mean_mark": mean,
+                        "count_of_students": count_of_all_mark,
+                        "quality": round(four + five, 1),
+                        "performance": round(three + four + five, 1)}
+            return {}
+
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
 
     def get_count_students(self):
         try:

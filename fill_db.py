@@ -201,18 +201,6 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_id_oo_parallels(self, parallel, id_oo):
-        try:
-            self._cur.execute(
-                f"SELECT id_oo_parallels FROM oo_parallels WHERE parallel = {parallel} AND id_oo = {id_oo}")
-            res, = self._cur.fetchone()
-            if not res:
-                print("id_oo_parallels не был найден")
-                return []
-            return res
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
     def get_id_classes(self, id_oo_parallels, liter):
         try:
             self._cur.execute(
@@ -258,15 +246,6 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_id_oo_parallels_subjects(self, id_subjects, id_oo_parallels):
-        try:
-            self._cur.execute(
-                f" SELECT id_oo_parallels_subjects FROM oo_parallels_subjects WHERE id_oo_parallels = {id_oo_parallels}"
-                f" AND id_subjects = {id_subjects}")
-            res, = self._cur.fetchone()
-            return res
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
     def create_roles(self):
         try:
             self._cur.execute(f"""INSERT INTO roles (role) VALUES ('admin'),('ministry'),('municipality'),('school')""")
