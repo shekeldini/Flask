@@ -695,39 +695,6 @@ padding-left: 20px;
     min-height: 430px !important;
 }
 
-.header__hamburger {
-    position: absolute;
-    top: 20px;
-    left: 30px;
-    height: 21px;
-    display: flex;
-    justify-content: space-between;
-    flex-direction: column;
-    align-items: flex-end;
-    cursor: pointer;
-    display: none;
-}
-
-.header__hamburger span {
-  display: block;
-  width: 30px;
-  height: 3px;
-  background: #151812;
-}
-
-.accordion-mobile__close {
-  width: 22px;
-  height: 22px;
-  font-size: 50px;
-  cursor: pointer;
-  line-height: 5px;
-  font-weight: 100;
-  top: 50px;
-  right: 25px;
-  position: absolute;
-  overflow: hidden;
- }
-
 @media (max-width: 1800px) {
   .wrapper__center {
     max-width: 1440px;
@@ -916,44 +883,10 @@ padding-left: 20px;
 
 }
 
-@media (max-width: 652px) {
-  .wrapper__left {
-    
-  }
-  .header__hamburger {
-    display: block;
-  }
-  .header__hamburger span:nth-child(2) {
-        margin-bottom: 5px;
-    margin-top: 5px;
-  }
- .accordion-mobile__close {
-       overflow: visible;
-  }
-
-}
-
 @media (max-width: 425px) {
   .wrapper__left {
-    position: fixed;
-    top: 145px;
-    left: -100%;
-    width: 100%;
-    height: 100vh;
-    z-index: 10;
-    visibility: hidden;
-    opacity: 0;
-    transition: all 0.6s;
+    display: none;
   }
-  .activeme {
-    left: 0;
-    visibility: visible;
-    opacity: 1;
-    width: 200px;
-    top: 145px;
-    padding-top: 70px;
-  }
-
   .wrapper__center {
     max-width: 400px;
   }
@@ -984,13 +917,10 @@ padding-left: 20px;
     margin-right: 30px;
   }
   form label {
-    font-size: 15px;
+   font-size: 15px;
   }
   .steps select {
-    width: 175px;
-  }
-  .steps__btns {
-    justify-content: center;
+		
   }
 
 }
@@ -1013,31 +943,6 @@ padding-left: 20px;
     background: #ffffff;
     padding: 30px 40px;
   }
-  form {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-  }
-  .steps {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  form label {
-   width: 100%;
-   text-align: center;
-   margin-bottom: 10px;
-  }
-  .steps__btns input {
-    width: 155px;
-  }
-  .steps select {
-    width: 270px;
-  }
-  .mobile {
-    display: none;
-  }
-
 
 }
 
@@ -1086,10 +991,6 @@ padding-left: 20px;
   .wrapper__right_login h6 {
    margin-bottom: 20px;
   }
-  h1 {
-    font-size: 30px;
-  }
-
 
 
 }

@@ -6,7 +6,7 @@ from classUserLogin import UserLogin
 from forms import LoginForm
 from admin.admin import admin
 from postgresql import Postgresql
-from classReport import Report
+from classReportController import ReportController
 from config import *
 
 DEBUG = True
@@ -15,7 +15,6 @@ MAX_CONTENT_LENGTH = 1024 * 1024
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.register_blueprint(admin, url_prefix='/admin')
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -60,13 +59,209 @@ def close_db(error):
     if hasattr(g, "link_db"):
         g.link_db.close()
 
+@app.route("/school_in_risk", methods=["POST", "GET"])
+@login_required
+def school_in_risk():
+    if current_user.get_id_role() not in (1, 2):
+        return abort(403)
+    if request.method == "POST":
+        report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
+        return jsonify(report.get_report())
+    return render_template('school_in_risk.html', title="Школы в зоне риска")
+
+@app.route("/districts_for_schools_in_risk")
+@login_required
+def districts_for_school_in_risk():
+    districts = dbase.get_districts_for_schools_in_risk(current_user.get_id())
+    district_array = []
+    if current_user.get_id_role() in {1, 2}:
+        district_array.append({'id': "all", 'name': "Вся выборка"})
+
+    for district in districts:
+        district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
+        district_array.append(district_obj)
+    return jsonify({'districts': district_array})
+
+
+@app.route('/oo_for_schools_in_risk/<id_district>')
+@login_required
+def oo_for_schools_in_risk(id_district):
+    oo_array = []
+    if id_district == "all":
+        oo_array.append({'id': "all", 'name': "Вся выборка"})
+        return jsonify({'oo': oo_array})
+    oo = dbase.get_oo_by_district_for_schools_in_risk(id_district=id_district,
+                                                      id_user=current_user.get_id())
+    if current_user.get_id_role() in {1, 2, 3} and len(oo) > 1:
+        oo_array.append({'id': "all", 'name': "Вся выборка"})
+
+    for school in oo:
+        oo_obj = {'id': school[0], 'name': school[1]}
+        oo_array.append(oo_obj)
+    return jsonify({'oo': oo_array})
+
+
+@app.route('/all_parallels_for_schools_in_risk/')
+@login_required
+def all_parallels_for_schools_in_risk():
+    parallels_array = []
+    for parallel in [4, 5]:
+        parallels_array.append({'id': parallel, 'name': parallel})
+    return jsonify({'parallels': parallels_array})
+
+
+@app.route('/parallels_by_oo_for_schools_in_risk/<id_oo>')
+@login_required
+def parallels_by_oo_for_schools_in_risk(id_oo):
+    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
+                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
+                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
+                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
+                                  "sch226065"],
+                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
+                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
+                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
+                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
+                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
+               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
+                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
+                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
+                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
+                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
+                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
+    oo_login = dbase.get_school_login(id_oo=id_oo)
+    parallels_array = []
+    for parallel in schools:
+        for sbj in schools[parallel]:
+            if oo_login in schools[parallel][sbj]:
+                parallels_array.append({'id': dbase.get_id_oo_parallels(parallel=parallel,
+                                                                        id_oo=id_oo),
+                                        'name': parallel})
+                break
+    return jsonify({'parallels': parallels_array})
+
+
+@app.route('/parallels_by_district_for_schools_in_risk/<id_district>')
+@login_required
+def parallels_by_district_for_schools_in_risk(id_district):
+    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
+                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
+                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
+                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
+                                  "sch226065"],
+                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
+                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
+                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
+                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
+                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
+               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
+                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
+                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
+                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
+                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
+                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
+
+    oo_array = dbase.get_oo_by_district_for_schools_in_risk(id_district=id_district,
+                                                            id_user=current_user.get_id())
+    parallels_array = []
+    for oo in oo_array:
+        oo_login = dbase.get_school_login(id_oo=oo[0])
+        for parallel in schools:
+            for sbj in schools[parallel]:
+                if oo_login in schools[parallel][sbj]:
+                    if {'id': parallel, 'name': parallel} not in parallels_array:
+                        parallels_array.append({'id': parallel, 'name': parallel})
+                    break
+    return jsonify({'parallels': parallels_array})
+
+
+@app.route('/all_subject_for_schools_in_risk/')
+@login_required
+def all_subject_for_schools_in_risk():
+    subject_array = []
+    for subject in ["Математика", "Русский язык"]:
+        subject_array.append({'id': dbase.get_subject_id(subject), 'name': subject})
+    return jsonify({'subjects': subject_array})
+
+
+
+@app.route('/sbj_by_oo_for_schools_in_risk/<id_oo>/<parallel>')
+@login_required
+def sbj_by_oo_for_schools_in_risk(id_oo, parallel):
+    id_oo_parallel = int(parallel)
+    parallel = dbase.get_parallel_by_id_oo_parallels(id_oo_parallel)
+
+    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
+                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
+                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
+                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
+                                  "sch226065"],
+                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
+                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
+                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
+                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
+                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
+               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
+                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
+                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
+                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
+                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
+                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
+    oo_login = dbase.get_school_login(id_oo=id_oo)
+    parallels_array = []
+
+    for sbj in schools[parallel]:
+        if oo_login in schools[parallel][sbj]:
+            id_oo_parallels_subjects = dbase.get_id_oo_parallels_subjects(
+                id_oo_parallels=id_oo_parallel,
+                id_subjects=dbase.get_subject_id(sbj))
+
+            parallels_array.append({'id': id_oo_parallels_subjects, 'name': sbj})
+
+    return jsonify({'subjects': parallels_array})
+
+
+@app.route('/sbj_by_district_for_schools_in_risk/<id_district>/<parallel>')
+@login_required
+def sbj_by_district_for_schools_in_risk(id_district, parallel):
+    parallel = int(parallel)
+    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
+                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
+                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
+                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
+                                  "sch226065"],
+                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
+                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
+                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
+                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
+                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
+               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
+                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
+                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
+                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
+                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
+                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
+
+    oo_array = dbase.get_oo_by_district_for_schools_in_risk(id_district=id_district,
+                                                            id_user=current_user.get_id())
+    sbj_array = []
+    for oo in oo_array:
+        oo_login = dbase.get_school_login(id_oo=oo[0])
+        for sbj in schools[parallel]:
+            if oo_login in schools[parallel][sbj]:
+                if {'id': dbase.get_subject_id(sbj), 'name': sbj} not in sbj_array:
+                    sbj_array.append({'id': dbase.get_subject_id(sbj), 'name': sbj})
+    return jsonify({'subjects': sbj_array})
+
+
+
 
 @app.route("/vpr_analysis", methods=["POST", "GET"])
 @login_required
 def vpr_analysis():
     if request.method == "POST":
 
-        report = Report(request=request.get_json(), dbase=dbase, user=current_user)
+        report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
         return jsonify(report.get_report())
 
     return render_template('vpr_analysis.html', title="Аналитика ВПР")
@@ -103,7 +298,7 @@ def oo_by_name_of_the_settlement(id_district):
         oo_array.append({'id': "all", 'name': "Вся выборка"})
         return jsonify({'oo': oo_array})
     oo = dbase.get_oo_from_district(id_district, current_user.get_id())
-    if current_user.get_id_role() in {1, 2, 3}:
+    if current_user.get_id_role() in {1, 2, 3} and len(oo) > 1:
         oo_array.append({'id': "all", 'name': "Вся выборка"})
 
     for school in oo:
@@ -187,6 +382,11 @@ def index():
 @app.errorhandler(404)
 def pageNotFound(error):
     return render_template("page404.html", title="Страница не найдена"), 404
+
+
+@app.errorhandler(403)
+def page_not_allowed(error):
+    return "Недостаточно прав", 403
 
 
 @app.route("/login", methods=["POST", "GET"])

@@ -30,9 +30,9 @@ const roundlet = new Chart(round, {
 		  label: '# of Votes',
 		  data: [87, 639, 7],
 		  backgroundColor: [
-		          'rgb(125, 160, 250, 0.7)',
-			  'rgb(71, 71, 161, 0.7)',
-			  'rgb(121, 120, 233, 0.7)'
+		          'rgb(162, 206, 253, 0.7)',
+			  'rgb(28, 142, 230, 0.7)',
+			  'rgb(255, 102, 94, 0.7)'
 	          ],
 		  hoverOffset: 4
 	   }]
@@ -42,10 +42,8 @@ const roundlet = new Chart(round, {
 
 	    },
 	    radius: '90%',
-	    maintainAspectRatio: false,           
+	    maintainAspectRatio: false,
             responsive: true,
-
-
 	    plugins: {
 	       legend: {
 		display: true,
@@ -59,14 +57,13 @@ const roundlet = new Chart(round, {
 const roundletTwo = new Chart(roundTwo, {
         type: 'pie',
         data: {
-           labels: ['Городские', 'Сельские', 'Столица'],
+           labels: ['Городские', 'Сельские'],
            datasets: [{
                   label: '# of Votes',
-                  data: [222, 472, 39],
+                  data: [222, 472],
                   backgroundColor: [
-                          'rgb(125, 160, 250, 0.7)',
-                          'rgb(71, 71, 161, 0.7)',
-                          'rgb(121, 120, 233, 0.7)',
+			  'rgb(255, 102, 94, 0.7)',
+                          'rgb(28, 142, 230, 0.7)',
                   ],
                   hoverOffset: 4
            }]
@@ -173,10 +170,7 @@ var chart_2 = new Chart(testTwo, {
             label: 'Алтайский край',
             data: [],
             backgroundColor: [
-		'rgba(71, 71, 161, 0.7)',
-		'rgba(71, 71, 161, 0.7)',
-		'rgba(71, 71, 161, 0.7)',
-		'rgba(71, 71, 161, 0.7)',
+		'rgba(243, 121, 126, 0.7)',
             ],
             borderColor: [
                  'rgba(102, 133, 255, 1)',
@@ -267,3 +261,15 @@ xhr_chart_2.onreadystatechange = function() {
       chart_2.update();
 }
 };
+
+const header__hamburger = document.querySelector('.header__hamburger'),
+      menu = document.querySelector('.accordion-mobile'),
+      closeElem = document.querySelector('.accordion-mobile__close');
+
+header__hamburger.addEventListener('click', () => {
+	menu.classList.add('activeme');
+});
+
+closeElem.addEventListener('click', () => {
+	menu.classList.remove('activeme');
+});

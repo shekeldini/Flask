@@ -898,3 +898,145 @@ class Postgresql:
             return 0
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_districts_for_schools_in_risk(self, id_user):
+        try:
+            self._cur.execute(f"""SELECT id_district, district_name FROM district 
+                                    WHERE id_district in 
+                                        (SELECT id_district FROM name_of_the_settlement 
+                                            WHERE id_name_of_the_settlement in 
+                                            (SELECT id_name_of_the_settlement FROM oo WHERE oo_login = ANY('{{sch224188, sch224235, sch224332, sch220163, sch224143,
+                                                sch224313, sch220150, sch224362, sch224234, sch220175,
+                                                sch223763, sch226062, sch224259, sch220198, sch224199,
+                                                sch224263, sch220128, sch223615, sch224246, sch223953,
+                                                sch223197, sch224286, sch223646, sch224395, sch220161,
+                                                sch224361, sch226065, sch224353, sch226059, sch224397,
+                                                sch224238, sch223610, sch224208, sch224268, sch224205,
+                                                sch223687}}'::text[])
+                                            AND oo_login in (SELECT oo_login FROM users_oo_logins 
+                                                                        WHERE id_user = {id_user})));""")
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return 0
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_oo_by_district_for_schools_in_risk(self, id_district, id_user):
+
+        try:
+            self._cur.execute(f"""SELECT id_oo, oo_name FROM oo 
+                                    WHERE id_name_of_the_settlement in 
+                                        (SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district})
+                                    AND oo_login = ANY('{{sch224188, sch224235, sch224332, sch220163, sch224143,
+                                                sch224313, sch220150, sch224362, sch224234, sch220175,
+                                                sch223763, sch226062, sch224259, sch220198, sch224199,
+                                                sch224263, sch220128, sch223615, sch224246, sch223953,
+                                                sch223197, sch224286, sch223646, sch224395, sch220161,
+                                                sch224361, sch226065, sch224353, sch226059, sch224397,
+                                                sch224238, sch223610, sch224208, sch224268, sch224205,
+                                                sch223687}}'::text[])
+                                    AND oo_login in (SELECT oo_login FROM users_oo_logins 
+                                                                        WHERE id_user = {id_user});""")
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_school_login(self, id_oo):
+        try:
+            self._cur.execute(f"""SELECT oo_login FROM oo WHERE id_oo = {id_oo};""")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_parallel_by_id_oo_parallels(self, id_oo_parallels):
+        try:
+            self._cur.execute(f"SELECT parallel FROM oo_parallels WHERE id_oo_parallels = {id_oo_parallels}")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+            return None
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+
+    def get_schools_in_risk_for_oo(self, id_oo_parallels_subjects, id_oo_parallels):
+        try:
+            self._cur.execute(f"""
+            SELECT id_oo_parallels, 
+                max(mark_count) filter (where value = 2) as vpr_two, 
+                max(mark_count) filter (where value = 3) as vpr_three, 
+                max(mark_count) filter (where value = 4) as vpr_four, 
+                max(mark_count) filter (where value = 5) as vpr_five, 
+                l_s_two, l_s_three, l_s_four, l_s_five FROM 
+        (SELECT id_oo_parallels, value, COUNT(value) as mark_count FROM
+            (SELECT id_oo_parallels,sum_marks,
+                CASE WHEN sum_marks<mark_three THEN 2
+                    WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+                    WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+                    WHEN sum_marks>=mark_five THEN 5
+                    ELSE 0
+                END AS value
+                FROM (SELECT id_students, id_oo_parallels, sum_marks, mark_three, mark_four, mark_five  
+                FROM (SELECT id_students, id_oo_parallels, id_oo_parallels_subjects, SUM(mark) as sum_marks 
+                    FROM result_for_task 
+                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} AND id_oo_parallels = {id_oo_parallels}
+                    GROUP BY id_students, id_oo_parallels, id_oo_parallels_subjects) AS t1
+                LEFT JOIN 
+                    (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five 
+                    FROM oo_parallels_subjects 
+                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}) AS t2
+                USING (id_oo_parallels_subjects)) AS t3)
+            AS t4 GROUP BY value, id_oo_parallels ORDER BY (value)) AS vpr
+        
+        LEFT JOIN 
+            (SELECT id_oo_parallels, 
+                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 2) as l_s_two, 
+                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 3) as l_s_three, 
+                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 4) as l_s_four, 
+                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 5) as l_s_five FROM 
+            (SELECT id_oo_parallels, mark_for_last_semester, COUNT(mark_for_last_semester) AS mark_count_for_last_semester
+                FROM (SELECT DISTINCT id_oo_parallels, id_students, id_oo_parallels_subjects, mark_for_last_semester 
+                    FROM result_for_task 
+                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} AND id_oo_parallels = {id_oo_parallels}) 
+                    AS t1 GROUP BY id_oo_parallels, mark_for_last_semester) AS t2 GROUP BY id_oo_parallels) AS l_s
+            USING (id_oo_parallels)
+             GROUP BY id_oo_parallels, l_s_two, l_s_three, l_s_four, l_s_five;""")
+            res = self._cur.fetchone()
+            if res:
+                id_oo_parallels, vpr_two, vpr_three, vpr_four, vpr_five, l_s_two, l_s_three, l_s_four, l_s_five = res
+                school_name = self.get_oo_name_from_oo_parallels(id_oo_parallels)
+
+                vpr_two = vpr_two if vpr_two else 0
+                vpr_three = vpr_three if vpr_three else 0
+                vpr_four = vpr_four if vpr_four else 0
+                vpr_five = vpr_five if vpr_five else 0
+
+                l_s_two = l_s_two if l_s_two else 0
+                l_s_three = l_s_three if l_s_three else 0
+                l_s_four = l_s_four if l_s_four else 0
+                l_s_five = l_s_five if l_s_five else 0
+
+                vpr_results = {"2": vpr_two,
+                               "3": vpr_three,
+                               "4": vpr_four,
+                               "5": vpr_five}
+
+                last_semester_results = {"2": l_s_two,
+                                         "3": l_s_three,
+                                         "4": l_s_four,
+                                         "5": l_s_five}
+
+                return {"school_name": school_name,
+                        "vpr_results": vpr_results,
+                        "last_semester_results": last_semester_results,
+                        "count_of_students": vpr_two + vpr_three + vpr_four + vpr_five}
+            return {}
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
