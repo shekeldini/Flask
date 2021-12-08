@@ -36,13 +36,11 @@ class ComparisonOfRatings(BaseReport):
                     id_oo_parallels=self._parallel["id"])
 
                 percents_district = self._dbase.get_comparison_of_ratings_for_all_schools_in_district(
-                    id_user=self._user.get_id(),
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
                 percents_all = self._dbase.get_comparison_of_ratings_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
@@ -81,13 +79,11 @@ class ComparisonOfRatings(BaseReport):
                             "district": {}}
 
                 percents_district = self._dbase.get_comparison_of_ratings_for_all_schools_in_district(
-                    id_user=self._user.get_id(),
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
                 percents_all = self._dbase.get_comparison_of_ratings_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
@@ -119,7 +115,6 @@ class ComparisonOfRatings(BaseReport):
             if self._oo["id"] == "all":
                 percents = {"all_districts": {}}
                 percents_all = self._dbase.get_comparison_of_ratings_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 

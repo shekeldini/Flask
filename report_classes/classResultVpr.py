@@ -20,13 +20,11 @@ class ResultVpr(BaseReport):
                     id_oo_parallels=self._parallel["id"])
 
                 percents_district = self._dbase.get_result_vpr_for_all_school_in_district(
-                    id_user=self._user.get_id(),
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
@@ -39,7 +37,7 @@ class ResultVpr(BaseReport):
 
                 return {"table_settings": {
                     "titles": ['Группы участников', 'Кол-во участников', '2', '3', '4', '5', "Средняя отметка",
-                               "Качество обученности", "Успеваемость"],
+                               "Качество обученности, %", "Успеваемость, %"],
                     "fields": ["count_of_students", '2', '3', '4', '5', "mean_mark", "quality", "performance"],
                     "values": percents,
                     "district": self._district,
@@ -53,7 +51,6 @@ class ResultVpr(BaseReport):
                 percents["district"]["schools"] = {}
 
                 percents_district = self._dbase.get_result_vpr_for_all_school_in_district(
-                    id_user=self._user.get_id(),
                     id_district=self._district["id"],
                     id_subjects=self._subject["id"],
                     parallel=self._parallel["id"])
@@ -71,7 +68,6 @@ class ResultVpr(BaseReport):
                     percents["district"]["schools"][school_name] = school_percents
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
@@ -82,7 +78,7 @@ class ResultVpr(BaseReport):
 
                 return {"table_settings": {
                     "titles": ['Группы участников', 'Кол-во участников', '2', '3', '4', '5', "Средняя отметка",
-                               "Качество обученности", "Успеваемость"],
+                               "Качество обученности, %", "Успеваемость, %"],
                     "fields": ["count_of_students", '2', '3', '4', '5', "mean_mark", "quality", "performance"],
                     "values": percents,
                     "district": self._district,
@@ -96,16 +92,13 @@ class ResultVpr(BaseReport):
                 percents["all_districts"]["districts"] = {}
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._subject["id"],
                     parallel=self._parallel["id"])
 
-                for id_district, district_name in self._dbase.get_district_for_report_type_2(id_user=self._user.get_id(),
-                                                                                             id_subjects=self._subject[
+                for id_district, district_name in self._dbase.get_district_for_report_type_2(id_subjects=self._subject[
                                                                                                  "id"],
                                                                                              parallel=self._parallel["id"]):
                     percents_district = self._dbase.get_result_vpr_for_all_school_in_district(
-                        id_user=self._user.get_id(),
                         id_district=id_district,
                         id_subjects=self._subject["id"],
                         parallel=self._parallel["id"])
@@ -115,7 +108,7 @@ class ResultVpr(BaseReport):
 
                 return {"table_settings": {
                     "titles": ['Группы участников', 'Кол-во участников', '2', '3', '4', '5', "Средняя отметка",
-                               "Качество обученности", "Успеваемость"],
+                               "Качество обученности, %", "Успеваемость, %"],
                     "fields": ["count_of_students", '2', '3', '4', '5', "mean_mark", "quality", "performance"],
                     "values": percents,
                     "district": self._district,

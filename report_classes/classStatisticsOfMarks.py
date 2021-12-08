@@ -26,13 +26,11 @@ class StatisticsOfMarks(BaseReport):
                     id_oo_parallels=self._parallel["id"])
 
                 percents_district, count_of_all_students_district = self._dbase.get_count_students_mark_for_all_school_in_district(
-                    id_user=self._user.get_id(),
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
@@ -76,13 +74,11 @@ class StatisticsOfMarks(BaseReport):
                 count_of_all_students = {"all_districts": {},
                                          "district": {}}
                 percents_district, count_of_all_students_district = self._dbase.get_count_students_mark_for_all_school_in_district(
-                    id_user=self._user.get_id(),
                     id_district=self._district["id"],
                     id_subjects=self._subject["id"],
                     parallel=self._parallel["id"])
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"])
 
@@ -122,7 +118,6 @@ class StatisticsOfMarks(BaseReport):
                 count_of_all_students = {"all_districts": {}}
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
-                    id_user=self._user.get_id(),
                     id_subjects=self._subject["id"],
                     parallel=self._parallel["id"])
 

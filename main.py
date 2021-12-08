@@ -62,7 +62,7 @@ def close_db(error):
 @app.route("/school_in_risk", methods=["POST", "GET"])
 @login_required
 def school_in_risk():
-    if current_user.get_id_role() not in (1, 2):
+    if current_user.get_id_role() not in (1, 2, 3):
         return abort(403)
     if request.method == "POST":
         report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
@@ -75,7 +75,7 @@ def districts_for_school_in_risk():
     districts = dbase.get_districts_for_schools_in_risk(current_user.get_id())
     district_array = []
     if current_user.get_id_role() in {1, 2}:
-        district_array.append({'id': "all", 'name': "Вся выборка"})
+        district_array.append({'id': "all", 'name': "Все муниципалитеты"})
 
     for district in districts:
         district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
@@ -88,12 +88,12 @@ def districts_for_school_in_risk():
 def oo_for_schools_in_risk(id_district):
     oo_array = []
     if id_district == "all":
-        oo_array.append({'id': "all", 'name': "Вся выборка"})
+        oo_array.append({'id': "all", 'name': "Все ОО"})
         return jsonify({'oo': oo_array})
     oo = dbase.get_oo_by_district_for_schools_in_risk(id_district=id_district,
                                                       id_user=current_user.get_id())
     if current_user.get_id_role() in {1, 2, 3} and len(oo) > 1:
-        oo_array.append({'id': "all", 'name': "Вся выборка"})
+        oo_array.append({'id': "all", 'name': "Все ОО"})
 
     for school in oo:
         oo_obj = {'id': school[0], 'name': school[1]}
@@ -283,7 +283,7 @@ def get_districts():
     districts = dbase.get_districts(current_user.get_id())
     district_array = []
     if current_user.get_id_role() in {1, 2}:
-        district_array.append({'id': "all", 'name': "Вся выборка"})
+        district_array.append({'id': "all", 'name': "Все муниципалитеты"})
 
     for district in districts:
         district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
@@ -295,11 +295,11 @@ def get_districts():
 def oo_by_name_of_the_settlement(id_district):
     oo_array = []
     if id_district == "all":
-        oo_array.append({'id': "all", 'name': "Вся выборка"})
+        oo_array.append({'id': "all", 'name': "Все ОО"})
         return jsonify({'oo': oo_array})
     oo = dbase.get_oo_from_district(id_district, current_user.get_id())
     if current_user.get_id_role() in {1, 2, 3} and len(oo) > 1:
-        oo_array.append({'id': "all", 'name': "Вся выборка"})
+        oo_array.append({'id': "all", 'name': "Все ОО"})
 
     for school in oo:
         oo_obj = {'id': school[0], 'name': school[1]}

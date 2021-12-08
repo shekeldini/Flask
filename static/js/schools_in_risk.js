@@ -62,7 +62,7 @@ oo_select.onchange = function(){
                 });
 
 	}
-	else{
+	if(oo != "all"){
                 fetch('parallels_by_oo_for_schools_in_risk/' + oo).then(function(response){
                         response.json().then(function(data) {
                                 optionHTML = '';
@@ -81,7 +81,7 @@ parallel_select.onchange = function(){
         oo = oo_select.value;
         district = district_select.value;
 	parallel = parallel_select.value;
-        if (oo_select.value == "all" && district != "all"){
+        if (oo == "all" && district != "all"){
                  fetch('sbj_by_district_for_schools_in_risk/' + district + '/' + parallel).then(function(response){
                         response.json().then(function(data) {
                                 optionHTML = '';
@@ -105,7 +105,7 @@ parallel_select.onchange = function(){
                 });
 
 	}
-	else{
+	if (oo != "all"){
                 fetch('sbj_by_oo_for_schools_in_risk/' + oo + '/' + parallel).then(function(response){
                         response.json().then(function(data) {
                                 optionHTML = '';
@@ -120,17 +120,22 @@ parallel_select.onchange = function(){
 };
 
 function draw_report(json_data){
-        let content_text = json_data.plot_settings.content;
-        let sub_content = json_data.plot_settings.sub_content
-        let title_text = json_data.plot_settings.title;
-        let x_axis = json_data.plot_settings.x_axis;
-        let y_axis = json_data.plot_settings.y_axis;
-        draw_report_type_3(json_data, content_text, sub_content, title_text, x_axis, y_axis)
-	createTable_type_3(json_data)
+	if (json_data.type == "oo"){
+		let content_text = json_data.plot_settings.content;
+	        let sub_content = json_data.plot_settings.sub_content
+       		let title_text = json_data.plot_settings.title;
+        	let x_axis = json_data.plot_settings.x_axis;
+        	let y_axis = json_data.plot_settings.y_axis;
+        	draw_report_type_3_for_oo(json_data, content_text, sub_content, title_text, x_axis, y_axis);
+		createTable_type_3_for_oo(json_data);
+	}
+	if (json_data.type == "district"){
+		createTable_type_3_for_district(json_data);
+	}
 };
 
 
-function draw_report_type_3(json_data, content_text, sub_content_list, title_text, x_axis, y_axis){
+function draw_report_type_3_for_oo(json_data, content_text, sub_content_list, title_text, x_axis, y_axis){
   let body = document.getElementById('report_place');
   let section = document.createElement('section');
   section.className = "TwoPage";
@@ -246,7 +251,7 @@ function draw_report_type_3(json_data, content_text, sub_content_list, title_tex
   return plot;
 };
 
-function createTable_type_3(jsonObj){
+function createTable_type_3_for_oo(jsonObj){
   let fieldTitles = jsonObj.table_settings.titles;
   let fields = jsonObj.table_settings.fields;
 
@@ -260,10 +265,13 @@ function createTable_type_3(jsonObj){
   let tbdy = document.createElement('tbody');
 
   var tr = document.createElement('tr');
+  for (var i=0; i<3; i++){
+         var td = document.createElement('td');
+         td.rowSpan = "2";
+         td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
+         tr.appendChild(td);
 
-  var td = document.createElement('td');
-  td.colSpan = "3"
-  tr.appendChild(td);
+  }
 
   var td = document.createElement('td');
   td.colSpan = "4"
@@ -278,20 +286,21 @@ function createTable_type_3(jsonObj){
   tbdy.appendChild(tr);
 
   var tr = document.createElement('tr');
-  fieldTitles.forEach((fieldTitle) => {
-    var td = document.createElement('td');
-    td.appendChild(document.createTextNode(fieldTitle));
-    tr.appendChild(td);
-  });
+  for (var i=3; i<jsonObj.table_settings.titles.length; i++){
+         var td = document.createElement('td');
+         td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
+         tr.appendChild(td);
+
+  }
   tbdy.appendChild(tr);
   var tr = document.createElement('tr');
 
   var td = document.createElement('td');
-  td.appendChild(document.createTextNode($( "#district option:selected" ).text()));
+  td.appendChild(document.createTextNode(jsonObj.values.district_name));
   tr.appendChild(td);
 
   var td = document.createElement('td');
-  td.appendChild(document.createTextNode($( "#oo option:selected" ).text()));
+  td.appendChild(document.createTextNode(jsonObj.values.school_name));
   tr.appendChild(td);
 
   var td = document.createElement('td');
@@ -313,6 +322,59 @@ function createTable_type_3(jsonObj){
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
   body.appendChild(div);
+  return tbl;
+};
+
+
+function createTable_type_3_for_district(jsonObj){
+  let fieldTitles = jsonObj.table_settings.titles;
+  let body = document.getElementById('report_place');
+  let section = document.createElement('section');
+  section.className = "TwoPage";
+  section.id = "report_section";
+  let container = document.createElement('div');
+  container.className = "container";
+  container.id = "report_container";
+
+  let div = document.createElement('div');
+  div.className = "TwoPage__wrapper";
+  let title = document.createElement('h3');
+  title.className = "TwoPage__wrapper_title";
+  let text = document.createTextNode(jsonObj.table_settings.content);
+  let tbl = document.createElement('table');
+  let thr = document.createElement('tr');
+  let tbdy = document.createElement('tbody');
+  var tr = document.createElement('tr');
+
+  fieldTitles.forEach((fieldTitle) => {
+  	var td = document.createElement('td');
+	td.appendChild(document.createTextNode(fieldTitle));
+  	tr.appendChild(td);
+  });
+  tbdy.appendChild(tr);
+
+  for([key, school_list] of Object.entries(jsonObj.values)){
+        for (school of school_list){
+        var tr = document.createElement('tr');
+
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(key));
+                tr.appendChild(td);
+
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(school));
+                tr.appendChild(td);
+	        tbdy.appendChild(tr);
+        }
+  }
+
+  title.appendChild(text);
+  div.appendChild(title);
+  tbl.appendChild(tbdy);
+  div.appendChild(tbl);
+  container.appendChild(div);
+  section.appendChild(container);
+  body.appendChild(section);
   return tbl;
 };
 
