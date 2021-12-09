@@ -17,6 +17,7 @@ MAX_CONTENT_LENGTH = 1024 * 1024
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config["UPLOAD_FOLDER"] = "download"
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = "Авторизируйтесь для доступа к закрытым страницам"
@@ -68,15 +69,6 @@ def download(filename):
     return send_from_directory(directory=uploads, path=filename, as_attachment=True)
 
 
-@app.route("/test", methods=["POST", "GET"])
-@login_required
-def test():
-    if current_user.get_id_role() != 1:
-        return abort(403)
-    return render_template('test.html')
-
-
-
 @app.route("/school_in_risk", methods=["POST", "GET"])
 @login_required
 def school_in_risk():
@@ -86,6 +78,7 @@ def school_in_risk():
         report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
         return jsonify(report.get_report())
     return render_template('school_in_risk.html', title="Школы в зоне риска")
+
 
 @app.route("/districts_for_schools_in_risk")
 @login_required
@@ -99,7 +92,6 @@ def districts_for_school_in_risk():
         district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
         district_array.append(district_obj)
     return jsonify({'districts': district_array})
-
 
 @app.route('/oo_for_schools_in_risk/<id_district>')
 @login_required

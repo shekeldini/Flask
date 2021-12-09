@@ -11,10 +11,15 @@ fetch('districts_for_schools_in_risk').then(function(response){
                                 optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
                         }
                         district_select.innerHTML = optionHTML;
-                        district_select.value = "";
+			if (district_select.length == 1){
+				district_select.defaultSelected = district_select[0];
+				district_select.onchange();
+			}
+			else{
+				district_select.value = "";
+			}
                 });
 });
-
 
 
 district_select.onchange = function(){
@@ -28,7 +33,14 @@ district_select.onchange = function(){
                                 optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
                         }
                         oo_select.innerHTML = optionHTML;
-                        oo_select.value = "";
+			if (oo_select.length == 1){
+                                oo_select.defaultSelected = oo_select[0];
+                                oo_select.onchange();
+                        }
+                        else{
+                                 oo_select.value = "";
+                        }
+
                 });
         });
 };
@@ -288,6 +300,9 @@ function createTable_type_3_for_oo(jsonObj){
   var tr = document.createElement('tr');
   for (var i=3; i<jsonObj.table_settings.titles.length; i++){
          var td = document.createElement('td');
+	 td.style.textAlign = "center";
+	 td.style.paddingLeft = "5px";
+
          td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
          tr.appendChild(td);
 

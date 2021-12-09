@@ -11,7 +11,15 @@ fetch('get_districts').then(function(response){
                                 optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
                         }
                         district_select.innerHTML = optionHTML;
-                        district_select.value = "";
+
+                        if (district_select.length == 1){
+                                district_select.defaultSelected = district_select[0];
+                                district_select.onchange();
+                        }
+                        else{
+                                district_select.value = "";
+                        }
+
                 });
 });
 
@@ -30,7 +38,15 @@ district_select.onchange = function(){
                                 optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
                         }
                         oo_select.innerHTML = optionHTML;
-                        oo_select.value = "";
+
+                        if (oo_select.length == 1){
+                                oo_select.defaultSelected = oo_select[0];
+                                oo_select.onchange();
+                        }
+                        else{
+                                 oo_select.value = "";
+                        }
+
                 });
         });
 };
@@ -618,6 +634,38 @@ function createTable_type_2(jsonObj){
   let thr = document.createElement('tr');
   let tbdy = document.createElement('tbody');
   var tr = document.createElement('tr');
+  let description_div = document.createElement('div');
+  description_div.className = "table-wrapper";
+  let quality_p = document.createElement('p');
+  quality_p.appendChild(document.createTextNode("Качество обученности – это совокупность фактического запаса знаний по предметам, сформированность предметных умений и умений учиться."));
+  quality_p.className = "table-wrapper__descr";
+  let quality_div = document.createElement('div');
+  quality_div.appendChild(document.createTextNode("Качество обученности = "));
+  quality_div.className = "table-wrapper__calc";
+  let quality_span = document.createElement('span');
+  quality_span.appendChild(document.createTextNode('(кол-во "5" + кол-во "4") / общее количество учащихся'));
+  quality_div.appendChild(quality_span);
+
+  let performance_p = document.createElement('p');
+  performance_p.appendChild(document.createTextNode("Успеваемость указывает на общее число учеников с положительными отметками."));
+  performance_p.className = "table-wrapper__descr";
+  let performance_div = document.createElement('div');
+  performance_div.appendChild(document.createTextNode("Успеваемость = "));
+  performance_div.className = "table-wrapper__calc";
+  let performance_span = document.createElement('span');
+  performance_span.appendChild(document.createTextNode('(кол-во "5" + кол-во "4" + кол-во "3") / общее количество учащихся'));
+  performance_div.appendChild(performance_span);
+
+  let description_title = document.createElement('h3');
+  description_title.appendChild(document.createTextNode('Методика расчета:'));
+
+  description_div.appendChild(description_title);
+  description_div.appendChild(quality_p);
+  description_div.appendChild(quality_div);
+  description_div.appendChild(performance_p);
+  description_div.appendChild(performance_div);
+
+
   for (var i=0; i<2; i++){
 	 var td = document.createElement('td');
  	 td.rowSpan = "2";
@@ -641,6 +689,9 @@ function createTable_type_2(jsonObj){
   var tr = document.createElement('tr');
   for (var i=2; i<6; i++){
          var td = document.createElement('td');
+         td.style.textAlign = "center";
+         td.style.paddingLeft = "5px";
+
          td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
          tr.appendChild(td);
 
@@ -721,6 +772,7 @@ function createTable_type_2(jsonObj){
   div.appendChild(title);
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
+  div.appendChild(description_div);
   container.appendChild(div);
   section.appendChild(container);
   body.appendChild(section);
