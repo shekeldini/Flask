@@ -87,6 +87,7 @@ body {
   justify-content: center;
   flex-direction: row;
   align-items: flex-start;
+  min-height: 100vh;
 }
 
 .wrapper__left {
@@ -208,6 +209,7 @@ body {
 
 .wrapper__right {
   margin-top: 130px;
+  margin-bottom: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -630,7 +632,8 @@ form label {
 
 .TwoPage__wrapper table td:first-child {
   text-align: left;
-padding-left: 20px;
+  padding-left: 20px;
+}
 }
 
 .TwoPage__wrapper table tr {
@@ -747,7 +750,45 @@ padding-left: 20px;
     font-family: "Roboto", sans-serif;
     font-weight: 400;
     display: none;
- }
+}
+
+.risk-message {
+border: 1px solid #cebbbd;
+    padding: 7px;
+    background: #fff6f5;
+    color: #af341c;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    display: none;
+
+}
+
+.analysis-message {
+  border: 1px solid #cebbbd;
+    padding: 7px;
+    background: #fff6f5;
+    color: #af341c;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    display: none;
+
+}
+
+.risk-descr {
+  text-align: left;
+  font-size: 19px;
+  color: #243964;
+  margin-bottom: 20px;
+  font-family: 'Roboto', sans-serif;  
+}
 
 @media (max-width: 1800px) {
   .wrapper__center {
@@ -769,7 +810,8 @@ padding-left: 20px;
   }
   .wrapper__center_top_img {
     min-width: 730px;
-  }
+     padding-left: 5px;
+ }
   .wrapper__center_low_bar {
     width: 700px;
   }
@@ -987,6 +1029,18 @@ padding-left: 20px;
   }
 }
 
+@media (min-width: 800px) and (max-width: 1024px) {
+  form label {
+   width: 61%;
+  }
+  .steps {
+    padding-left: 10px;
+  }
+  .steps__btns {
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+}
 
 @media (min-width: 800px) and (max-width: 970px) {
   .other__wrapper .accordion__wrapper_item_link {
@@ -1082,10 +1136,10 @@ padding-left: 20px;
         margin-bottom: 5px;
     margin-top: 5px;
   }
- .accordion-mobile__close {
+  .accordion-mobile__close {
        overflow: visible;
   }
-.activeme {
+  .activeme {
     left: 0;
     visibility: visible;
     opacity: 1;
@@ -1095,6 +1149,41 @@ padding-left: 20px;
   }
 
 
+}
+
+@media (max-width: 692px) {
+  .footer__text {
+     margin-right: 0px;
+  }
+}
+
+@media (min-width: 569px) and (max-width: 692px) {
+  .TwoPage__wrapper table td:first-child {
+    padding-left: 0px;
+  }
+  .TwoPage__wrapper table td {
+    padding-left: 0px;
+  }
+} 
+
+@media (max-width: 568px) {
+  .TwoPage__wrapper table td:first-child {
+    padding-left: 0px;
+  }
+  .TwoPage__wrapper table td {
+    padding-left: 0px;
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 500px) and (max-width: 692px) {
+  form label {
+    width: 41%;
+  }
+  .steps__btns {
+    justify-content: center;
+    margin-bottom: 30px;
+  }
 }
 
 @media (min-width: 426px) and (max-width: 692px) {
@@ -1127,6 +1216,16 @@ padding-left: 20px;
   }
 }
 
+@media (min-width: 426px) and (max-width: 499px) {
+  form label {
+    width: 41%;
+  }
+  .steps__btns {
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+}
+
 @media (max-width: 425px) {
   .wrapper__center {
     max-width: 400px;
@@ -1152,10 +1251,10 @@ padding-left: 20px;
     height: 455px !important ;
   }
   .footer { 
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
   .footer__text {
-    margin-right: 30px;
+    margin-right: 0px;
   }
   form label {
     font-size: 15px;
@@ -1165,6 +1264,13 @@ padding-left: 20px;
   }
   .steps__btns {
     justify-content: center;
+    margin-bottom: 30px;
+  }
+  .risk {
+    display: none;
+  }
+  .risk-message {
+    display: block;
   }
 
 }
@@ -1172,6 +1278,18 @@ padding-left: 20px;
 @media (min-width: 376px) and (max-width: 401px) {
   .wrapper__center_low_bar {
     width: 370px;
+  }
+}
+
+@media (min-width: 376px) and (max-width: 397px) {
+  form label {
+    width: 48%;
+  }
+  .steps {
+    padding-left: 10px;
+  }
+  .steps__btns input {
+    width: 165px;
   }
 }
 
@@ -1209,13 +1327,16 @@ padding-left: 20px;
    margin-bottom: 10px;
   }
   .steps__btns input {
-    width: 155px;
+    width: 150px;
   }
   .steps select {
     width: 270px;
   }
   .mobile {
     display: none;
+  }
+  .analysis-message {
+    display:block;
   }
 
 }

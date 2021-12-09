@@ -60,6 +60,6 @@ class SchoolsInRisk(BaseReport):
                                                                               self._subject['name']])).replace("'", ""))
             return {"type": "district",
                     'table_settings': {
-                        'titles': ['Района', 'Название ОО'],
+                        'titles': ['Район', 'Название ОО'],
                         'content': 'Необъективные результаты ВПР'},
                     'values': res}

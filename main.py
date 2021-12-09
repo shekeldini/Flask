@@ -1,5 +1,6 @@
 import psycopg2
-from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response, jsonify
+import os
+from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response, jsonify, send_from_directory
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from classUserLogin import UserLogin
@@ -15,7 +16,7 @@ MAX_CONTENT_LENGTH = 1024 * 1024
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-
+app.config["UPLOAD_FOLDER"] = "download"
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = "Авторизируйтесь для доступа к закрытым страницам"
@@ -58,6 +59,23 @@ def before_request():
 def close_db(error):
     if hasattr(g, "link_db"):
         g.link_db.close()
+
+
+@app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
+@login_required
+def download(filename):
+    uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
+    return send_from_directory(directory=uploads, path=filename, as_attachment=True)
+
+
+@app.route("/test", methods=["POST", "GET"])
+@login_required
+def test():
+    if current_user.get_id_role() != 1:
+        return abort(403)
+    return render_template('test.html')
+
+
 
 @app.route("/school_in_risk", methods=["POST", "GET"])
 @login_required

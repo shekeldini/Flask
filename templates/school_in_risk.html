@@ -8,6 +8,12 @@
         <section class="onePage">
             <div class="container">
                 <h1>Всероссийские проверочные работы</h1>
+		<div class="risk-descr">
+		Необъективность результатов ВПР характеризует долю участников 
+		этой оценочной процедуры, находящихся в зоне риска за счет того, 
+		что в их ОО обнаружены признаки необъективности результатов 
+		согласно методике, предоставленной ФИОКО [ссылка]
+		</div>
                         <form action="" method="post" class="form-contact" id="vpr_form">
                                 <div class="steps">
                                         <label for="district">Муниципалитет</label>
@@ -34,14 +40,16 @@
                                 <input class="bnt" id="submit_btn" name="submit_btn" type="button" value="Показать">
                                 <input class="btn" id="clear_btn" name="clear_btn" type="button" value="Сброс">
                         </div>
+
+			<div class="risk-message">Поверните экран для отображения отчета</div>
                 </div>
         </section>
-        <section id="report_place">
+        <section class="risk" id="report_place">
 
         </section>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 <script src="{{ url_for('static', filename='js/schools_in_risk.js')}}"></script>
-
+<script src="{{ url_for('static', filename='js/hamburger.js')}}"></script>
 {% endblock %}
