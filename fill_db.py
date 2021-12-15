@@ -16,9 +16,11 @@ class FillDb(Postgresql):
 
     def create_index_on_result_for_task(self):
         self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels );")
+
     def get_id_organizational_and_legal_form(self, type_of_organizational_and_legal_form):
         try:
-            type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
+            type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_') \
+                .replace('-', '_').replace(',', '').replace('_(', '(')
             self._cur.execute(
                 f"SELECT id_organizational_and_legal_form FROM organizational_and_legal_form WHERE "
                 f"type_of_organizational_and_legal_form = '{type_}'")
@@ -101,8 +103,8 @@ class FillDb(Postgresql):
         try:
             if description is None:
                 description = "4.Нет_данных"
-            description = description[2:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(',
-                                                                                                               '(')
+            description = description[2:].strip().replace(' ', '_') \
+                .replace('-', '_').replace(',', '').replace('_(', '(')
             self._cur.execute(
                 f"SELECT id_count_of_parents_ready_to_help FROM count_of_parents_ready_to_help WHERE description = '{description}'")
             res, = self._cur.fetchone()
@@ -117,8 +119,8 @@ class FillDb(Postgresql):
         try:
             if description is None:
                 description = "5. Нет_данных"
-            description = description[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(',
-                                                                                                               '(')
+            description = description[3:].strip().replace(' ', '_') \
+                .replace('-', '_').replace(',', '').replace('_(', '(')
             self._cur.execute(
                 f"SELECT id_regular_transport_link FROM regular_transport_link WHERE description = '{description}'")
             res, = self._cur.fetchone()
@@ -133,8 +135,8 @@ class FillDb(Postgresql):
         try:
             if description is None:
                 description = "5. Нет_данных"
-            description = description[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(',
-                                                                                                               '(')
+            description = description[3:].strip().replace(' ', '_') \
+                .replace('-', '_').replace(',', '').replace('_(', '(')
             self._cur.execute(
                 f"SELECT id_frequency_of_regular_transport_link FROM frequency_of_regular_transport_link WHERE description = '{description}'")
             res, = self._cur.fetchone()
@@ -149,8 +151,9 @@ class FillDb(Postgresql):
         try:
             if description is None:
                 description = "5. Нет_данных"
-            description = description[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(',
-                                                                                                               '(')
+            description = description[3:].strip().replace(' ', '_') \
+                .replace('-', '_').replace(',', '').replace('_(',
+                                                            '(')
             self._cur.execute(
                 f"SELECT id_possibility_to_get_to_the_oo_by_public_transport FROM possibility_to_get_to_the_oo_by_public_transport WHERE description = '{description}'")
             res, = self._cur.fetchone()
@@ -165,7 +168,8 @@ class FillDb(Postgresql):
         try:
             if interval is None:
                 interval = "5. Нет даннных"
-            interval = interval[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
+            interval = interval[3:].strip().replace(' ', '_') \
+                .replace('-', '_').replace(',', '').replace('_(', '(')
             self._cur.execute(
                 f"SELECT id_the_involvement_of_students_in_additional_education FROM the_involvement_of_students_in_additional_education WHERE interval = '{interval}'")
             res, = self._cur.fetchone()
@@ -187,7 +191,6 @@ class FillDb(Postgresql):
             return res
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
-
 
     def get_id_subjects(self, subject_name):
         try:
@@ -339,8 +342,8 @@ class FillDb(Postgresql):
     def find_oo_location_type_id_by_location_type(self, location_type):
         try:
             location_type = location_type[2:]
-            location_type = location_type.strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(',
-                                                                                                               '(')
+            location_type = location_type.strip().replace(' ', '_') \
+                .replace('-', '_').replace(',', '').replace('_(', '(')
             self._cur.execute(
                 f"SELECT id_oo_location_type FROM oo_location_type WHERE location_type = '{location_type}'")
             res, = self._cur.fetchone()
@@ -382,7 +385,6 @@ class FillDb(Postgresql):
             print("Таблица name_of_the_settlement заполненна ")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
-
 
     def fill_organizational_and_legal_form(self):
         try:
@@ -1201,41 +1203,56 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
+    def fill_kt(self):
+        try:
+            parallels = glob("excel/Описание_работ/*")
+
+            for p in parallels:
+                parallel = int(p.replace("excel/Описание_работ\\", ""))
+                subjects = glob(p + "/*")
+                for s in subjects:
+                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
+
+        except psycopg2.Error as e:
+            print("Ошибка при заполнении БД " + str(e))
+
+
 psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
-#psql.dropAllTables()
-#psql.createTables()
-#psql.fill_district()
-#psql.fill_oo_location_type()
-#psql.fill_name_of_the_settlement()
-#psql.fill_organizational_and_legal_form()
-#psql.fill_oo_logins()
-#psql.fill_population_of_the_settlement()
-#psql.fill_internet_speed()
-#psql.fill_the_involvement_of_students_in_additional_education()
-#psql.fill_count_of_parents_attending_events()
-#psql.fill_count_of_parents_ready_to_help()
-#psql.fill_regular_transport_link()
-#psql.fill_frequency_of_regular_transport_link()
-#psql.fill_possibility_to_get_to_the_oo_by_public_transport()
-#psql.fill_oo()
-#psql.fill_duration_of_refresher_courses()
-#psql.fill_completed_advanced_training_courses_for_teachers()
-#psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
-#psql.fill_description_of_career_guidance()
-#psql.fill_oo_description_of_career_guidance()
-#psql.fill_levels_of_the_educational_program()
-#psql.fill_oo_levels_of_the_educational_program()
-#psql.fill_percentage_of_parents_attending_parentteacher_meeting()
-#psql.fill_parallels()
-#psql.fill_oo_parallels()
-#psql.fill_subjects()
-#psql.fill_textbooks()
-#psql.fill_classes()
-#psql.fill_classes_textbooks()
-#psql.fill_students()
-#psql.fill_oo_parallels_subjects()
-#psql.fill_result_for_task()
-#psql.create_index_on_result_for_task()
-#psql.create_roles()
-psql.create_users()
-psql.fill_users_oo_logins()
+# psql.dropAllTables()
+# psql.createTables()
+# psql.fill_district()
+# psql.fill_oo_location_type()
+# psql.fill_name_of_the_settlement()
+# psql.fill_organizational_and_legal_form()
+# psql.fill_oo_logins()
+# psql.fill_population_of_the_settlement()
+# psql.fill_internet_speed()
+# psql.fill_the_involvement_of_students_in_additional_education()
+# psql.fill_count_of_parents_attending_events()
+# psql.fill_count_of_parents_ready_to_help()
+# psql.fill_regular_transport_link()
+# psql.fill_frequency_of_regular_transport_link()
+# psql.fill_possibility_to_get_to_the_oo_by_public_transport()
+# psql.fill_oo()
+# psql.fill_duration_of_refresher_courses()
+# psql.fill_completed_advanced_training_courses_for_teachers()
+# psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
+# psql.fill_description_of_career_guidance()
+# psql.fill_oo_description_of_career_guidance()
+# psql.fill_levels_of_the_educational_program()
+# psql.fill_oo_levels_of_the_educational_program()
+# psql.fill_percentage_of_parents_attending_parentteacher_meeting()
+# psql.fill_parallels()
+# psql.fill_oo_parallels()
+# psql.fill_subjects()
+# psql.fill_textbooks()
+# psql.fill_classes()
+# psql.fill_classes_textbooks()
+# psql.fill_students()
+# psql.fill_oo_parallels_subjects()
+# psql.fill_result_for_task()
+# psql.create_index_on_result_for_task()
+# psql.create_roles()
+# psql.create_users()
+# psql.fill_users_oo_logins()
+psql.fill_kt()
