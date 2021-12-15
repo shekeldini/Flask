@@ -44,11 +44,12 @@
     
                     {% if current_user.is_authenticated %}
                             <a href="{{ url_for('logout') }}">
+			    <i class="mdi mdi-logout"></i>
                     {% else %}
                             <a href="{{ url_for('login') }}">
+		            <i class="mdi mdi-account-circle"></i>
                     {% endif %}
     
-                    <i class="mdi mdi-account-circle"></i>
                 </a>
             </div>
         </div>

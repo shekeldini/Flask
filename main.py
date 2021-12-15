@@ -66,7 +66,7 @@ def close_db(error):
 @login_required
 def download(filename):
     uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
-    return send_from_directory(directory=uploads, path=filename, as_attachment=True)
+    return send_from_directory(directory=uploads, path=filename)
 
 
 @app.route("/school_in_risk", methods=["POST", "GET"])
