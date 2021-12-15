@@ -154,7 +154,7 @@ function draw_report_type_3_for_oo(json_data, content_text, sub_content_list, ti
   section.className = "TwoPage";
   section.id = "report_section";
   let container = document.createElement('div');
-  container.className = "container";
+  container.className = "container_report";
   container.id = "report_container";
   let div =  document.createElement('div');
   div.className = "report_place_border";
@@ -354,7 +354,7 @@ function createTable_type_3_for_district(jsonObj){
   section.className = "TwoPage";
   section.id = "report_section";
   let container = document.createElement('div');
-  container.className = "container";
+  container.className = "container_report";
   container.id = "report_container";
 
   let div = document.createElement('div');

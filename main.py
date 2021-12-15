@@ -68,6 +68,13 @@ def download(filename):
     return send_from_directory(directory=uploads, path=filename)
 
 
+
+@app.route("/task_descr", methods=["POST", "GET"])
+@login_required
+def task_descr():
+    return render_template('task_descr.html', title="Описание заданий")
+
+
 @app.route("/school_in_risk", methods=["POST", "GET"])
 @login_required
 def school_in_risk():

@@ -470,6 +470,11 @@ body {
   margin: 0 auto;
 }
 
+.container_report {
+  max-width: 1200px;
+  margin: 0 auto;
+
+}
 .onePage__low {
   display: flex;
   justify-content: space-between;
@@ -544,11 +549,12 @@ h1 {
 }
 
 .steps__btns input {
+  cursor: pointer;
   margin-right: 20px;
   width: 175px;
   height: 45px;
   border-radius: 5px;
-  background-color: #0e448e;
+  background: #0e448e;
   border: none;
   font-size: 18px;
   font-family: 'Roboto', sans-serif;
@@ -556,16 +562,15 @@ h1 {
   color: #ffffff;
 }
 
-}
 .steps__btns input:last-child {
   margin-right: 0;
 }
 
-}
 .steps__btns input:hover,
-.steps__btns button:focus {
+.steps__btns input:focus {
   background: #192f8f;
   transition: 0.2s all;
+
 }
 
 .steps select {
@@ -1382,7 +1387,7 @@ border: 1px solid #cebbbd;
   .steps {
     padding-left: 10px;
   }
-  .steps__btns input {
+  .steps__btns input.steps__btns input {
     width: 165px;
   }
 }
@@ -1420,7 +1425,7 @@ border: 1px solid #cebbbd;
    text-align: center;
    margin-bottom: 10px;
   }
-  .steps__btns input {
+  .steps__btns input.steps__btns input {
     width: 150px;
   }
   .steps select {

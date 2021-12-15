@@ -139,7 +139,7 @@ function draw_report_type_0(json_data){
   section.className = "TwoPage";
   section.id = "report_section";
   let container = document.createElement('div');
-  container.className = "container";
+  container.className = "container_report";
   container.id = "report_container";
   let div =  document.createElement('div');
   div.className = "report_place_border";
@@ -343,7 +343,7 @@ function draw_report_type_1_all(json_data, content_text, title_text, x_axis, y_a
   section.className = "TwoPage";
   section.id = "report_section";
   let container = document.createElement('div');
-  container.className = "container";
+  container.className = "container_report";
   container.id = "report_container";
   let div =  document.createElement('div');
   div.className = "report_place_border";
@@ -464,7 +464,7 @@ function draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis,
         section.className = "TwoPage";
         section.id = "report_section_" + index;
         let container = document.createElement('div');
-        container.className = "container";
+        container.className = "container_report";
         container.id = "report_container_" + index;
         let div =  document.createElement('div');
         div.className = "report_place_border";
@@ -632,7 +632,7 @@ function createTable_type_2(jsonObj){
   section.className = "TwoPage";
   section.id = "report_section";
   let container = document.createElement('div');
-  container.className = "container";
+  container.className = "container_report";
   container.id = "report_container";
 
   let div = document.createElement('div');
