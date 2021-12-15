@@ -263,6 +263,10 @@ function createTable_type_0(jsonObj) {
   div.className = "TwoPage__wrapper";
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
+
+  let btn = document.createElement('button');
+  btn.className = "upload mdi mdi-download";
+
   let text = document.createTextNode('Таблица результатов:');
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');
@@ -290,6 +294,7 @@ function createTable_type_0(jsonObj) {
   div.appendChild(title);
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
+  div.appendChild(btn);
   body.appendChild(div);
   return tbl;
 };
@@ -580,6 +585,10 @@ function createTable_type_1(jsonObj, key, index){
   div.className = "TwoPage__wrapper";
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
+
+  let btn = document.createElement('button');
+  btn.className = "upload mdi mdi-download";
+
   let text = document.createTextNode('Таблица результатов:');
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');
@@ -609,6 +618,7 @@ function createTable_type_1(jsonObj, key, index){
   div.appendChild(title);
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
+  div.appendChild(btn);
   body.appendChild(div);
   return tbl;
 };
@@ -629,6 +639,10 @@ function createTable_type_2(jsonObj){
   div.className = "TwoPage__wrapper";
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
+
+  let btn = document.createElement('button');
+  btn.className = "upload mdi mdi-download";
+
   let text = document.createTextNode(jsonObj.content);
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');
@@ -772,6 +786,7 @@ function createTable_type_2(jsonObj){
   div.appendChild(title);
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
+  div.appendChild(btn);
   div.appendChild(description_div);
   container.appendChild(div);
   section.appendChild(container);
@@ -816,22 +831,44 @@ $(document).ready(function(){
                         }
                 };
         $(".error").remove();
-        if (id_district == null){
-                $('#district').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        if (id_oo == null){
-                $('#oo').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        if (id_oo_parallels == null){
-                $('#parallel').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        if (id_oo_parallels_subjects == null){
-                $('#subject').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        if (id_report == null){
-                $('#report').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        else {
+	if(id_district == null || id_oo == null || id_oo_parallels == null || id_oo_parallels_subjects == null || id_report == null) {
+               if (id_district == null){
+                district_select.style.border = "2px solid red"
+               } else {
+                    district_select.style.border = "2px solid #7ecd7e"
+
+               }
+               if (id_oo == null){
+                       oo_select.style.border = "2px solid red"
+               } else {
+                    oo_select.style.border = "2px solid #7ecd7e"
+
+               }
+
+               if (id_oo_parallels == null){
+                       parallel_select.style.border = "2px solid red"
+               } else {
+                    parallel_select.style.border = "2px solid #7ecd7e"
+
+               }
+
+
+               if (id_oo_parallels_subjects == null){
+                       subject_select.style.border = "2px solid red"
+               } else {
+                    subject_select.style.border = "2px solid #7ecd7e"
+
+               }
+
+               if (id_report == null){
+                       report_select.style.border = "2px solid red"
+               } 
+        }else {
+		district_select.style.border = "";
+                oo_select.style.border = "";
+                parallel_select.style.border = "";
+                subject_select.style.border = "";
+                report_select.style.border = "";
                 $("#submit_btn").attr("disabled", true);
                 $.ajax({
                 type : 'POST',
@@ -860,7 +897,11 @@ $(document).ready(function(){
         $("#clear_btn").click(function(){
                 $(".error").remove();
                 $(".TwoPage").remove();
-
+		district_select.style.border = ""
+                oo_select.style.border = ""
+                parallel_select.style.border = ""
+                subject_select.style.border = ""
+                report_select.style.border = ""
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
                 report_select.innerHTML = "";

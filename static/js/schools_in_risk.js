@@ -93,6 +93,7 @@ parallel_select.onchange = function(){
         oo = oo_select.value;
         district = district_select.value;
 	parallel = parallel_select.value;
+
         if (oo == "all" && district != "all"){
                  fetch('sbj_by_district_for_schools_in_risk/' + district + '/' + parallel).then(function(response){
                         response.json().then(function(data) {
@@ -272,6 +273,10 @@ function createTable_type_3_for_oo(jsonObj){
   div.className = "TwoPage__wrapper";
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
+
+  let btn = document.createElement('button');
+  btn.className = "upload mdi mdi-download";
+
   let text = document.createTextNode(jsonObj.table_settings.content);
   let tbl = document.createElement('table');
   let tbdy = document.createElement('tbody');
@@ -336,6 +341,7 @@ function createTable_type_3_for_oo(jsonObj){
   div.appendChild(title);
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
+  div.appendChild(btn);
   body.appendChild(div);
   return tbl;
 };
@@ -355,10 +361,18 @@ function createTable_type_3_for_district(jsonObj){
   div.className = "TwoPage__wrapper";
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
+
+  let btn = document.createElement('button');
+  btn.className = "upload mdi mdi-download";
+
+
   let text = document.createTextNode(jsonObj.table_settings.content);
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');
   let tbdy = document.createElement('tbody');
+
+
+
   var tr = document.createElement('tr');
 
   fieldTitles.forEach((fieldTitle) => {
@@ -377,6 +391,8 @@ function createTable_type_3_for_district(jsonObj){
                 tr.appendChild(td);
 
                 var td = document.createElement('td');
+                td.style.textAlign = "left";
+	        td.style.paddingLeft = "20px";
                 td.appendChild(document.createTextNode(school));
                 tr.appendChild(td);
 	        tbdy.appendChild(tr);
@@ -387,6 +403,7 @@ function createTable_type_3_for_district(jsonObj){
   div.appendChild(title);
   tbl.appendChild(tbdy);
   div.appendChild(tbl);
+  div.appendChild(btn);
   container.appendChild(div);
   section.appendChild(container);
   body.appendChild(section);
@@ -430,19 +447,40 @@ $(document).ready(function(){
                         }
                 };
         $(".error").remove();
-        if (id_district == null){
-                $('#district').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        if (id_oo == null){
-                $('#oo').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        if (id_parallel == null){
-                $('#parallel').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        if (id_subject == null){
-                $('#subject').after('<span class="error">Это поле не может быть пустым</span>');
-        }
-        else {
+        if(id_district == null || id_oo == null || id_parallel == null || id_subject == null) {
+               if (id_district == null){
+                district_select.style.border = "2px solid red"
+
+	       } else {
+                    district_select.style.border = "2px solid #7ecd7e"
+
+               }
+	       if (id_oo == null){
+ 		oo_select.style.border = "2px solid red"
+
+               } else {
+                    oo_select.style.border = "2px solid #7ecd7e"
+
+               }
+	       if (id_parallel == null){
+		parallel_select.style.border = "2px solid red"
+
+               } else {
+                    parallel_select.style.border = "2px solid #7ecd7e"
+
+               }
+	       if (id_subject == null) {
+		subject_select.style.border = "2px solid red"
+
+               } else {
+                    subject_select.style.border = "2px solid #7ecd7e"
+
+               }
+        }else {
+		district_select.style.border = "";
+                oo_select.style.border = "";
+                parallel_select.style.border = "";
+                subject_select.style.border = "";
                 $("#submit_btn").attr("disabled", true);
                 $.ajax({
                 type : 'POST',
@@ -472,7 +510,10 @@ $(document).ready(function(){
         $("#clear_btn").click(function(){
                 $(".error").remove();
                 $(".TwoPage").remove();
-
+		district_select.style.border = "";
+                oo_select.style.border = "";
+                parallel_select.style.border = "";
+                subject_select.style.border = "";
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
                 district = district_select.value;
