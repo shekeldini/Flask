@@ -18,12 +18,8 @@ class FillDb(Postgresql):
         self._cur.execute("CREATE INDEX ON result_for_task (id_oo_parallels_subjects, id_oo_parallels );")
 
     def create_index_on_result_for_task_distributio_of_tasks_by_positions_of_codifiers(self):
-<<<<<<< HEAD
-        self._cur.execute("CREATE INDEX ON result_for_task_distributio_of_tasks_by_positions_of_codifiers (task_number, id_subjects, parallel);")
-=======
         self._cur.execute(
             "CREATE INDEX ON result_for_task_distributio_of_tasks_by_positions_of_codifiers (task_number, id_subjects, parallel);")
->>>>>>> d050cadcef19a92e4a3854ab7fe3cfcfaa225b82
 
     def get_id_kt(self, kt_key, id_subjects, parallel):
         try:
@@ -53,10 +49,6 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-<<<<<<< HEAD
-
-=======
->>>>>>> d050cadcef19a92e4a3854ab7fe3cfcfaa225b82
     def get_id_organizational_and_legal_form(self, type_of_organizational_and_legal_form):
         try:
             type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_') \
@@ -1280,11 +1272,6 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> d050cadcef19a92e4a3854ab7fe3cfcfaa225b82
     def fill_ks(self):
         try:
             self._cur.execute("TRUNCATE TABLE ks RESTART IDENTITY cascade;")
@@ -1314,10 +1301,6 @@ class FillDb(Postgresql):
             print("Таблица ks заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
-<<<<<<< HEAD
-
-=======
->>>>>>> d050cadcef19a92e4a3854ab7fe3cfcfaa225b82
 
     def fill_distributio_of_tasks_by_positions_of_codifiers(self):
         try:
@@ -1346,13 +1329,11 @@ class FillDb(Postgresql):
                             elif level.upper() == "В":
                                 level = "Высокий"
                         max_mark = all_sheet["H" + str(row)].value
-<<<<<<< HEAD
                         self._cur.execute(f"INSERT INTO distributio_of_tasks_by_positions_of_codifiers "
                                           f"(id_subjects, parallel, task_number, task_number_from_kim, "
                                           f"fgos, poop_noo, level, max_mark) "
                                           f"VALUES ({id_subjects}, {parallel}, {task_number}, '{task_number_from_kim}',"
                                           f"'{fgos}', '{poop_noo}', '{level}', {max_mark})")
-=======
                         try:
                             self._cur.execute(f"INSERT INTO distributio_of_tasks_by_positions_of_codifiers "
                                               f"(id_subjects, parallel, task_number, task_number_from_kim, "
@@ -1361,7 +1342,6 @@ class FillDb(Postgresql):
                                               f"'{fgos}', '{poop_noo}', '{level}', {max_mark})")
                         except:
                             pass
->>>>>>> d050cadcef19a92e4a3854ab7fe3cfcfaa225b82
             print("Таблица distributio_of_tasks_by_positions_of_codifiers заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
@@ -1409,14 +1389,9 @@ class FillDb(Postgresql):
                         threading.Thread(
                             target=psql.thread_fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers,
                             args=(temp,)))
-<<<<<<< HEAD
-                    temp = []
-                    count = 0
-=======
                     temp.clear()
                     count = 0
 
->>>>>>> d050cadcef19a92e4a3854ab7fe3cfcfaa225b82
             for thread in thread_list:
                 thread.start()
 
@@ -1510,8 +1485,4 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.fill_distributio_of_tasks_by_positions_of_codifiers()
 # psql.fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
 # psql.create_index_on_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
-<<<<<<< HEAD
 # psql.fill_ks_kt()
-=======
-psql.fill_ks_kt()
->>>>>>> d050cadcef19a92e4a3854ab7fe3cfcfaa225b82
