@@ -1158,7 +1158,7 @@ class Postgresql:
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud), 1) * 100
+                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1210,7 +1210,7 @@ class Postgresql:
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud), 1) * 100
+                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1256,7 +1256,7 @@ class Postgresql:
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud), 1) * 100
+                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
