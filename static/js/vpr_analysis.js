@@ -267,6 +267,8 @@ function createTable_type_0(jsonObj) {
   let btn = document.createElement('button');
   btn.className = "upload mdi mdi-download";
 
+
+
   let text = document.createTextNode('Таблица результатов:');
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');
@@ -296,6 +298,8 @@ function createTable_type_0(jsonObj) {
   div.appendChild(tbl);
   div.appendChild(btn);
   body.appendChild(div);
+  window.getComputedStyle(div).opacity;
+  div.className +=" in";
   return tbl;
 };
 
@@ -620,6 +624,8 @@ function createTable_type_1(jsonObj, key, index){
   div.appendChild(tbl);
   div.appendChild(btn);
   body.appendChild(div);
+  window.getComputedStyle(div).opacity;
+  div.className +=" in";
   return tbl;
 };
 
@@ -791,6 +797,8 @@ function createTable_type_2(jsonObj){
   container.appendChild(div);
   section.appendChild(container);
   body.appendChild(section);
+  window.getComputedStyle(div).opacity;
+  div.className +=" in";
   return tbl;
 };
 

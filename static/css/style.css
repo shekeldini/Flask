@@ -852,6 +852,16 @@ border: 1px solid #cebbbd;
   padding-left: 0;
 }
 
+.TwoPage__wrapper {
+  opacity: 0; 
+  transition: opacity 2s;
+}
+
+.in {
+  opacity: 1;
+  
+}
+
 @media (max-width: 1800px) {
   .wrapper__center {
     max-width: 1440px;
