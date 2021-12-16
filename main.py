@@ -77,7 +77,7 @@ def task_description():
     if request.method == "POST":
         report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
         return jsonify(report.get_report())
-    return render_template('task_descr.html', title="Описание заданий")
+    return render_template('task_description.html', title="Описание заданий")
 
 
 @app.route("/api/task_description/get_task_numbers/<int:id_oo>/<int:parallel>/<int:id_subject>",
