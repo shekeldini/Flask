@@ -119,7 +119,7 @@ subject_select.onchange = function(){
 id_oo = oo_select.value;
 parallel = parallel_select.value;
 id_subject = subject_select.value;
-fetch('/api/task_description/get_task_numbers/' + id_oo + '/' + parallel + '/' id_subject).then(function(response){
+fetch('/api/task_description/get_task_numbers/' + id_oo + '/' + parallel + '/' + id_subject).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (report of data.task_numbers) {
