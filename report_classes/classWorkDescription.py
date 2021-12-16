@@ -14,7 +14,7 @@ class WorkDescription(BaseReport):
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл", self._oo["name"]]},
-                        "values_array": {"OO": {"values": res}}}
+                        "values_array": {"oo": {"values": res}}}
 
             elif self._oo["id"] == "all":
                 res = self._dbase.get_task_description_for_district(id_district=self._district["id"],
@@ -25,7 +25,7 @@ class WorkDescription(BaseReport):
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл", self._district["name"]]},
-                        "values_array": {"OO": {"values": res}}}
+                        "values_array": {"district": {"values": res}}}
 
         elif self._district["id"] == "all":
             if self._oo["id"] == "all":
@@ -36,4 +36,4 @@ class WorkDescription(BaseReport):
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл", self._district["name"]]},
-                        "values_array": {"OO": {"values": res}}}
+                        "values_array": {"all": {"values": res}}}
