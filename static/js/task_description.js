@@ -131,7 +131,7 @@ fetch('/api/task_description/get_task_numbers/' + id_oo + '/' + parallel + '/' +
         });
 };
 
-subject_select.onchange = function(){
+report_select.onchange = function(){
 task_number = task_select.value;
 fetch('/api/task_description/get_reports/' + task_number).then(function(response){
                 response.json().then(function(data) {
