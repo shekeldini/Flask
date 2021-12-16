@@ -122,11 +122,11 @@ id_subject = subject_select.value;
 fetch('/api/task_description/get_task_numbers/' + id_oo + '/' + parallel + '/' + id_subject).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
-                        for (report of data.task_numbers) {
-                                optionHTML += '<option value="' + report.id+'">' + report.name + '</option>'
+                        for (task of data.task_numbers) {
+                                optionHTML += '<option value="' + task.id+'">' + task.name + '</option>'
                         }
-                        report_select.innerHTML = optionHTML;
-                        report_select.value = "";
+                        task_select.innerHTML = optionHTML;
+                        task_select.value = "";
                 });
         });
 };

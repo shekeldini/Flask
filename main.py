@@ -92,7 +92,7 @@ def task_description_get_task_numbers(id_oo, parallel, id_subject):
         task_numbers = dbase.get_task_numbers(id_subjects=id_subject, parallel=parallel)
 
     for key, value in enumerate(task_numbers):
-        task_numbers_array.append({'id': key, 'name': value})
+        task_numbers_array.append({'id': key + 1, 'name': value})
     return jsonify({'task_numbers': task_numbers_array})
 
 
