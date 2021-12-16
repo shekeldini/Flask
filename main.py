@@ -80,7 +80,7 @@ def task_description():
     return render_template('task_description.html', title="Описание заданий")
 
 
-@app.route("/api/task_description/get_task_numbers/<int:id_oo>/<int:parallel>/<int:id_subject>",
+@app.route("/api/task_description/get_task_numbers/id_oo/<int:parallel>/<int:id_subject>",
            methods=["POST", "GET"])
 @login_required
 def task_description_get_task_numbers(id_oo, parallel, id_subject):
