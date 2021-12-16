@@ -1,6 +1,7 @@
 import psycopg2
 import os
-from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response, jsonify, send_from_directory
+from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response, jsonify, \
+    send_from_directory
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from classUserLogin import UserLogin
@@ -68,11 +69,40 @@ def download(filename):
     return send_from_directory(directory=uploads, path=filename)
 
 
-
-@app.route("/task_descr", methods=["POST", "GET"])
+@app.route("/task_description", methods=["POST", "GET"])
 @login_required
 def task_description():
+    if current_user.get_id_role() != 1:
+        return "В разработке"
+    if request.method == "POST":
+        report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
+        return jsonify(report.get_report())
     return render_template('task_descr.html', title="Описание заданий")
+
+
+@app.route("/api/task_description/get_task_numbers/<int:id_oo>/<int:parallel>/<int:id_subject>",
+           methods=["POST", "GET"])
+@login_required
+def task_description_get_task_numbers(id_oo, parallel, id_subject):
+    task_numbers_array= [{'id': "all", 'name': "Все задания"}]
+
+    if id_oo != "all":
+        task_numbers = dbase.get_task_numbers_by_id_oo_parallels_subjects(id_subject)
+    else:
+        task_numbers = dbase.get_task_numbers(id_subjects=id_subject, parallel=parallel)
+
+    for key, value in enumerate(task_numbers):
+        task_numbers_array.append({'id': key, 'name': value})
+    return jsonify({'task_numbers': task_numbers_array})
+
+
+@app.route("/api/task_description/get_reports/<int:task_number>", methods=["POST", "GET"])
+@login_required
+def task_description_get_reports(task_number):
+    if task_number == "all":
+        return jsonify({'reports': [{'id': 4, 'name': "Описание работы"}]})
+    else:
+        return jsonify({'reports': [{'id': 5, 'name': "Распредиление задания по позициям кодификаторов"}]})
 
 
 @app.route("/school_in_risk", methods=["POST", "GET"])
@@ -98,6 +128,7 @@ def districts_for_school_in_risk():
         district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
         district_array.append(district_obj)
     return jsonify({'districts': district_array})
+
 
 @app.route('/oo_for_schools_in_risk/<id_district>')
 @login_required
@@ -200,7 +231,6 @@ def all_subject_for_schools_in_risk():
     return jsonify({'subjects': subject_array})
 
 
-
 @app.route('/sbj_by_oo_for_schools_in_risk/<id_oo>/<parallel>')
 @login_required
 def sbj_by_oo_for_schools_in_risk(id_oo, parallel):
@@ -270,17 +300,15 @@ def sbj_by_district_for_schools_in_risk(id_district, parallel):
     return jsonify({'subjects': sbj_array})
 
 
-
-
 @app.route("/vpr_analysis", methods=["POST", "GET"])
 @login_required
 def vpr_analysis():
     if request.method == "POST":
-
         report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
         return jsonify(report.get_report())
 
     return render_template('vpr_analysis.html', title="Аналитика ВПР")
+
 
 @app.route("/get_reports")
 @login_required
@@ -306,6 +334,7 @@ def get_districts():
         district_array.append(district_obj)
     return jsonify({'districts': district_array})
 
+
 @app.route('/oo/<id_district>')
 @login_required
 def oo_by_name_of_the_settlement(id_district):
@@ -322,6 +351,7 @@ def oo_by_name_of_the_settlement(id_district):
         oo_array.append(oo_obj)
     return jsonify({'oo': oo_array})
 
+
 @app.route('/parallels_for_district/<id_district>')
 @login_required
 def parallels_for_district(id_district):
@@ -332,7 +362,6 @@ def parallels_for_district(id_district):
         parallels_obj = {'id': parallel, 'name': parallel}
         parallels_array.append(parallels_obj)
     return jsonify({'parallels': parallels_array})
-
 
 
 @app.route('/parallels/<id_oo>')
@@ -354,6 +383,7 @@ def parallels_for_oo(id_oo):
 
         return jsonify({'parallels': parallels_array})
 
+
 @app.route('/all_subjects/<parallel>')
 @login_required
 def all_subjects(parallel):
@@ -364,6 +394,7 @@ def all_subjects(parallel):
         subjects_array.append(subjects_obj)
 
     return jsonify({'subjects': subjects_array})
+
 
 @app.route('/subjects/<id_oo_parallels>')
 @login_required

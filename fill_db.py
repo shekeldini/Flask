@@ -1494,8 +1494,4 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
 # psql.create_index_on_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
 # psql.fill_ks_kt()
-res = psql.get_task_description_for_district(id_district=6,
-                                             id_subjects=5,
-                                             parallel=4)
-for r in res:
-    print(r, res[r])
+
