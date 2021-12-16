@@ -71,7 +71,7 @@ def download(filename):
 
 @app.route("/task_descr", methods=["POST", "GET"])
 @login_required
-def task_descr():
+def task_description():
     return render_template('task_descr.html', title="Описание заданий")
 
 

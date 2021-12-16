@@ -1301,13 +1301,15 @@ class FillDb(Postgresql):
                                           f"VALUES ('NULL', {id_subjects}, {parallel}, '')")
             self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 1, 11, '')")
             self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 6, 11, '')")
-            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 11, 11, '')")
+            self._cur.execute(
+                f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 11, 11, '')")
             print("Таблица ks заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
     def fill_distributio_of_tasks_by_positions_of_codifiers(self):
         try:
+            self._cur.execute("TRUNCATE TABLE distributio_of_tasks_by_positions_of_codifiers RESTART IDENTITY cascade;")
             parallels = glob("excel/Описание_работ/*")
             for p in parallels:
                 parallel = int(p.replace("excel/Описание_работ\\", ""))
@@ -1323,8 +1325,12 @@ class FillDb(Postgresql):
                         task_number_from_kim = all_sheet["A" + str(row)].value
                         task_number = all_sheet["B" + str(row)].value
                         fgos = all_sheet["C" + str(row)].value
+                        if fgos:
+                            fgos = fgos.replace("- ", "").replace("  ", " ")
                         poop_noo = all_sheet["D" + str(row)].value
-                        level = all_sheet["D" + str(row)].value
+                        if poop_noo:
+                            poop_noo = poop_noo.replace("- ", "").replace("  ", " ")
+                        level = all_sheet["E" + str(row)].value
                         if level:
                             if level.upper() == "Б":
                                 level = "Базовый"
@@ -1333,11 +1339,6 @@ class FillDb(Postgresql):
                             elif level.upper() == "В":
                                 level = "Высокий"
                         max_mark = all_sheet["H" + str(row)].value
-                        self._cur.execute(f"INSERT INTO distributio_of_tasks_by_positions_of_codifiers "
-                                          f"(id_subjects, parallel, task_number, task_number_from_kim, "
-                                          f"fgos, poop_noo, level, max_mark) "
-                                          f"VALUES ({id_subjects}, {parallel}, {task_number}, '{task_number_from_kim}',"
-                                          f"'{fgos}', '{poop_noo}', '{level}', {max_mark})")
                         try:
                             self._cur.execute(f"INSERT INTO distributio_of_tasks_by_positions_of_codifiers "
                                               f"(id_subjects, parallel, task_number, task_number_from_kim, "
@@ -1375,6 +1376,8 @@ class FillDb(Postgresql):
 
     def fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers(self):
         try:
+            self._cur.execute(
+                "TRUNCATE TABLE result_for_task_distributio_of_tasks_by_positions_of_codifiers RESTART IDENTITY cascade;")
             self._cur.execute("""SELECT id_distributio_of_tasks_by_positions_of_codifiers, 
                                   id_subjects, 
                                   parallel, 
@@ -1393,7 +1396,7 @@ class FillDb(Postgresql):
                         threading.Thread(
                             target=psql.thread_fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers,
                             args=(temp,)))
-                    temp.clear()
+                    temp = []
                     count = 0
 
             for thread in thread_list:
@@ -1491,3 +1494,8 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
 # psql.create_index_on_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
 # psql.fill_ks_kt()
+res = psql.get_task_description_for_district(id_district=6,
+                                             id_subjects=5,
+                                             parallel=4)
+for r in res:
+    print(r, res[r])
