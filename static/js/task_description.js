@@ -30,6 +30,7 @@ fetch('get_districts').then(function(response){
 district_select.onchange = function(){
         parallel_select.innerHTML = "";
         subject_select.innerHTML = "";
+        task_select.innerHTML = "";
         report_select.innerHTML = "";
 
         district = district_select.value;
@@ -55,6 +56,7 @@ district_select.onchange = function(){
 oo_select.onchange = function(){
 
         subject_select.innerHTML = "";
+        task_select.innerHTML = "";
         report_select.innerHTML = "";
 
         oo = oo_select.value;
@@ -86,6 +88,7 @@ oo_select.onchange = function(){
 
 
 parallel_select.onchange = function(){
+        task_select.innerHTML = "";
         report_select.innerHTML = "";
 
         parallel = parallel_select.value;
@@ -116,6 +119,7 @@ parallel_select.onchange = function(){
 
 
 subject_select.onchange = function(){
+report_select.innerHTML = "";
 id_oo = oo_select.value;
 parallel = parallel_select.value;
 id_subject = subject_select.value;
