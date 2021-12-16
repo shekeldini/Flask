@@ -1143,18 +1143,22 @@ class Postgresql:
             if res:
                 for task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        if not fgos:
-                            fgos = ""
-                        if not poop_noo:
-                            poop_noo = ""
+                        if not fgos or fgos == "None":
+                            fgos = " "
+                        if not poop_noo or fgos == "None":
+                            poop_noo = " "
                         text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ")
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
-                                                 "values": {value: count}}
+                                                 "values": {value: {"count": count}}}
                     else:
-                        res_dict[task_number]["values"][value] = count
-
+                        res_dict[task_number]["values"][value] = {"count": count}
+                        all_stud = 0
+                        for key, key_value in res_dict[task_number]["values"].items():
+                            all_stud += res_dict[task_number]["values"][key]["count"]
+                        for key, key_value in res_dict[task_number]["values"].items():
+                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud), 1) * 100
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1191,18 +1195,22 @@ class Postgresql:
             if res:
                 for task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        if not fgos:
-                            fgos = ""
-                        if not poop_noo:
-                            poop_noo = ""
+                        if not fgos or fgos == "None":
+                            fgos = " "
+                        if not poop_noo or fgos == "None":
+                            poop_noo = " "
                         text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ")
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
-                                                 "values": {value: count}}
+                                                 "values": {value: {"count": count}}}
                     else:
-                        res_dict[task_number]["values"][value] = count
-
+                        res_dict[task_number]["values"][value] = {"count": count}
+                        all_stud = 0
+                        for key, key_value in res_dict[task_number]["values"].items():
+                            all_stud += res_dict[task_number]["values"][key]["count"]
+                        for key, key_value in res_dict[task_number]["values"].items():
+                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud), 1) * 100
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1233,18 +1241,22 @@ class Postgresql:
             if res:
                 for task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        if not fgos:
-                            fgos = ""
-                        if not poop_noo:
-                            poop_noo = ""
+                        if not fgos or fgos == "None":
+                            fgos = " "
+                        if not poop_noo or fgos == "None":
+                            poop_noo = " "
                         text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ")
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
-                                                 "values": {value: count}}
+                                                 "values": {value: {"count": count}}}
                     else:
-                        res_dict[task_number]["values"][value] = count
-
+                        res_dict[task_number]["values"][value] = {"count": count}
+                        all_stud = 0
+                        for key, key_value in res_dict[task_number]["values"].items():
+                            all_stud += res_dict[task_number]["values"][key]["count"]
+                        for key, key_value in res_dict[task_number]["values"].items():
+                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud), 1) * 100
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
