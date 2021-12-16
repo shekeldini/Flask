@@ -96,7 +96,7 @@ def task_description_get_task_numbers(id_oo, parallel, id_subject):
     return jsonify({'task_numbers': task_numbers_array})
 
 
-@app.route("/api/task_description/get_reports/task_number", methods=["POST", "GET"])
+@app.route("/api/task_description/get_reports/<task_number>", methods=["POST", "GET"])
 @login_required
 def task_description_get_reports(task_number):
     if task_number == "all":
