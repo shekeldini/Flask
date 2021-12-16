@@ -19,7 +19,11 @@ class FillDb(Postgresql):
 
     def create_index_on_result_for_task_distributio_of_tasks_by_positions_of_codifiers(self):
         self._cur.execute(
-            "CREATE INDEX ON result_for_task_distributio_of_tasks_by_positions_of_codifiers (task_number, id_subjects, parallel);")
+            "CREATE INDEX ON result_for_task_distributio_of_tasks_by_positions_of_codifiers (id_subjects, parallel);")
+
+    def create_index_on_oo_parallels_subjects(self):
+        self._cur.execute(
+            "CREATE INDEX ON oo_parallels_subjects (id_subjects, id_oo_parallels);")
 
     def get_id_kt(self, kt_key, id_subjects, parallel):
         try:
@@ -1475,6 +1479,7 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.fill_classes_textbooks()
 # psql.fill_students()
 # psql.fill_oo_parallels_subjects()
+# psql.create_index_on_oo_parallels_subjects()
 # psql.fill_result_for_task()
 # psql.create_index_on_result_for_task()
 # psql.create_roles()
