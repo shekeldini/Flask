@@ -20,7 +20,8 @@ class WorkDescription(BaseReport):
                                                       "Блоки ПООП обучающийся научится "
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
-                                                      "в соответствии с ФГОС (ФК ГОС)", "Макс балл", self._oo["name"]]},
+                                                      "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
+                                                      "Все муниципалтеты", self._district["name"], self._oo["name"]]},
                         "values_array": {"oo": {"values": oo},
                                          "district": {"values": district},
                                          "all": {"values": all_}}}
@@ -37,18 +38,19 @@ class WorkDescription(BaseReport):
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
-                                                      self._district["name"]]},
+                                                      "Все муниципалтеты", self._district["name"]]},
                         "values_array": {"district": {"values": district},
                                          "all": {"values": all_}}}
 
         elif self._district["id"] == "all":
             if self._oo["id"] == "all":
-                res = self._dbase.get_task_description_for_all(id_subjects=self._subject["id"],
-                                                               parallel=self._parallel["id"])
+                all_ = self._dbase.get_task_description_for_all(id_subjects=self._subject["id"],
+                                                                parallel=self._parallel["id"])
+
                 return {"table_settings": {"titles": ["Номер задания",
                                                       "Блоки ПООП обучающийся научится "
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
                                                       self._district["name"]]},
-                        "values_array": {"all": {"values": res}}}
+                        "values_array": {"all": {"values": all_}}}
