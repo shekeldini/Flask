@@ -12,10 +12,10 @@ class WorkDescription(BaseReport):
 
                 district = self._dbase.get_task_description_for_district(id_district=self._district["id"],
                                                                          id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                                                                         parallel=self._parallel["id"])
+                                                                         parallel=self._parallel["name"])
 
                 all_ = self._dbase.get_task_description_for_all(id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                                                                parallel=self._parallel["id"])
+                                                                parallel=self._parallel["name"])
                 return {"table_settings": {"titles": ["Номер задания",
                                                       "Блоки ПООП обучающийся научится "
                                                       "/ получит возможность научиться "
