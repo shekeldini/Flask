@@ -151,7 +151,52 @@ fetch('/api/task_description/get_reports/' + task_number).then(function(response
 };
 
 
+function draw_report(json_data){
+        createTable_type_4(json_data);
+};
 
+
+function createTable_type_4(jsonObj){
+  let titles_list = jsonObj.table_settings.titles;
+
+  let body = document.getElementById('report_container');
+  let div = document.createElement('div');
+  div.className = "TwoPage__wrapper";
+  let title = document.createElement('h3');
+  title.className = "TwoPage__wrapper_title";
+
+  let btn = document.createElement('button');
+  btn.className = "upload mdi mdi-download";
+
+  let tbl = document.createElement('table');
+  let tbdy = document.createElement('tbody');
+
+  var tr = document.createElement('tr');
+  for (var i=0; i<3; i++){
+         var td = document.createElement('td');
+         td.rowSpan = "2";
+         td.appendChild(document.createTextNode(titles_list[i]));
+         tr.appendChild(td);
+
+  }
+  var tr2 = document.createElement('tr');
+  for (var i=3; i<titles_list.length; i++){
+         var td = document.createElement('td');
+         td.colSpan = "4";
+         td.appendChild(document.createTextNode(titles_list[i]));
+         tr.appendChild(td);
+         for (category of ["Выполнили кол-во", "Не выполнили кол-во", "Выполнили в %", "Не выполнили в %"])
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(category));
+  }             tr2.appendChild(td);
+  tbdy.appendChild(tr);
+  tbdy.appendChild(tr2);
+  tbl.appendChild(tbdy);
+  div.appendChild(tbl);
+  div.appendChild(btn);
+  body.appendChild(div);
+  return tbl;
+};
 
 
 $(document).ready(function(){
