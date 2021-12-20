@@ -290,9 +290,9 @@ class FillDb(Postgresql):
             self._cur.execute(f" SELECT id_distributio_of_tasks_by_positions_of_codifiers "
                               f"FROM distributio_of_tasks_by_positions_of_codifiers "
                               f"WHERE id_subjects = {id_subjects} AND parallel = {parallel} AND task_number = {task_number}")
-            res, = self._cur.fetchone()
+            res = self._cur.fetchone()
             if res:
-                return res
+                return res[0]
             return None
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1193,6 +1193,8 @@ class FillDb(Postgresql):
                     id_distributio_of_tasks_by_positions_of_codifiers = self.get_id_distributio_of_tasks_by_positions_of_codifiers(id_subjects=id_subjects,
                                                                                parallel=parallel,
                                                                                task_number=task_number + 1)
+                    if not id_distributio_of_tasks_by_positions_of_codifiers:
+                        print(id_subjects, parallel, task_number + 1)
                     self._cur.execute(f"INSERT INTO result_for_task "
                                       f"(task_number, id_oo_parallels_subjects, id_students,"
                                       f" id_oo_parallels, id_subjects, variant, mark_for_last_semester, mark, parallel,"
@@ -1489,15 +1491,13 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.fill_students()
 # psql.fill_oo_parallels_subjects()
 # psql.create_index_on_oo_parallels_subjects()
-# psql.fill_result_for_task()
-# psql.create_index_on_result_for_task()
 # psql.create_roles()
 # psql.create_users()
 # psql.fill_users_oo_logins()
 # psql.fill_kt()
 # psql.fill_ks()
-psql.fill_distributio_of_tasks_by_positions_of_codifiers()
-psql.fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
-# psql.create_index_on_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
-psql.fill_ks_kt()
+# psql.fill_distributio_of_tasks_by_positions_of_codifiers()
+psql.fill_result_for_task()
+psql.create_index_on_result_for_task()
+# psql.fill_ks_kt()
 
