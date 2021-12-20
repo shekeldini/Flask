@@ -1188,14 +1188,20 @@ class FillDb(Postgresql):
                 id_students = self.get_id_students(id_oo_parallels, id_classes, student_number)
                 id_subjects = self.get_id_subjects(df.get_subj_name())
                 id_oo_parallels_subjects = self.get_id_oo_parallels_subjects(id_subjects, id_oo_parallels)
+
                 for task_number, mark in enumerate(marks):
+                    id_distributio_of_tasks_by_positions_of_codifiers = self.get_id_distributio_of_tasks_by_positions_of_codifiers(id_subjects=id_subjects,
+                                                                               parallel=parallel,
+                                                                               task_number=task_number + 1)
                     self._cur.execute(f"INSERT INTO result_for_task "
                                       f"(task_number, id_oo_parallels_subjects, id_students,"
-                                      f" id_oo_parallels, id_subjects, variant, mark_for_last_semester, mark) "
+                                      f" id_oo_parallels, id_subjects, variant, mark_for_last_semester, mark, parallel,"
+                                      f" id_distributio_of_tasks_by_positions_of_codifiers) "
                                       f"VALUES "
                                       f"({task_number + 1}, {id_oo_parallels_subjects}, {id_students},"
                                       f" {id_oo_parallels}, {id_subjects}, {int(variant)},"
-                                      f" {int(mark_for_last_semester)}, {int(mark)})")
+                                      f" {int(mark_for_last_semester)}, {int(mark)}, {parallel},"
+                                      f" {id_distributio_of_tasks_by_positions_of_codifiers})")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 

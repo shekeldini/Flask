@@ -326,11 +326,15 @@ CREATE TABLE IF NOT EXISTS "result_for_task"(
 "variant" INTEGER NOT NULL,
 "mark_for_last_semester" INTEGER NOT NULL,
 "mark" INTEGER NOT NULL,
+parallel INTEGER NOT NULL,
+id_distributio_of_tasks_by_positions_of_codifiers INTEGER NOT NULL,
 CONSTRAINT "K14" PRIMARY KEY ("id_result_for_task","task_number"),
 CONSTRAINT "C13" FOREIGN KEY ("id_oo_parallels_subjects","id_oo_parallels","id_subjects")
     REFERENCES "oo_parallels_subjects" ("id_oo_parallels_subjects","id_oo_parallels","id_subjects"),
 CONSTRAINT "C12" FOREIGN KEY ("id_students","id_oo_parallels")
-    REFERENCES "students" ("id_students","id_oo_parallels")
+    REFERENCES "students" ("id_students","id_oo_parallels"),
+CONSTRAINT "C47" FOREIGN KEY (id_distributio_of_tasks_by_positions_of_codifiers, parallel, id_subjects, task_number)
+    REFERENCES "distributio_of_tasks_by_positions_of_codifiers" (id_distributio_of_tasks_by_positions_of_codifiers, parallel, id_subjects, task_number)
 );
 
 CREATE TABLE IF NOT EXISTS "distributio_of_tasks_by_positions_of_codifiers"(
@@ -339,9 +343,11 @@ CREATE TABLE IF NOT EXISTS "distributio_of_tasks_by_positions_of_codifiers"(
 "parallel" INTEGER NOT NULL,
 "task_number" INTEGER NOT NULL,
 "task_number_from_kim" VARCHAR (10),
-"acquired_skills" text,
+"fgos" text,
+"poop_noo" text,
+"level" text,
 "max_mark" INTEGER NOT NULL,
-"average_execution_times_of_task" INTEGER,
+UNIQUE (id_subjects, parallel, task_number, task_number_from_kim),
 CONSTRAINT "K41" PRIMARY KEY ("id_distributio_of_tasks_by_positions_of_codifiers","id_subjects","parallel","task_number"),
 CONSTRAINT "C42" FOREIGN KEY ("id_subjects")
     REFERENCES "subjects" ("id_subjects"),
@@ -349,21 +355,10 @@ CONSTRAINT "C50" FOREIGN KEY ("parallel")
     REFERENCES "parallels" ("parallel")
 );
 
-CREATE TABLE IF NOT EXISTS "result_for_task_distributio_of_tasks_by_positions_of_codifiers"(
-"id_distributio_of_tasks_by_positions_of_codifiers" INTEGER NOT NULL,
-"id_result_for_task" INTEGER NOT NULL,
-"task_number" INTEGER NOT NULL,
-"id_subjects" INTEGER NOT NULL,
-"parallel" INTEGER NOT NULL,
-CONSTRAINT "K43" PRIMARY KEY ("id_distributio_of_tasks_by_positions_of_codifiers","id_result_for_task","id_subjects","parallel","task_number"),
-CONSTRAINT "C47" FOREIGN KEY ("id_distributio_of_tasks_by_positions_of_codifiers","id_subjects","parallel","task_number")
-    REFERENCES "distributio_of_tasks_by_positions_of_codifiers" ("id_distributio_of_tasks_by_positions_of_codifiers","id_subjects","parallel","task_number"),
-CONSTRAINT "C46" FOREIGN KEY ("id_result_for_task","task_number")
-    REFERENCES "result_for_task" ("id_result_for_task","task_number")
-);
 
 CREATE TABLE IF NOT EXISTS "ks"(
 "id_ks" SERIAL,
+"ks_key" VARCHAR (10),
 "id_subjects" INTEGER NOT NULL,
 "parallel" INTEGER NOT NULL,
 "description" text,
@@ -376,6 +371,7 @@ CONSTRAINT "C48" FOREIGN KEY ("parallel")
 
 CREATE TABLE IF NOT EXISTS "kt"(
 "id_kt" SERIAL,
+"kt_key" VARCHAR (10),
 "id_subjects" INTEGER NOT NULL,
 "parallel" INTEGER NOT NULL,
 "description" text,
