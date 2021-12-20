@@ -160,9 +160,7 @@ function draw_report(json_data){
 
 
 function createTable_type_4(jsonObj){
-<<<<<<< HEAD
 
-  let titles_list = jsonObj.table_settings.titles;
   let body = document.getElementById('report_place');
   let section = document.createElement('section');
   section.className = "TwoPage";
@@ -174,26 +172,14 @@ function createTable_type_4(jsonObj){
   div.className = "TwoPage__wrapper";
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title scroll-title";
-=======
   let titles_list = jsonObj.table_settings.titles;
-
-  let body = document.getElementById('report_container');
-  let div = document.createElement('div');
-  div.className = "TwoPage__wrapper";
-  let title = document.createElement('h3');
-  title.className = "TwoPage__wrapper_title";
->>>>>>> c613338f57fbcc405526a90e8946dbcd6bbebb78
 
   let btn = document.createElement('button');
   btn.className = "upload mdi mdi-download";
 
-<<<<<<< HEAD
   let text = document.createTextNode('Описание контрольных измерительных материалов');
   let tbl = document.createElement('table');
   tbl.className = "scroll";
-=======
-  let tbl = document.createElement('table');
->>>>>>> c613338f57fbcc405526a90e8946dbcd6bbebb78
   let tbdy = document.createElement('tbody');
 
   var tr = document.createElement('tr');
@@ -210,7 +196,6 @@ function createTable_type_4(jsonObj){
          td.colSpan = "4";
          td.appendChild(document.createTextNode(titles_list[i]));
          tr.appendChild(td);
-<<<<<<< HEAD
          for (category of ["Выполнили кол-во", "Не выполнили кол-во", "Выполнили в %", "Не выполнили в %"]){
                 var td2 = document.createElement('td');
 		//td2.style.minWidth = "120px";
@@ -304,19 +289,6 @@ function createTable_type_4(jsonObj){
   body.appendChild(section);
   window.getComputedStyle(div).opacity;
   div.className +=" in";
-
-=======
-         for (category of ["Выполнили кол-во", "Не выполнили кол-во", "Выполнили в %", "Не выполнили в %"])
-                var td = document.createElement('td');
-                td.appendChild(document.createTextNode(category));
-  }             tr2.appendChild(td);
-  tbdy.appendChild(tr);
-  tbdy.appendChild(tr2);
-  tbl.appendChild(tbdy);
-  div.appendChild(tbl);
-  div.appendChild(btn);
-  body.appendChild(div);
->>>>>>> c613338f57fbcc405526a90e8946dbcd6bbebb78
   return tbl;
 };
 
