@@ -150,8 +150,144 @@ fetch('/api/task_description/get_reports/' + task_number).then(function(response
         });
 };
 
+function draw_report(json_data){
+        createTable_type_4(json_data);
+};
 
 
+function createTable_type_4(jsonObj){
+
+  let titles_list = jsonObj.table_settings.titles;
+  let body = document.getElementById('report_place');
+  let section = document.createElement('section');
+  section.className = "TwoPage";
+  section.id = "report_section";
+  let container = document.createElement('div');
+  container.className = "container_report";
+  container.id = "report_container";
+  let div = document.createElement('div');
+  div.className = "TwoPage__wrapper";
+  let title = document.createElement('h3');
+  title.className = "TwoPage__wrapper_title scroll-title";
+
+  let btn = document.createElement('button');
+  btn.className = "upload mdi mdi-download";
+
+  let text = document.createTextNode('Описание контрольных измерительных материалов');
+  let tbl = document.createElement('table');
+  tbl.className = "scroll";
+  let tbdy = document.createElement('tbody');
+
+  var tr = document.createElement('tr');
+  for (var i=0; i<3; i++){
+         var td = document.createElement('td');
+         td.rowSpan = "2";
+         td.appendChild(document.createTextNode(titles_list[i]));
+         tr.appendChild(td);
+
+  }
+  var tr2 = document.createElement('tr');
+  for (var i=3; i<titles_list.length; i++){
+         var td = document.createElement('td');
+         td.colSpan = "4";
+         td.appendChild(document.createTextNode(titles_list[i]));
+         tr.appendChild(td);
+         for (category of ["Выполнили кол-во", "Не выполнили кол-во", "Выполнили в %", "Не выполнили в %"]){
+                var td2 = document.createElement('td');
+		//td2.style.minWidth = "120px";
+		//td2.style.verticalAlign = "top";
+		//td2.style.paddingTop = "5px";
+		td2.className = "task-title__small";
+                td2.appendChild(document.createTextNode(category));
+                tr2.appendChild(td2);
+	 }
+  }
+
+  tbdy.appendChild(tr);
+  tbdy.appendChild(tr2);
+  for (var i = 1; i < Object.keys(jsonObj.values_array.all.values).length + 1; i++){
+          var td = document.createElement('td');
+	  var tr = document.createElement('tr');
+          td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].task_number_from_kim));
+          tr.appendChild(td);
+
+          var td = document.createElement('td');
+	  //td.style.textAlign = "left";
+          //td.style.minWidth = "460px";
+	  td.className = "mobiles";
+          td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].text));
+          tr.appendChild(td);
+
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].max_mark));
+          tr.appendChild(td);
+          td.style.minWidth = "90px";
+
+
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].values["Выполнили"]["count"]));
+          tr.appendChild(td);
+
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].values["Не выполнили"]["count"]));
+          tr.appendChild(td);
+
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].values["Выполнили"]["%"]));
+          tr.appendChild(td);
+
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].values["Не выполнили"]["%"]));
+          tr.appendChild(td);
+          if (Object.keys(jsonObj.values_array).length > 1){
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.district.values[i].values["Выполнили"]["count"]));
+                  tr.appendChild(td);
+
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.district.values[i].values["Не выполнили"]["count"]));
+                  tr.appendChild(td);
+
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.district.values[i].values["Выполнили"]["%"]));
+                  tr.appendChild(td);
+
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.district.values[i].values["Не выполнили"]["%"]));
+                  tr.appendChild(td);
+          }
+          if (Object.keys(jsonObj.values_array).length > 2){
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.oo.values[i].values["Выполнили"]["count"]));
+                  tr.appendChild(td);
+
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.oo.values[i].values["Не выполнили"]["count"]));
+                  tr.appendChild(td);
+
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.oo.values[i].values["Выполнили"]["%"]));
+                  tr.appendChild(td);
+
+                  var td = document.createElement('td');
+                  td.appendChild(document.createTextNode(jsonObj.values_array.oo.values[i].values["Не выполнили"]["%"]));
+                  tr.appendChild(td);
+          }
+          tbdy.appendChild(tr); 
+  }
+  title.appendChild(text);
+  div.appendChild(title);
+  tbl.appendChild(tbdy);
+  div.appendChild(tbl);
+  div.appendChild(btn);
+  container.appendChild(div);
+  section.appendChild(container);
+  body.appendChild(section);
+  window.getComputedStyle(div).opacity;
+  div.className +=" in";
+
+  return tbl;
+};
 
 
 $(document).ready(function(){
@@ -246,7 +382,7 @@ $(document).ready(function(){
                 $("#submit_btn").attr("disabled", true);
                 $.ajax({
                 type : 'POST',
-                url : "/vpr_analysis",
+                url : "/task_description",
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify(sendInfo),
 
@@ -254,6 +390,7 @@ $(document).ready(function(){
                         marker = JSON.stringify(data);
                         var jsonObj = JSON.parse(marker);
                         $(".TwoPage").remove();
+			draw_report(jsonObj);
                         $("#submit_btn").attr("disabled", false);
 
         },

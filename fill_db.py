@@ -1326,10 +1326,10 @@ class FillDb(Postgresql):
                         task_number = all_sheet["B" + str(row)].value
                         fgos = all_sheet["C" + str(row)].value
                         if fgos:
-                            fgos = fgos.replace("- ", "").replace("  ", " ")
+                            fgos = fgos.replace("- ", "").replace("  ", " ").replace("\n", " ").replace("_x0002_", "")
                         poop_noo = all_sheet["D" + str(row)].value
                         if poop_noo:
-                            poop_noo = poop_noo.replace("- ", "").replace("  ", " ")
+                            poop_noo = poop_noo.replace("- ", "").replace("  ", " ").replace("\n", " ").replace("_x0002_", "")
                         level = all_sheet["E" + str(row)].value
                         if level:
                             if level.upper() == "Б":
@@ -1490,8 +1490,8 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.fill_users_oo_logins()
 # psql.fill_kt()
 # psql.fill_ks()
-# psql.fill_distributio_of_tasks_by_positions_of_codifiers()
-# psql.fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
+psql.fill_distributio_of_tasks_by_positions_of_codifiers()
+psql.fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
 # psql.create_index_on_result_for_task_distributio_of_tasks_by_positions_of_codifiers()
-# psql.fill_ks_kt()
+psql.fill_ks_kt()
 

@@ -343,6 +343,8 @@ function createTable_type_3_for_oo(jsonObj){
   div.appendChild(tbl);
   div.appendChild(btn);
   body.appendChild(div);
+  window.getComputedStyle(div).opacity;
+  div.className +=" in";
   return tbl;
 };
 
@@ -407,6 +409,8 @@ function createTable_type_3_for_district(jsonObj){
   container.appendChild(div);
   section.appendChild(container);
   body.appendChild(section);
+  window.getComputedStyle(div).opacity;
+  div.className +=" in";
   return tbl;
 };
 

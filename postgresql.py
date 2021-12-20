@@ -1131,7 +1131,7 @@ class Postgresql:
                                     WHERE parallel={parallel} AND id_oo in 
                                         (SELECT id_oo FROM oo 
                                             WHERE year='{year}'))
-                            AND id_subjects={id_subjects}) GROUP BY id_result_for_task, id_students, task_number, mark) AS T1
+                            AND id_subjects={id_subjects}) GROUP BY id_result_for_task, task_number, mark) AS T1
             
                 LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, id_result_for_task FROM result_for_task_distributio_of_tasks_by_positions_of_codifiers WHERE id_subjects = {id_subjects} AND parallel = {parallel}) AS T2
                     USING (id_result_for_task) ORDER BY task_number) AS T4
@@ -1147,11 +1147,11 @@ class Postgresql:
                             fgos = " "
                         if not poop_noo or fgos == "None":
                             poop_noo = " "
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "")
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
-                                                 "values": {value: {"count": count}}}
+                                                 "values": {value: {"count": count, "%": 100}}}
                     else:
                         res_dict[task_number]["values"][value] = {"count": count}
                         all_stud = 0
@@ -1159,6 +1159,13 @@ class Postgresql:
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
                             res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                for task_number in res_dict:
+                    if "Выполнили" not in res_dict[task_number]["values"]:
+                        res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
+
+                    if "Не выполнили" not in res_dict[task_number]["values"]:
+                        res_dict[task_number]["values"]["Не выполнили"] = {"count": 0, "%": 0}
+
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1182,7 +1189,7 @@ class Postgresql:
                                         (SELECT id_oo FROM oo 
                                             WHERE year='{year}'
                                             AND id_name_of_the_settlement in (SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district})))
-                            AND id_subjects={id_subjects}) GROUP BY id_result_for_task, id_students, task_number, mark) AS T1
+                            AND id_subjects={id_subjects}) GROUP BY id_result_for_task, task_number, mark) AS T1
             
                 LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, id_result_for_task FROM result_for_task_distributio_of_tasks_by_positions_of_codifiers 
                         WHERE id_subjects = {id_subjects} AND parallel = {parallel}) AS T2
@@ -1199,11 +1206,11 @@ class Postgresql:
                             fgos = " "
                         if not poop_noo or fgos == "None":
                             poop_noo = " "
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "")
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
-                                                 "values": {value: {"count": count}}}
+                                                 "values": {value: {"count": count, "%": 100}}}
                     else:
                         res_dict[task_number]["values"][value] = {"count": count}
                         all_stud = 0
@@ -1211,6 +1218,13 @@ class Postgresql:
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
                             res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                for task_number in res_dict:
+                    if "Выполнили" not in res_dict[task_number]["values"]:
+                        res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
+
+                    if "Не выполнили" not in res_dict[task_number]["values"]:
+                        res_dict[task_number]["values"]["Не выполнили"] = {"count": 0, "%": 0}
+
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -1227,7 +1241,7 @@ class Postgresql:
             (SELECT id_distributio_of_tasks_by_positions_of_codifiers, id_result_for_task, task_number, mark FROM
                 (SELECT id_result_for_task, task_number, mark FROM result_for_task 
                     WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
-                         GROUP BY id_result_for_task, id_students, task_number, mark) AS T1
+                         GROUP BY id_result_for_task, task_number, mark) AS T1
             
                 LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, id_result_for_task FROM result_for_task_distributio_of_tasks_by_positions_of_codifiers 
                         WHERE id_subjects IN (SELECT id_subjects FROM oo_parallels_subjects WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects})
@@ -1245,11 +1259,11 @@ class Postgresql:
                             fgos = " "
                         if not poop_noo or fgos == "None":
                             poop_noo = " "
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "")
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
-                                                 "values": {value: {"count": count}}}
+                                                 "values": {value: {"count": count, "%": 100}}}
                     else:
                         res_dict[task_number]["values"][value] = {"count": count}
                         all_stud = 0
@@ -1257,6 +1271,13 @@ class Postgresql:
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
                             res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                for task_number in res_dict:
+                    if "Выполнили" not in res_dict[task_number]["values"]:
+                        res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
+
+                    if "Не выполнили" not in res_dict[task_number]["values"]:
+                        res_dict[task_number]["values"]["Не выполнили"] = {"count": 0, "%": 0}
+
             return res_dict
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))

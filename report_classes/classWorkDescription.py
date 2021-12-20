@@ -21,7 +21,8 @@ class WorkDescription(BaseReport):
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
-                                                      "Все муниципалтеты", self._district["name"], self._oo["name"]]},
+                                                      "Все муниципалитеты", self._district["name"], self._oo["name"]],
+                                           "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"oo": {"values": oo},
                                          "district": {"values": district},
                                          "all": {"values": all_}}}
@@ -38,7 +39,8 @@ class WorkDescription(BaseReport):
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
-                                                      "Все муниципалтеты", self._district["name"]]},
+                                                      "Все муниципалитеты", self._district["name"]],
+                                           "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"district": {"values": district},
                                          "all": {"values": all_}}}
 
@@ -52,5 +54,6 @@ class WorkDescription(BaseReport):
                                                       "/ получит возможность научиться "
                                                       "или проверяемые требования (умения) "
                                                       "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
-                                                      self._district["name"]]},
+                                                      self._district["name"]],
+                                           "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"all": {"values": all_}}}

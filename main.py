@@ -72,8 +72,6 @@ def download(filename):
 @app.route("/task_description", methods=["POST", "GET"])
 @login_required
 def task_description():
-    if current_user.get_id_role() != 1:
-        return "В разработке"
     if request.method == "POST":
         report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
         return jsonify(report.get_report())
@@ -102,7 +100,7 @@ def task_description_get_reports(task_number):
     if task_number == "all":
         return jsonify({'reports': [{'id': 4, 'name': "Описание работы"}]})
     else:
-        return jsonify({'reports': [{'id': 5, 'name': "Распредиление задания по позициям кодификаторов"}]})
+        return jsonify({'reports': [{'id': 5, 'name': "Распределение задания по позициям кодификаторов"}]})
 
 
 @app.route("/school_in_risk", methods=["POST", "GET"])
