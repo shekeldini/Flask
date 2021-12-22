@@ -264,11 +264,14 @@ function createTable_type_0(jsonObj) {
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
 
-  let btn = document.createElement('button');
+  let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
 
+  let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
+  "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text();
 
-
+  btn.setAttribute("href", btn_url);
   let text = document.createTextNode('Таблица результатов:');
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');
@@ -590,8 +593,14 @@ function createTable_type_1(jsonObj, key, index){
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
 
-  let btn = document.createElement('button');
+  let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
+
+  let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
+  "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text();
+
+  btn.setAttribute("href", btn_url);
 
   let text = document.createTextNode('Таблица результатов:');
   let tbl = document.createElement('table');
@@ -646,8 +655,15 @@ function createTable_type_2(jsonObj){
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
 
-  let btn = document.createElement('button');
+  let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
+
+  let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
+  "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text();
+
+  btn.setAttribute("href", btn_url);
+
 
   let text = document.createTextNode(jsonObj.content);
   let tbl = document.createElement('table');

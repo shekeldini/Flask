@@ -174,15 +174,22 @@ function createTable_type_4(jsonObj){
   title.className = "TwoPage__wrapper_title scroll-title";
   let titles_list = jsonObj.table_settings.titles;
 
-  let btn = document.createElement('button');
+  let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
 
+  let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
+  "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_task_id=" + task_select.value + "&filter_task_name=" + $( "#task option:selected" ).text() +
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() ;
+
+  btn.setAttribute("href", btn_url);
   let text = document.createTextNode('Описание контрольных измерительных материалов');
   let tbl = document.createElement('table');
   tbl.className = "scroll";
   let tbdy = document.createElement('tbody');
 
   var tr = document.createElement('tr');
+  tr.className = "adhesive";
   for (var i=0; i<3; i++){
          var td = document.createElement('td');
          td.rowSpan = "2";
@@ -212,6 +219,11 @@ function createTable_type_4(jsonObj){
   for (var i = 1; i < Object.keys(jsonObj.values_array.all.values).length + 1; i++){
           var td = document.createElement('td');
 	  var tr = document.createElement('tr');
+	  if (i % 2 == 0) {
+            tr.className = "dark"
+          } else {
+	     tr.className = "white"
+          };
           td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].task_number_from_kim));
           tr.appendChild(td);
 
@@ -410,14 +422,16 @@ $(document).ready(function(){
         $("#clear_btn").click(function(){
                 $(".error").remove();
                 $(".TwoPage").remove();
-        district_select.style.border = ""
+	        district_select.style.border = ""
                 oo_select.style.border = ""
                 parallel_select.style.border = ""
                 subject_select.style.border = ""
-                report_select.style.border = ""
+                task_select.style.border = "";
+                report_select.style.border = "";
+		oo_select.innerHTML = "";
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
-                task_select.style.border = "";
+                task_select.innerHTML = "";
                 report_select.innerHTML = "";
 
                 district = district_select.value;

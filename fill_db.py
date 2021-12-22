@@ -1189,26 +1189,32 @@ class FillDb(Postgresql):
                 id_subjects = self.get_id_subjects(df.get_subj_name())
                 id_oo_parallels_subjects = self.get_id_oo_parallels_subjects(id_subjects, id_oo_parallels)
 
+
+                r = """
+                INSERT INTO result_for_task 
+                (task_number, id_oo_parallels_subjects, id_students,
+                 id_oo_parallels, id_subjects, variant, mark_for_last_semester, mark, parallel,
+                 id_distributio_of_tasks_by_positions_of_codifiers) VALUES 
+                """
                 for task_number, mark in enumerate(marks):
-                    id_distributio_of_tasks_by_positions_of_codifiers = self.get_id_distributio_of_tasks_by_positions_of_codifiers(id_subjects=id_subjects,
-                                                                               parallel=parallel,
-                                                                               task_number=task_number + 1)
-                    if not id_distributio_of_tasks_by_positions_of_codifiers:
-                        print(id_subjects, parallel, task_number + 1)
-                    self._cur.execute(f"INSERT INTO result_for_task "
-                                      f"(task_number, id_oo_parallels_subjects, id_students,"
-                                      f" id_oo_parallels, id_subjects, variant, mark_for_last_semester, mark, parallel,"
-                                      f" id_distributio_of_tasks_by_positions_of_codifiers) "
-                                      f"VALUES "
-                                      f"({task_number + 1}, {id_oo_parallels_subjects}, {id_students},"
-                                      f" {id_oo_parallels}, {id_subjects}, {int(variant)},"
-                                      f" {int(mark_for_last_semester)}, {int(mark)}, {parallel},"
-                                      f" {id_distributio_of_tasks_by_positions_of_codifiers})")
+                    id_distributio_of_tasks_by_positions_of_codifiers = self.get_id_distributio_of_tasks_by_positions_of_codifiers(
+                        id_subjects=id_subjects,
+                        parallel=parallel,
+                        task_number=task_number + 1)
+                    s = f"""
+                            ({task_number + 1}, {id_oo_parallels_subjects}, {id_students},
+                            {id_oo_parallels}, {id_subjects}, {int(variant)},
+                            {int(mark_for_last_semester)}, {int(mark)}, {parallel},
+                            {id_distributio_of_tasks_by_positions_of_codifiers}), """
+                    r += s
+                self._cur.execute(r.rstrip(", "))
+
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
     def fill_result_for_task(self):
         try:
+            self._cur.execute("TRUNCATE TABLE result_for_task RESTART IDENTITY cascade;")
             all_parallels = glob("excel/vpr_results/*")
             thread_list = []
             for path in all_parallels:
@@ -1265,13 +1271,13 @@ class FillDb(Postgresql):
             parallels = glob("excel/Описание_работ/*")
 
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ\\", ""))
+                parallel = int(p.replace("excel/Описание_работ/", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
+                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
                     id_subjects = self.get_subject_id(subject)
                     kt_data = openpyxl.reader.excel.load_workbook(
-                        filename=s + "\\KT.xlsx", data_only=True)
+                        filename=s + "/KT.xlsx", data_only=True)
                     kt_sheet = kt_data.active
                     for row in range(2, kt_sheet.max_row + 1):
                         kt_key = kt_sheet["A" + str(row)].value
@@ -1290,15 +1296,15 @@ class FillDb(Postgresql):
             parallels = glob("excel/Описание_работ/*")
 
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ\\", ""))
+                parallel = int(p.replace("excel/Описание_работ/", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
+                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
                     id_subjects = self.get_subject_id(subject)
 
-                    if glob(s + "\\KS.xlsx"):
+                    if glob(s + "/KS.xlsx"):
                         ks_data = openpyxl.reader.excel.load_workbook(
-                            filename=s + "\\KS.xlsx", data_only=True)
+                            filename=s + "/KS.xlsx", data_only=True)
                         ks_sheet = ks_data.active
                         for row in range(2, ks_sheet.max_row + 1):
                             ks_key = ks_sheet["A" + str(row)].value
@@ -1320,14 +1326,14 @@ class FillDb(Postgresql):
             self._cur.execute("TRUNCATE TABLE distributio_of_tasks_by_positions_of_codifiers RESTART IDENTITY cascade;")
             parallels = glob("excel/Описание_работ/*")
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ\\", ""))
+                parallel = int(p.replace("excel/Описание_работ/", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
+                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
                     id_subjects = self.get_subject_id(subject)
 
                     all_data = openpyxl.reader.excel.load_workbook(
-                        filename=s + "\\ALL.xlsx", data_only=True)
+                        filename=s + "/ALL.xlsx", data_only=True)
                     all_sheet = all_data.active
                     for row in range(2, all_sheet.max_row + 1):
                         task_number_from_kim = all_sheet["A" + str(row)].value
@@ -1359,75 +1365,20 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def thread_fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers(self, ids):
-        try:
-            for id_distributio_of_tasks_by_positions_of_codifiers, id_subjects, parallel, task_number in ids:
-
-                self._cur.execute(f"""select id_result_for_task from result_for_task 
-                                    where task_number = {task_number} 
-                                    AND id_oo_parallels_subjects IN 
-                                        (select id_oo_parallels_subjects from oo_parallels_subjects 
-                                            where id_subjects = {id_subjects} AND id_oo_parallels IN 
-                                                (select id_oo_parallels from oo_parallels where parallel = {parallel})) order by (id_result_for_task)""")
-                res = self._cur.fetchall()
-                for id_result_for_task, in res:
-                    self._cur.execute(f"INSERT INTO result_for_task_distributio_of_tasks_by_positions_of_codifiers "
-                                      f"(id_distributio_of_tasks_by_positions_of_codifiers, "
-                                      f"id_result_for_task, "
-                                      f"task_number, "
-                                      f"id_subjects, "
-                                      f"parallel)"
-                                      f"VALUES ({id_distributio_of_tasks_by_positions_of_codifiers},"
-                                      f" {id_result_for_task}, {task_number}, {id_subjects}, {parallel})")
-        except psycopg2.Error as e:
-            print("Ошибка при заполнении БД " + str(e))
-
-    def fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers(self):
-        try:
-            self._cur.execute(
-                "TRUNCATE TABLE result_for_task_distributio_of_tasks_by_positions_of_codifiers RESTART IDENTITY cascade;")
-            self._cur.execute("""SELECT id_distributio_of_tasks_by_positions_of_codifiers, 
-                                  id_subjects, 
-                                  parallel, 
-                                  task_number FROM distributio_of_tasks_by_positions_of_codifiers""")
-            distributio_of_tasks_by_positions_of_codifiers = self._cur.fetchall()
-            thread_list = []
-            temp = []
-            count = 0
-            for id_distributio_of_tasks_by_positions_of_codifiers, id_subjects, parallel, task_number in distributio_of_tasks_by_positions_of_codifiers:
-                if count < 60:
-                    temp.append((id_distributio_of_tasks_by_positions_of_codifiers, id_subjects, parallel, task_number))
-                    count += 1
-                else:
-                    psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
-                    thread_list.append(
-                        threading.Thread(
-                            target=psql.thread_fill_result_for_task_distributio_of_tasks_by_positions_of_codifiers,
-                            args=(temp,)))
-                    temp = []
-                    count = 0
-
-            for thread in thread_list:
-                thread.start()
-
-            if all(thread.is_alive() is False for thread in thread_list):
-                print("Таблица result_for_task заполненна")
-        except Exception as e:
-            print(e)
 
     def fill_ks_kt(self):
         try:
             self._cur.execute("TRUNCATE TABLE ks_kt RESTART IDENTITY cascade;")
             parallels = glob("excel/Описание_работ/*")
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ\\", ""))
+                parallel = int(p.replace("excel/Описание_работ/", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
+                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
                     id_subjects = self.get_subject_id(subject)
 
                     all_data = openpyxl.reader.excel.load_workbook(
-                        filename=s + "\\ALL.xlsx", data_only=True)
+                        filename=s + "/ALL.xlsx", data_only=True)
                     all_sheet = all_data.active
                     for row in range(2, all_sheet.max_row + 1):
                         task_number = all_sheet["B" + str(row)].value
@@ -1497,7 +1448,7 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.fill_kt()
 # psql.fill_ks()
 # psql.fill_distributio_of_tasks_by_positions_of_codifiers()
-psql.fill_result_for_task()
-psql.create_index_on_result_for_task()
+# psql.fill_result_for_task()
+# psql.create_index_on_result_for_task()
 # psql.fill_ks_kt()
 

@@ -1,5 +1,6 @@
 from report_classes.classBaseReport import BaseReport
-
+from openpyxl import Workbook
+import datetime
 
 class SchoolsInRisk(BaseReport):
     def __init__(self, request, dbase, user):
@@ -63,3 +64,44 @@ class SchoolsInRisk(BaseReport):
                         'titles': ['Район', 'Название ОО'],
                         'content': 'Необъективные результаты ВПР'},
                     'values': res}
+
+    def export_report(self):
+        report = self.get_report()
+        file_name = 'Shools In Risk.xlsx'
+        wb = Workbook()
+        ws = wb.active
+        if report["type"] in ("district", "all"):
+
+            for index, title in enumerate(report["table_settings"]["titles"]):
+                ws.cell(row=1, column=index + 1, value=title)
+            row_count = 2
+            for key, school_list in report["values"].items():
+                for school in school_list:
+                    ws.cell(row=row_count, column=1, value=key)
+                    ws.cell(row=row_count, column=2, value=school)
+                    row_count += 1
+        elif report["type"] == "oo":
+            titles = report["table_settings"]["titles"]
+            for index in range(3):
+                ws.cell(row=1, column=index + 1, value=titles[index])
+                ws.merge_cells(start_row=1, start_column=index + 1, end_row=2, end_column=index + 1)
+
+            ws.cell(row=1, column=4, value="Отметка по школе")
+            ws.merge_cells(start_row=1, start_column=4, end_row=1, end_column=7)
+
+            ws.cell(row=1, column=8, value="Отметка по ВПР")
+            ws.merge_cells(start_row=1, start_column=8, end_row=1, end_column=11)
+
+            for index in range(3, 11):
+                ws.cell(row=2, column=4 + index - 3, value=titles[index])
+
+            ws.cell(row=3, column=1, value=report["values"]["district_name"])
+            ws.cell(row=3, column=2, value=report["values"]["school_name"])
+            ws.cell(row=3, column=3, value=report["values"]["count_of_students"])
+            for index, value in enumerate(list(report["values"]["last_semester_results"].values())):
+                ws.cell(row=3, column=4 + index, value=value)
+
+            for index, value in enumerate(report["values"]["vpr_results"].values()):
+                ws.cell(row=3, column=8 + index, value=value)
+
+        return wb, file_name

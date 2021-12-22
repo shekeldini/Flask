@@ -873,16 +873,46 @@ border: 1px solid #cebbbd;
   text-align: center;
 }
 
+.scroll tbody tr td:nth-child(1)(even) {
+  background: #449ff0;
+
+}
+
 .mobiles {
   text-align: left !important ;
   min-width: 460px;
   padding-left: 5px !important ;
 }
 
+.adhesive {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #ffffff;
+}
+
+.scroll tbody .white td:first-child {
+  background: #ffffff;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+.scroll tbody .dark td:first-child {
+  background: #dee2e6;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
 .task-title__small {
   min-width: 120px;
   vertical-align: top;
   padding-top: 5px;
+  position: sticky;
+  top: 25px;
+  z-index: 30;
+  background: #f2f2f2;
 }
 
 @media (max-width: 1800px) {

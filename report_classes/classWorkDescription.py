@@ -1,4 +1,5 @@
 from report_classes.classBaseReport import BaseReport
+from openpyxl import Workbook
 
 
 class WorkDescription(BaseReport):
@@ -57,3 +58,49 @@ class WorkDescription(BaseReport):
                                                       self._district["name"]],
                                            "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"all": {"values": all_}}}
+
+    def export_report(self):
+        report = self.get_report()
+        file_name = 'Task Description.xlsx'
+        wb = Workbook()
+        ws = wb.active
+        titles = report["table_settings"]["titles"]
+        for index in range(3):
+            ws.cell(row=1, column=index + 1, value=titles[index])
+            ws.merge_cells(start_row=1, start_column=index + 1, end_row=2, end_column=index + 1)
+        column = 4
+        for index in range(3, len(titles)):
+
+            ws.cell(row=1, column=column, value=titles[index])
+            ws.merge_cells(start_row=1, start_column=column, end_row=1, end_column=column + 3)
+            for i, category in enumerate(["Выполнили кол-во", "Не выполнили кол-во", "Выполнили в %", "Не выполнили в %"]):
+                ws.cell(row=2, column=column + i, value=category)
+            column += 4
+        for i in range(1, len(report["values_array"]["all"]["values"]) + 1):
+            ws.cell(row=2 + i, column=1, value=report["values_array"]["all"]["values"][i]["task_number_from_kim"])
+            ws.cell(row=2 + i, column=2, value=report["values_array"]["all"]["values"][i]["text"])
+            ws.cell(row=2 + i, column=3, value=report["values_array"]["all"]["values"][i]["max_mark"])
+            ws.cell(row=2 + i, column=4, value=report["values_array"]["all"]["values"][i]["values"]["Выполнили"]["count"])
+            ws.cell(row=2 + i, column=5, value=report["values_array"]["all"]["values"][i]["values"]["Не выполнили"]["count"])
+            ws.cell(row=2 + i, column=6, value=report["values_array"]["all"]["values"][i]["values"]["Выполнили"]["%"])
+            ws.cell(row=2 + i, column=7, value=report["values_array"]["all"]["values"][i]["values"]["Не выполнили"]["%"])
+            if len(report["values_array"]) > 1:
+                ws.cell(row=2 + i, column=8,
+                        value=report["values_array"]["district"]["values"][i]["values"]["Выполнили"]["count"])
+                ws.cell(row=2 + i, column=9,
+                        value=report["values_array"]["district"]["values"][i]["values"]["Не выполнили"]["count"])
+                ws.cell(row=2 + i, column=10,
+                        value=report["values_array"]["district"]["values"][i]["values"]["Выполнили"]["%"])
+                ws.cell(row=2 + i, column=11,
+                        value=report["values_array"]["district"]["values"][i]["values"]["Не выполнили"]["%"])
+
+            if len(report["values_array"]) > 2:
+                ws.cell(row=2 + i, column=12,
+                        value=report["values_array"]["oo"]["values"][i]["values"]["Выполнили"]["count"])
+                ws.cell(row=2 + i, column=13,
+                        value=report["values_array"]["oo"]["values"][i]["values"]["Не выполнили"]["count"])
+                ws.cell(row=2 + i, column=14,
+                        value=report["values_array"]["oo"]["values"][i]["values"]["Выполнили"]["%"])
+                ws.cell(row=2 + i, column=15,
+                        value=report["values_array"]["oo"]["values"][i]["values"]["Не выполнили"]["%"])
+        return wb, file_name

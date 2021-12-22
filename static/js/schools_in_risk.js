@@ -274,9 +274,15 @@ function createTable_type_3_for_oo(jsonObj){
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
 
-  let btn = document.createElement('button');
+  let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
 
+  let btn_url = "/api/export/?" + "filter_report_id=3" + "&filter_report_name=Школы в зоне риска" + "&filter_district_id=" + district_select.value + "&filter_district_name=" + $( "#district option:selected" ).text() +
+  "&filter_oo_id=" + oo_select.value +  "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value + "&filter_parallel_name=" + $( "#parallel option:selected" ).text() +
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text();
+
+
+  btn.setAttribute("href", btn_url);
   let text = document.createTextNode(jsonObj.table_settings.content);
   let tbl = document.createElement('table');
   let tbdy = document.createElement('tbody');
@@ -364,10 +370,14 @@ function createTable_type_3_for_district(jsonObj){
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
 
-  let btn = document.createElement('button');
+  let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
 
+  let btn_url = "/api/export/?" + "filter_report_id=" + 3  + "&filter_report_name=Школы в зоне риска" + "&filter_district_id=" + district_select.value + "&filter_district_name=" + $( "#district option:selected" ).text() +
+  "&filter_oo_id=" + oo_select.value +  "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value + "&filter_parallel_name=" + $( "#parallel option:selected" ).text() +
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text();
 
+  btn.setAttribute("href", btn_url);
   let text = document.createTextNode(jsonObj.table_settings.content);
   let tbl = document.createElement('table');
   let thr = document.createElement('tr');

@@ -1,7 +1,8 @@
 import psycopg2
 import os
+from io import BytesIO
 from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response, jsonify, \
-    send_from_directory
+    send_from_directory, Response
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from classUserLogin import UserLogin
@@ -61,8 +62,41 @@ def close_db(error):
     if hasattr(g, "link_db"):
         g.link_db.close()
 
+@app.route("/api/export/")
+@login_required
+def export():
+    export_data = {"report": {"id": request.args.get("filter_report_id"),
+                              "name": request.args.get("filter_report_name")},
 
-@app.route('/uploads/<path:filename>', methods=['GET', 'POST'])
+                   "district": {"id": request.args.get("filter_district_id"),
+                                "name": request.args.get("filter_district_name")},
+
+                   "oo": {"id": request.args.get("filter_oo_id"),
+                          "name": request.args.get("filter_oo_name")},
+
+                   "parallel": {"id": request.args.get("filter_parallel_id"),
+                                "name": request.args.get("filter_parallel_name")},
+
+                   "subject": {"id": request.args.get("filter_subject_id"),
+                               "name": request.args.get("filter_subject_name")},
+
+                   "task": {"id": request.args.get("filter_task_id"),
+                            "name": request.args.get("filter_task_name")},
+                   }
+    report = ReportController(request=export_data, dbase=dbase, user=current_user)
+    wb, name = report.export_report()
+    virtual_workbook = BytesIO()
+    wb.save(virtual_workbook)
+    wb.close()
+    return Response(
+        virtual_workbook.getvalue(),
+        headers={
+            'Content-Disposition': f'attachment; filename={name}',
+            'Content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+    )
+
+@app.route('/download/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download(filename):
     uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
