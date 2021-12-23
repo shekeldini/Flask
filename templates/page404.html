@@ -1,6 +1,27 @@
-{% extends 'base_with_menu.html' %}
-
-{% block main %}
-{{ super() }}
-<p> Страница не найдена, вернуться на <a href="{{url_for('index')}}">главную</a> страницу.
-{% endblock %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link type="text/css" href="{{ url_for('static', filename='css/style.css')}}" rel="stylesheet"  >
+		<title> Страница не найдена </title>
+<head>
+<body>
+    <div class="mainContent">
+        <section class="wrapper">
+			<div class="wrapper-error">
+			 <div class="container">
+			  <div class="wrapper-error__shell">
+			    <h2 class="wrapper-error__title">Страница не найдена</h2>
+			    <div class="wrapper-error__text">
+			      Мы не можем найти страницу, которую вы ищете.Вы можете вернуться на <a href="{{url_for('index')}}">главную страницу</a>, и попробовать
+			      еще раз.
+			    </div>
+			  </div>
+			 </div>
+			</div>
+        </section>
+        </div>
+</body>
+</html>

@@ -1,4 +1,5 @@
 from report_classes.classBaseReport import BaseReport
+from openpyxl import Workbook
 
 
 class StatisticsOfMarks(BaseReport):
@@ -146,3 +147,19 @@ class StatisticsOfMarks(BaseReport):
                         "oo": self._oo,
                         "percents": percents,
                         }
+    def export_report(self):
+        report = self.get_report()
+        file_name = 'Statistics Of Marks.xlsx'
+        wb = Workbook()
+        ws = wb.active
+        for index, title in enumerate(report["table_settings"]["titles"]):
+            ws.cell(row=1, column=index + 1, value=title)
+        row = 2
+        for index in range(len(report["table_settings"]["values"]["groups"])):
+            col = 1
+            for field in report["table_settings"]["fields"]:
+                ws.cell(row=row, column=col, value=report["table_settings"]["values"][field][index])
+                col += 1
+            row += 1
+
+        return wb, file_name

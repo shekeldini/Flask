@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Manrope&display=swap');
 
-
 body {
   margin: 0 auto;
   min-height: 100vh;
@@ -915,6 +914,48 @@ border: 1px solid #cebbbd;
   background: #f2f2f2;
 }
 
+.wrapper-error {
+  background:center/cover no-repeat url("/static/images/404-hero.svg");
+  min-width: 100%;
+  min-height: 100vh;
+}
+
+.wrapper-error__shell {
+  margin-top: 480px;
+  padding-left: 15px;
+}
+
+.wrapper-error__title {
+  font-family: "Roboto", sans-serif;
+  font-weight: 600;
+  font-size: 40px;
+  color: #ffffff;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 30px;
+}
+
+.wrapper-error__text {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: #FFFFFF;
+  max-width: 500px;
+}
+
+.wrapper-error__text a {
+  color: #ffffff;
+  border-bottom: 2px solid #2cd4d9;
+  text-decoration: none;
+  transition: 0.2s all;
+}
+
+.wrapper-error__text a:hover,
+.wrapper-error__text a:focus {
+  color: #2cd4d9;
+
+}
+
 @media (max-width: 1800px) {
   .wrapper__center {
     max-width: 1440px;
@@ -1290,6 +1331,9 @@ border: 1px solid #cebbbd;
   }
   .mobiles {
     min-width: 200px;
+  }
+  .wrapper-error__shell {
+    margin-top: 340px;
   }
 
 }

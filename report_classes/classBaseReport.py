@@ -5,5 +5,6 @@ class BaseReport:
         self._parallel = request["parallel"]
         self._subject = request["subject"]
         self._report_type = request["report"]
+        self._request = request
         self._dbase = dbase
         self._user = user

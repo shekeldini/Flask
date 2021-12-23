@@ -1,4 +1,5 @@
 from report_classes.classBaseReport import BaseReport
+from openpyxl import Workbook
 
 
 class ComparisonOfRatings(BaseReport):
@@ -136,3 +137,22 @@ class ComparisonOfRatings(BaseReport):
                         "oo": self._oo,
                         "percents": percents,
                         }
+    def export_report(self):
+        key = self._request["table_type"]
+        report = self.get_report()
+        file_name = 'Comparison Of Ratings.xlsx'
+        wb = Workbook()
+        ws = wb.active
+        for index, title in enumerate(report["table_settings"]["titles"]):
+            ws.cell(row=1, column=index + 1, value=title)
+        row = 2
+        groups = ["Понизили", "Подтвердили", "Повысили", "Всего"]
+        for index, group in enumerate(groups):
+            col = 1
+            ws.cell(row=row, column=col, value=report["table_settings"]["groups"][index])
+            for row_key in ["count_of_students", "%"]:
+                col += 1
+                ws.cell(row=row, column=col, value=report["percents"][key]["value"][group][row_key])
+            row += 1
+
+        return wb, file_name

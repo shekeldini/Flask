@@ -1,4 +1,5 @@
 from report_classes.classBaseReport import BaseReport
+from openpyxl import Workbook
 
 
 class ResultVpr(BaseReport):
@@ -115,3 +116,49 @@ class ResultVpr(BaseReport):
                     "oo": self._oo},
                     "content": content,
                     "sub_content": sub_content}
+
+    def export_report(self):
+        report = self.get_report()
+        file_name = 'Result Vpr.xlsx'
+        wb = Workbook()
+        ws = wb.active
+        titles = report["table_settings"]["titles"]
+        for index in range(2):
+            ws.cell(row=1, column=index + 1, value=titles[index])
+            ws.merge_cells(start_row=1, start_column=index + 1, end_row=2, end_column=index + 1)
+
+        ws.cell(row=1, column=3, value="Распределение отметок в %")
+        ws.merge_cells(start_row=1, start_column=3, end_row=1, end_column=6)
+        for index in range(6, len(titles)):
+            ws.cell(row=1, column=index + 1, value=titles[index])
+            ws.merge_cells(start_row=1, start_column=index + 1, end_row=2, end_column=index + 1)
+
+        for index in range(2, 6):
+            ws.cell(row=2, column=index + 1, value=titles[index])
+
+        if len(report["table_settings"]["values"]) == 3:
+            keys = ["all_districts", "district", "oo"]
+            dictionary = None
+        elif len(report["table_settings"]["values"]) == 2:
+            keys = ["all_districts", "district"]
+            dictionary = report["table_settings"]["values"]["district"]["schools"]
+        else:
+            keys = ["all_districts"]
+            dictionary = report["table_settings"]["values"]["all_districts"]["districts"]
+        row = 3
+        for key in keys:
+            col = 1
+            ws.cell(row=row, column=col, value=report["table_settings"]["values"][key]["name"])
+            for field in report["table_settings"]["fields"]:
+                col += 1
+                ws.cell(row=row, column=col, value=report["table_settings"]["values"][key]["value"][field])
+            row += 1
+        if dictionary:
+            for key, values in dictionary.items():
+                col = 1
+                ws.cell(row=row, column=col, value=key)
+                for field in report["table_settings"]["fields"]:
+                    col += 1
+                    ws.cell(row=row, column=col, value=values[field])
+                row += 1
+        return wb, file_name

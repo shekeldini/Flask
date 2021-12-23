@@ -82,6 +82,7 @@ def export():
 
                    "task": {"id": request.args.get("filter_task_id"),
                             "name": request.args.get("filter_task_name")},
+                   "table_type": request.args.get("filter_table_type")
                    }
     report = ReportController(request=export_data, dbase=dbase, user=current_user)
     wb, name = report.export_report()
