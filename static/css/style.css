@@ -864,7 +864,7 @@ border: 1px solid #cebbbd;
 .scroll {
   display: block;
   overflow: scroll;
-  height: 600px !important ;
+  height: 500px !important ;
 }
 
 .scroll tbody tr td:first-child {
@@ -954,6 +954,10 @@ border: 1px solid #cebbbd;
 .wrapper-error__text a:focus {
   color: #2cd4d9;
 
+}
+
+.textLeft {
+ text-align: left !important; 
 }
 
 @media (max-width: 1800px) {

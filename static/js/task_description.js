@@ -150,14 +150,183 @@ fetch('/api/task_description/get_reports/' + task_number).then(function(response
         });
 };
 
-function draw_report(json_data){
-        createTable_type_4(json_data);
+function draw_report(report_type, json_data){
+        if (report_type == 4){
+                createTable_type_4(json_data);  
+        }
+        if (report_type == 5){
+                createTable_type_5(json_data);  
+        }
 };
 
-function draw_report(json_data){
-        createTable_type_4(json_data);
-};
+function createTable_type_5(jsonObj){
 
+  let body = document.getElementById('report_place');
+  let section = document.createElement('section');
+  section.className = "TwoPage";
+  section.id = "report_section";
+  let container = document.createElement('div');
+  container.className = "container_report";
+  container.id = "report_container";
+  let div = document.createElement('div');
+  div.className = "TwoPage__wrapper";
+  let title = document.createElement('h3');
+  title.className = "TwoPage__wrapper_title scroll-title";
+  let names = jsonObj.table_settings.titles;
+
+  let btn = document.createElement('a');
+  btn.className = "upload mdi mdi-download";
+
+  let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
+  "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_task_id=" + task_select.value + "&filter_task_name=" + $( "#task option:selected" ).text() +
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() ;
+  btn.setAttribute("href", btn_url);
+  let col_span = Object.keys(jsonObj.values_array).length
+  if (col_span == 3){
+        var keys = ["all", "district", "oo"]
+  }
+  if (col_span == 2){
+        var keys = ["all", "district"]
+  }
+  if (col_span == 1){
+        var keys = ["all"]
+  }
+
+  
+  let text = document.createTextNode('Описание контрольных измерительных материалов');
+  let tbl = document.createElement('table');
+  tbl.className = "scroll";
+  let tbdy = document.createElement('tbody');
+  
+  for ([task, dict_values] of Object.entries(jsonObj["values_array"]["all"]["values"])){
+        
+        let titles = ["№", "Умения, виды деятельности", "Уровень сложности", "Максимальный балл"]
+        let values_for_titles = [dict_values["task_number_from_kim"], dict_values["text"], dict_values["level"], dict_values["max_mark"]]
+        for (var i = 0; i < titles.length; i++){
+                var tr = document.createElement('tr');
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(titles[i]));
+                tr.appendChild(td);
+
+                var td = document.createElement('td');
+                td.colSpan = col_span;
+                td.appendChild(document.createTextNode(values_for_titles[i]));
+                tr.appendChild(td);
+                tbdy.appendChild(tr);
+        }
+        let ks_row_span = dict_values["ks"].length;
+        let kt_row_span = dict_values["kt"].length;
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.rowSpan = ks_row_span;
+        td.appendChild(document.createTextNode("Проверяемые элементы содержания"));
+        tr.appendChild(td);
+        var td = document.createElement('td');
+	td.className = "textLeft";
+        td.colSpan = col_span;
+        td.appendChild(document.createTextNode(1+ ") " + dict_values["ks"][0]));
+        tr.appendChild(td);
+        tbdy.appendChild(tr);
+        if (ks_row_span > 1){
+                for (var i=1; i<ks_row_span; i++){
+                        var tr = document.createElement('tr');
+                        var td = document.createElement('td');
+			td.colSpan = col_span;
+		        td.textAlign = "left";
+                        td.appendChild(document.createTextNode(i + 1 +") " + dict_values["ks"][i]));
+                        tr.appendChild(td);
+                        tbdy.appendChild(tr);
+                }
+        }
+
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.rowSpan = kt_row_span;
+        td.appendChild(document.createTextNode("Проверяемые требования"));
+        tr.appendChild(td);
+        var td = document.createElement('td');
+	td.className = "textLeft";
+        td.colSpan = col_span;
+        td.appendChild(document.createTextNode(1+ ") " + dict_values["kt"][0]));
+        tr.appendChild(td);
+        tbdy.appendChild(tr);
+        if (kt_row_span > 1){
+                for (var i=1; i<kt_row_span; i++){
+                        var tr = document.createElement('tr');
+                        var td = document.createElement('td');
+			td.colSpan = col_span;
+		        td.textAlign = "left";
+                        td.appendChild(document.createTextNode(i + 1 + ") " + dict_values["kt"][i]));
+                        tr.appendChild(td);
+                        tbdy.appendChild(tr);
+                }
+        }
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        tr.appendChild(td);
+        for (name of names){
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(name));
+                tr.appendChild(td);
+        }
+        tbdy.appendChild(tr);
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode("Выполнили кол-во"));
+        tr.appendChild(td);
+        for (key of keys){
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(jsonObj.values_array[key].values[task].values["Выполнили"]["count"]));
+                tr.appendChild(td);
+        }
+        tbdy.appendChild(tr);
+
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode("Не выполнили кол-во"));
+        tr.appendChild(td);
+        for (key of keys){
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(jsonObj["values_array"][key]["values"][task]["values"]["Не выполнили"]["count"]));
+                tr.appendChild(td);
+        }
+        tbdy.appendChild(tr);
+
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode("Выполнили в %"));
+        tr.appendChild(td);
+        for (key of keys){
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(jsonObj["values_array"][key]["values"][task]["values"]["Выполнили"]["%"]));
+                tr.appendChild(td);
+        }
+        tbdy.appendChild(tr);
+
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode("Не выполнили %"));
+        tr.appendChild(td);
+        for (key of keys){
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(jsonObj["values_array"][key]["values"][task]["values"]["Не выполнили"]["%"]));
+                tr.appendChild(td);
+        }
+        tbdy.appendChild(tr);
+  }
+  title.appendChild(text);
+  div.appendChild(title);
+  tbl.appendChild(tbdy);
+  div.appendChild(tbl);
+  div.appendChild(btn);
+  container.appendChild(div);
+  section.appendChild(container);
+  body.appendChild(section);
+  window.getComputedStyle(div).opacity;
+  div.className +=" in";
+  return tbl;
+};
 
 function createTable_type_4(jsonObj){
 
@@ -405,7 +574,7 @@ $(document).ready(function(){
                         marker = JSON.stringify(data);
                         var jsonObj = JSON.parse(marker);
                         $(".TwoPage").remove();
-			draw_report(jsonObj);
+			draw_report(id_report, jsonObj);
                         $("#submit_btn").attr("disabled", false);
 
         },

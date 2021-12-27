@@ -23,12 +23,7 @@ class WorkDescriptionForOneTask(BaseReport):
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"],
                     task_number=self.task["id"])
-                return {"table_settings": {"titles": ["Номер задания",
-                                                      "Блоки ПООП обучающийся научится "
-                                                      "/ получит возможность научиться "
-                                                      "или проверяемые требования (умения) "
-                                                      "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
-                                                      "Все муниципалитеты", self._district["name"], self._oo["name"]],
+                return {"table_settings": {"titles": ["Все муниципалитеты", self._district["name"], self._oo["name"]],
                                            "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"oo": {"values": oo},
                                          "district": {"values": district},
@@ -45,12 +40,7 @@ class WorkDescriptionForOneTask(BaseReport):
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"],
                     task_number=self.task["id"])
-                return {"table_settings": {"titles": ["Номер задания",
-                                                      "Блоки ПООП обучающийся научится "
-                                                      "/ получит возможность научиться "
-                                                      "или проверяемые требования (умения) "
-                                                      "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
-                                                      "Все муниципалитеты", self._district["name"]],
+                return {"table_settings": {"titles": ["Все муниципалитеты", self._district["name"]],
                                            "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"district": {"values": district},
                                          "all": {"values": all_}}}
@@ -62,14 +52,65 @@ class WorkDescriptionForOneTask(BaseReport):
                     parallel=self._parallel["name"],
                     task_number=self.task["id"])
 
-                return {"table_settings": {"titles": ["Номер задания",
-                                                      "Блоки ПООП обучающийся научится "
-                                                      "/ получит возможность научиться "
-                                                      "или проверяемые требования (умения) "
-                                                      "в соответствии с ФГОС (ФК ГОС)", "Макс балл",
-                                                      self._district["name"]],
+                return {"table_settings": {"titles": [self._district["name"]],
                                            "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"all": {"values": all_}}}
 
     def export_report(self):
-        return {}, None
+        report = self.get_report()
+        file_name = 'Task Description For One Task.xlsx'
+        wb = Workbook()
+        ws = wb.active
+
+        if len(report["values_array"]) == 3:
+            colspan = 2
+            keys = ["all", "district", "oo"]
+        elif len(report["values_array"]) == 2:
+            colspan = 1
+            keys = ["all", "district"]
+        else:
+            colspan = 0
+            keys = ["all"]
+        row = 1
+        for task, value in report["values_array"]["all"]["values"].items():
+            for title, value_for_title in zip(["№", "Умения, виды деятельности", "Уровень сложности", "Максимальный балл"],
+                                              [value["task_number_from_kim"], value["text"], value["level"], value["max_mark"]]):
+                ws.cell(row=row, column=1, value=title)
+                ws.cell(row=row, column=2, value=value_for_title)
+                ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=2 + colspan)
+                row += 1
+
+            ws.cell(row=row, column=1, value="Проверяемые элементы содержания")
+            ks_row = row
+            for index, ks in enumerate(value["ks"]):
+                ws.cell(row=row, column=2, value=f"{index + 1}) {ks}")
+                ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=2 + colspan)
+                row += 1
+            ws.merge_cells(start_row=ks_row, start_column=1, end_row=row - 1, end_column=1)
+
+            ws.cell(row=row, column=1, value="Проверяемые требования")
+            kt_row = row
+            for index, kt in enumerate(value["kt"]):
+                ws.cell(row=row, column=2, value=f"{index + 1}) {kt}")
+                ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=2 + colspan)
+                row += 1
+            ws.merge_cells(start_row=kt_row, start_column=1, end_row=row - 1, end_column=1)
+
+            for index, title in enumerate(report["table_settings"]["titles"]):
+                ws.cell(row=row, column=2 + index, value=title)
+
+            ws.cell(row=row + 1, column=1, value="Выполнили кол-во")
+            ws.cell(row=row + 2, column=1, value="Не выполнили кол-во")
+            ws.cell(row=row + 3, column=1, value="Выполнили в %")
+            ws.cell(row=row + 4, column=1, value="Не выполнили %")
+            for index, key in enumerate(keys):
+                ws.cell(row=row + 1, column=2 + index,
+                        value=report["values_array"][key]["values"][task]["values"]["Выполнили"]["count"])
+                ws.cell(row=row + 2, column=2 + index,
+                        value=report["values_array"][key]["values"][task]["values"]["Не выполнили"]["count"])
+                ws.cell(row=row + 3, column=2 + index,
+                        value=report["values_array"][key]["values"][task]["values"]["Выполнили"]["%"])
+                ws.cell(row=row + 4, column=2 + index,
+                        value=report["values_array"][key]["values"][task]["values"]["Не выполнили"]["%"])
+
+        return wb, file_name
