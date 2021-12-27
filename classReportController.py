@@ -3,6 +3,8 @@ from report_classes.classComparisonOfRatings import ComparisonOfRatings
 from report_classes.classResultVpr import ResultVpr
 from report_classes.classSchoolRisk import SchoolsInRisk
 from report_classes.classWorkDescription import WorkDescription
+from report_classes.classWorkDescriptionForOneTask import WorkDescriptionForOneTask
+
 
 class ReportController:
     def __init__(self, request, dbase, user):
@@ -24,8 +26,20 @@ class ReportController:
         elif int(self._request["report"]["id"]) == 4:
             self.report_cls = WorkDescription(self._request, self._dbase, self._user)
 
+        elif int(self._request["report"]["id"]) == 5:
+            self.report_cls = WorkDescriptionForOneTask(self._request, self._dbase, self._user)
+
+        else:
+            self.report_cls = None
+
     def get_report(self):
-        return self.report_cls.get_report()
+        if self.report_cls:
+            return self.report_cls.get_report()
+        else:
+            return {"something wrong"}
 
     def export_report(self):
-        return self.report_cls.export_report()
+        if self.report_cls:
+            return self.report_cls.export_report()
+        else:
+            return None, None

@@ -1314,6 +1314,9 @@ class FillDb(Postgresql):
                         self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) "
                                           f"VALUES ('NULL', {id_subjects}, {parallel}, '')")
             self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 1, 11, '')")
+
+            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 6, 7, '')")
+
             self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 6, 11, '')")
             self._cur.execute(
                 f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 11, 11, '')")
@@ -1445,10 +1448,10 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.create_roles()
 # psql.create_users()
 # psql.fill_users_oo_logins()
-# psql.fill_kt()
-# psql.fill_ks()
+psql.fill_kt()
+psql.fill_ks()
 # psql.fill_distributio_of_tasks_by_positions_of_codifiers()
 # psql.fill_result_for_task()
 # psql.create_index_on_result_for_task()
-# psql.fill_ks_kt()
+psql.fill_ks_kt()
 

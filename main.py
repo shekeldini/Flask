@@ -86,6 +86,8 @@ def export():
                    }
     report = ReportController(request=export_data, dbase=dbase, user=current_user)
     wb, name = report.export_report()
+    if not wb or not name:
+        return "something wrong"
     virtual_workbook = BytesIO()
     wb.save(virtual_workbook)
     wb.close()

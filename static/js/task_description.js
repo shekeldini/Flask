@@ -337,7 +337,7 @@ $(document).ready(function(){
                         "name": $( "#subject option:selected" ).text()
                          },
 
-                tusk: {
+                task: {
                         'id': id_task,
                         "name": $( "#task option:selected" ).text()
                          }, 
