@@ -419,10 +419,10 @@ def parallels_for_oo(id_oo):
         return jsonify({'parallels': parallels_array})
 
 
-@app.route('/all_subjects/<parallel>')
+@app.route('/all_subjects/<id_district>/<parallel>')
 @login_required
-def all_subjects(parallel):
-    subjects = dbase.get_subjects(parallel, current_user.get_id())
+def all_subjects(id_district, parallel):
+    subjects = dbase.get_subjects(parallel, current_user.get_id(), id_district)
     subjects_array = []
     for subject in sorted(subjects, key=lambda x: x[1]):
         subjects_obj = {'id': subject[0], 'name': subject[1]}

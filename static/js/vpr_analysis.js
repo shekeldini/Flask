@@ -88,7 +88,7 @@ parallel_select.onchange = function(){
 
         parallel = parallel_select.value;
         if (district_select.value == "all" || oo_select.value == "all"){
-                 fetch('all_subjects/' + parallel).then(function(response){
+                 fetch('all_subjects/'+ district_select.value + "/" + parallel).then(function(response){
                         response.json().then(function(data) {
                                 optionHTML = '';
                                 for (subject of data.subjects) {
@@ -791,11 +791,46 @@ function createTable_type_2(jsonObj){
                 }
                 tbdy.appendChild(tr);
         }
-        for ([key, dict_values] of Object.entries(jsonObj.table_settings.values.all_districts.districts)){
+	
+let items = Object.keys(jsonObj.table_settings.values.all_districts.districts)
+
+function predicate_1(item) {
+    return item.indexOf('район') >= 0;
+}
+
+function predicate_2(item) {
+    return item.indexOf('край') >= 0;
+}
+
+function predicate_3(item) {
+    return item.indexOf('г.') >= 0;
+}
+
+const result_1 = items.reduce((res, item) => {
+    res[predicate_1(item) ? 'a' : 'b'].push(item);
+    return res;
+}, { a: [], b: [] });
+
+const result_2= result_1.b.reduce((res, item) => {
+    res[predicate_2(item) ? 'a' : 'b'].push(item);
+    return res;
+}, { a: [], b: [] });
+
+const result_3 = result_2.b.reduce((res, item) => {
+    res[predicate_3(item) ? 'a' : 'b'].push(item);
+    return res;
+}, { a: [], b: [] });
+
+let result = []
+result = result.concat(result_1.a.sort(), result_2.a.sort(), result_3.b.sort(), result_3.a.sort())
+
+        //for ([key, dict_values] of Object.entries(jsonObj.table_settings.values.all_districts.districts)){
+	for (key of result) {
                 let tr = document.createElement('tr');
                 var td = document.createElement('td');
                 td.appendChild(document.createTextNode(key));
                 tr.appendChild(td);
+let dict_values = jsonObj.table_settings.values.all_districts.districts[key];
                 for (field of fields){
                         var td = document.createElement('td');
                         td.appendChild(document.createTextNode(dict_values[field]));

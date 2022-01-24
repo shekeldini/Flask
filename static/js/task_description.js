@@ -93,7 +93,7 @@ parallel_select.onchange = function(){
 
         parallel = parallel_select.value;
         if (district_select.value == "all" || oo_select.value == "all"){
-                 fetch('all_subjects/' + parallel).then(function(response){
+                 fetch('all_subjects/'+ district_select.value + "/" + parallel).then(function(response){
                         response.json().then(function(data) {
                                 optionHTML = '';
                                 for (subject of data.subjects) {
@@ -206,10 +206,16 @@ function createTable_type_5(jsonObj){
         for (var i = 0; i < titles.length; i++){
                 var tr = document.createElement('tr');
                 var td = document.createElement('td');
+		td.className = "textLeft";
                 td.appendChild(document.createTextNode(titles[i]));
                 tr.appendChild(td);
 
                 var td = document.createElement('td');
+		td.width = "85%";
+		td.className = "textLeft";
+		//td.style.setProperty("text-align", "justify", "important");
+		td.style.paddingRight = "5px";
+		
                 td.colSpan = col_span;
                 td.appendChild(document.createTextNode(values_for_titles[i]));
                 tr.appendChild(td);
@@ -219,11 +225,12 @@ function createTable_type_5(jsonObj){
         let kt_row_span = dict_values["kt"].length;
         var tr = document.createElement('tr');
         var td = document.createElement('td');
+	td.className = "textLeft";
         td.rowSpan = ks_row_span;
         td.appendChild(document.createTextNode("Проверяемые элементы содержания"));
         tr.appendChild(td);
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.colSpan = col_span;
         td.appendChild(document.createTextNode(1+ ") " + dict_values["ks"][0]));
         tr.appendChild(td);
@@ -232,8 +239,8 @@ function createTable_type_5(jsonObj){
                 for (var i=1; i<ks_row_span; i++){
                         var tr = document.createElement('tr');
                         var td = document.createElement('td');
+			td.className = "textLeft";
 			td.colSpan = col_span;
-		        td.textAlign = "left";
                         td.appendChild(document.createTextNode(i + 1 +") " + dict_values["ks"][i]));
                         tr.appendChild(td);
                         tbdy.appendChild(tr);
@@ -242,6 +249,7 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
+	td.className = "textLeft";
         td.rowSpan = kt_row_span;
         td.appendChild(document.createTextNode("Проверяемые требования"));
         tr.appendChild(td);
@@ -255,8 +263,9 @@ function createTable_type_5(jsonObj){
                 for (var i=1; i<kt_row_span; i++){
                         var tr = document.createElement('tr');
                         var td = document.createElement('td');
+			td.className = "textLeft";
 			td.colSpan = col_span;
-		        td.textAlign = "left";
+		        
                         td.appendChild(document.createTextNode(i + 1 + ") " + dict_values["kt"][i]));
                         tr.appendChild(td);
                         tbdy.appendChild(tr);
@@ -264,15 +273,18 @@ function createTable_type_5(jsonObj){
         }
         var tr = document.createElement('tr');
         var td = document.createElement('td');
+	td.className = "textLeft";
         tr.appendChild(td);
         for (name of names){
                 var td = document.createElement('td');
+		td.className = "textWeight";
                 td.appendChild(document.createTextNode(name));
                 tr.appendChild(td);
         }
         tbdy.appendChild(tr);
         var tr = document.createElement('tr');
         var td = document.createElement('td');
+	td.className = "textLeft";
         td.appendChild(document.createTextNode("Выполнили кол-во"));
         tr.appendChild(td);
         for (key of keys){
@@ -284,6 +296,7 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
+	td.className = "textLeft";
         td.appendChild(document.createTextNode("Не выполнили кол-во"));
         tr.appendChild(td);
         for (key of keys){
@@ -295,6 +308,7 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
+	td.className = "textLeft";
         td.appendChild(document.createTextNode("Выполнили в %"));
         tr.appendChild(td);
         for (key of keys){
@@ -306,6 +320,7 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
+	td.className = "textLeft";
         td.appendChild(document.createTextNode("Не выполнили %"));
         tr.appendChild(td);
         for (key of keys){

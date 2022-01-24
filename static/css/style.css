@@ -957,8 +957,18 @@ border: 1px solid #cebbbd;
 }
 
 .textLeft {
- text-align: left !important; 
+ text-align: left !important;
+ padding-left: 12px !important; 
 }
+
+.textWeight {
+  font-weight: 500;
+}
+
+.scroll tbody tr:first-child td {
+  text-align: center !important;
+}
+
 
 @media (max-width: 1800px) {
   .wrapper__center {

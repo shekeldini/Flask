@@ -1318,6 +1318,7 @@ class FillDb(Postgresql):
             self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 6, 7, '')")
 
             self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 6, 11, '')")
+            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 11, 7, '')")
             self._cur.execute(
                 f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 11, 11, '')")
             print("Таблица ks заполненна")
