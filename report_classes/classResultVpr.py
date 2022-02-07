@@ -23,11 +23,13 @@ class ResultVpr(BaseReport):
                 percents_district = self._dbase.get_result_vpr_for_all_school_in_district(
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                    parallel=self._parallel["name"])
+                    parallel=self._parallel["name"],
+                    year=self._year["name"])
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                    parallel=self._parallel["name"])
+                    parallel=self._parallel["name"],
+                    year=self._year["name"])
 
                 percents["oo"]["name"] = self._oo["name"]
                 percents["oo"]["value"] = percents_oo
@@ -54,7 +56,8 @@ class ResultVpr(BaseReport):
                 percents_district = self._dbase.get_result_vpr_for_all_school_in_district(
                     id_district=self._district["id"],
                     id_subjects=self._subject["id"],
-                    parallel=self._parallel["id"])
+                    parallel=self._parallel["id"],
+                    year=self._year["name"])
 
                 for id_oo_parallels_subjects, id_oo_parallels in self._dbase.get_oo_from_id_oo_parallels_subjects(
                         id_district=self._district["id"],
@@ -70,7 +73,8 @@ class ResultVpr(BaseReport):
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                    parallel=self._parallel["name"])
+                    parallel=self._parallel["name"],
+                    year=self._year["name"])
 
                 percents["district"]["name"] = self._district["name"]
                 percents["district"]["value"] = percents_district
@@ -94,15 +98,17 @@ class ResultVpr(BaseReport):
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
                     id_subjects=self._subject["id"],
-                    parallel=self._parallel["id"])
+                    parallel=self._parallel["id"],
+                    year=self._year["name"])
 
-                for id_district, district_name in self._dbase.get_district_for_report_type_2(id_subjects=self._subject[
-                                                                                                 "id"],
-                                                                                             parallel=self._parallel["id"]):
+                for id_district, district_name in self._dbase.get_district_for_report_type_2(id_subjects=self._subject["id"],
+                                                                                             parallel=self._parallel["id"],
+                                                                                             year=self._year["name"]):
                     percents_district = self._dbase.get_result_vpr_for_all_school_in_district(
                         id_district=id_district,
                         id_subjects=self._subject["id"],
-                        parallel=self._parallel["id"])
+                        parallel=self._parallel["id"],
+                        year=self._year["name"])
                     percents["all_districts"]["districts"][district_name.replace("_", " ")] = percents_district
                 percents["all_districts"]["name"] = "Все муниципалитеты"
                 percents["all_districts"]["value"] = percents_all

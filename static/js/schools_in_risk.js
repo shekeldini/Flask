@@ -1,32 +1,58 @@
+year_select = document.getElementById('year');
 district_select = document.getElementById('district');
 oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
 
-
-fetch('districts_for_schools_in_risk').then(function(response){
+fetch('api/get_year').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
-                        for (district of data.districts) {
-                                optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                        for (year of data.year) {
+                                optionHTML += '<option value="' + year.id+'">' + year.name + '</option>'
                         }
-                        district_select.innerHTML = optionHTML;
-			if (district_select.length == 1){
-				district_select.defaultSelected = district_select[0];
-				district_select.onchange();
-			}
-			else{
-				district_select.value = "";
-			}
+                        year_select.innerHTML = optionHTML;
+
+                        if (year_select.length == 1){
+                                year_select.defaultSelected = year_select[0];
+                                year_select.onchange();
+                        }
+                        else{
+                                year_select.value = "";
+                        }
+
                 });
 });
+year_select.onchange = function(){
+    parallel_select.innerHTML = "";
+    subject_select.innerHTML = "";
+    year = year_select.value;
+    fetch('/api/school_in_risk/get_districts/' + year).then(function(response){
+                    response.json().then(function(data) {
+                            optionHTML = '';
+                            for (district of data.districts) {
+                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                            }
+                            district_select.innerHTML = optionHTML;
+
+                            if (district_select.length == 1){
+                                    district_select.defaultSelected = district_select[0];
+                                    district_select.onchange();
+                            }
+                            else{
+                                    district_select.value = "";
+                            }
+
+                    });
+    });
+};
 
 
 district_select.onchange = function(){
         parallel_select.innerHTML = "";
         subject_select.innerHTML = "";
+        year = year_select.value;
         district = district_select.value;
-        fetch('oo_for_schools_in_risk/' + district).then(function(response){
+        fetch('/api/school_in_risk/get_oo/'+ year + '/' + district).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (oo of data.oo) {
@@ -46,90 +72,40 @@ district_select.onchange = function(){
 };
 
 oo_select.onchange = function(){
-        subject_select.innerHTML = "";
+    subject_select.innerHTML = "";
+    year = year_select.value;
 	district = district_select.value;
-        oo = oo_select.value;
-        if (oo == "all" && district != "all"){
-               fetch('parallels_by_district_for_schools_in_risk/' + district_select.value).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (parallel of data.parallels) {
-                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                                }
-                                parallel_select.innerHTML = optionHTML;
-                                parallel_select.value = "";
-                        });
-                });
-        }
-	if (district == "all"){
-		fetch('all_parallels_for_schools_in_risk/').then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (parallel of data.parallels) {
-                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                                }
-                                parallel_select.innerHTML = optionHTML;
-                                parallel_select.value = "";
-                        });
-                });
-
-	}
-	if(oo != "all"){
-                fetch('parallels_by_oo_for_schools_in_risk/' + oo).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (parallel of data.parallels) {
-                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                                }
-                                parallel_select.innerHTML = optionHTML;
-                                parallel_select.value = "";
-                        });
-                });
-        }
+    oo = oo_select.value;
+    fetch('/api/school_in_risk/get_parallels/' + year + '/' + district +'/' + oo).then(function(response){
+            response.json().then(function(data) {
+                    optionHTML = '';
+                    for (parallel of data.parallels) {
+                            optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
+                    }
+                    parallel_select.innerHTML = optionHTML;
+                    parallel_select.value = "";
+            });
+    });
+        
 
 };
 
 parallel_select.onchange = function(){
-        oo = oo_select.value;
-        district = district_select.value;
-	parallel = parallel_select.value;
-
-        if (oo == "all" && district != "all"){
-                 fetch('sbj_by_district_for_schools_in_risk/' + district + '/' + parallel).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (subject of data.subjects) {
-                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-                                }
-                                subject_select.innerHTML = optionHTML;
-                                subject_select.value = "";
-                        });
-                });
-        }if (district == "all"){
-		fetch('all_subject_for_schools_in_risk/').then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (subject of data.subjects) {
-                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-                                }
-                                subject_select.innerHTML = optionHTML;
-                                subject_select.value = "";
-                        });
-                });
-
-	}
-	if (oo != "all"){
-                fetch('sbj_by_oo_for_schools_in_risk/' + oo + '/' + parallel).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (subject of data.subjects) {
-                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-                                }
-                                subject_select.innerHTML = optionHTML;
-                                subject_select.value = "";
-                        });
-                });
-        };
+    year = year_select.value;
+    district = district_select.value;
+    oo = oo_select.value;
+    parallel = parallel_select.value;
+    fetch('/api/school_in_risk/get_subject/' + year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
+            response.json().then(function(data) {
+                    optionHTML = '';
+                    for (subject of data.subjects) {
+                            optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
+                    }
+                    subject_select.innerHTML = optionHTML;
+                    subject_select.value = "";
+            });
+    });
+        
 };
 
 function draw_report(json_data){
@@ -427,7 +403,7 @@ function createTable_type_3_for_district(jsonObj){
 
 $(document).ready(function(){
         $("#submit_btn").click(function(){
-
+                var year = $('#year').val();
                 var id_district = $('#district').val();
                 var id_oo = $('#oo').val();
                 var id_parallel = $('#parallel').val();
@@ -436,6 +412,10 @@ $(document).ready(function(){
 
 
                 var sendInfo = {
+                year: {
+                    'id': year,
+                    "name": $( "#year option:selected" ).text()
+                    },
                 district: {
                         'id': id_district,
                         "name": $( "#district option:selected" ).text()
@@ -528,18 +508,27 @@ $(document).ready(function(){
                 oo_select.style.border = "";
                 parallel_select.style.border = "";
                 subject_select.style.border = "";
+                oo_select.innerHTML = "";
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
                 district = district_select.value;
-                fetch('oo/' + district).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (oo of data.oo) {
-                                        optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
-                                }
-                                oo_select.innerHTML = optionHTML;
-                                oo_select.value = "";
-                        });
+                fetch('/api/school_in_risk/get_districts/' + year).then(function(response){
+                    response.json().then(function(data) {
+                            optionHTML = '';
+                            for (district of data.districts) {
+                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                            }
+                            district_select.innerHTML = optionHTML;
+
+                            if (district_select.length == 1){
+                                    district_select.defaultSelected = district_select[0];
+                                    district_select.onchange();
+                            }
+                            else{
+                                    district_select.value = "";
+                            }
+
+                    });
                 });
         });
 });

@@ -17,12 +17,14 @@ class WorkDescriptionForOneTask(BaseReport):
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"],
-                    task_number=self.task["id"])
+                    task_number=self.task["id"],
+                    year=self._year["name"])
 
                 all_ = self._dbase.get_task_description_for_one_task_for_all(
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"],
-                    task_number=self.task["id"])
+                    task_number=self.task["id"],
+                    year=self._year["name"])
                 return {"table_settings": {"titles": ["Все муниципалитеты", self._district["name"], self._oo["name"]],
                                            "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"oo": {"values": oo},
@@ -34,12 +36,14 @@ class WorkDescriptionForOneTask(BaseReport):
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"],
-                    task_number=self.task["id"])
+                    task_number=self.task["id"],
+                    year=self._year["name"])
 
                 all_ = self._dbase.get_task_description_for_one_task_for_all(
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"],
-                    task_number=self.task["id"])
+                    task_number=self.task["id"],
+                    year=self._year["name"])
                 return {"table_settings": {"titles": ["Все муниципалитеты", self._district["name"]],
                                            "title": "Описание контрольных измерительных материалов"},
                         "values_array": {"district": {"values": district},
@@ -50,7 +54,8 @@ class WorkDescriptionForOneTask(BaseReport):
                 all_ = self._dbase.get_task_description_for_one_task_for_all(
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
                     parallel=self._parallel["name"],
-                    task_number=self.task["id"])
+                    task_number=self.task["id"],
+                    year=self._year["name"])
 
                 return {"table_settings": {"titles": [self._district["name"]],
                                            "title": "Описание контрольных измерительных материалов"},

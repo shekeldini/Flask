@@ -216,10 +216,10 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_id_oo(self, oo_login):
+    def get_id_oo(self, oo_login, year="2021"):
         try:
             self._cur.execute(
-                f"SELECT id_oo FROM oo WHERE oo_login = '{oo_login}'")
+                f"SELECT id_oo FROM oo WHERE oo_login = '{oo_login}' and year = '{year}'")
             res, = self._cur.fetchone()
             if not res:
                 print("id_oo не был найден")
@@ -230,6 +230,7 @@ class FillDb(Postgresql):
 
     def get_id_subjects(self, subject_name):
         try:
+            subject_name = subject_name.replace(" ", "_")
             self._cur.execute(
                 f"SELECT id_subjects FROM subjects WHERE subject_name = '{subject_name}'")
             res, = self._cur.fetchone()
@@ -1189,7 +1190,6 @@ class FillDb(Postgresql):
                 id_subjects = self.get_id_subjects(df.get_subj_name())
                 id_oo_parallels_subjects = self.get_id_oo_parallels_subjects(id_subjects, id_oo_parallels)
 
-
                 r = """
                 INSERT INTO result_for_task 
                 (task_number, id_oo_parallels_subjects, id_students,
@@ -1347,7 +1347,8 @@ class FillDb(Postgresql):
                             fgos = fgos.replace("- ", "").replace("  ", " ").replace("\n", " ").replace("_x0002_", "")
                         poop_noo = all_sheet["D" + str(row)].value
                         if poop_noo:
-                            poop_noo = poop_noo.replace("- ", "").replace("  ", " ").replace("\n", " ").replace("_x0002_", "")
+                            poop_noo = poop_noo.replace("- ", "").replace("  ", " ").replace("\n", " ").replace(
+                                "_x0002_", "")
                         level = all_sheet["E" + str(row)].value
                         if level:
                             if level.upper() == "Б":
@@ -1360,15 +1361,14 @@ class FillDb(Postgresql):
                         try:
                             self._cur.execute(f"INSERT INTO distributio_of_tasks_by_positions_of_codifiers "
                                               f"(id_subjects, parallel, task_number, task_number_from_kim, "
-                                              f"fgos, poop_noo, level, max_mark) "
+                                              f"fgos, poop_noo, level, max_mark, year) "
                                               f"VALUES ({id_subjects}, {parallel}, {task_number}, '{task_number_from_kim}',"
-                                              f"'{fgos}', '{poop_noo}', '{level}', {max_mark})")
+                                              f"'{fgos}', '{poop_noo}', '{level}', {max_mark}, '{2021}')")
                         except:
                             pass
             print("Таблица distributio_of_tasks_by_positions_of_codifiers заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
-
 
     def fill_ks_kt(self):
         try:
@@ -1411,6 +1411,36 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
+    def fill_schools_in_risk(self):
+        try:
+            self._cur.execute("TRUNCATE TABLE schools_in_risk RESTART IDENTITY cascade;")
+            schools = {
+                2021: {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
+                                          "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
+                                          "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
+                                          "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
+                                          "sch226065"],
+                           "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
+                                            "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
+                                            "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
+                                            "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
+                                            "sch224362", "sch224397", "sch226062", "sch226065"]},
+                       5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
+                                          "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
+                                          "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
+                           "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
+                                            "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
+                                            "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}}
+            for year in schools:
+                for parallel in schools[year]:
+                    for subject in schools[year][parallel]:
+                        for school in schools[year][parallel][subject]:
+                            self._cur.execute(f"""
+                            INSERT INTO schools_in_risk (year, parallel, id_subjects, id_oo) 
+                            VALUES ('{year}', {parallel}, {self.get_id_subjects(subject)}, {self.get_id_oo(school)})""")
+            print("Таблица schools_in_risk заполненна")
+        except psycopg2.Error as e:
+            print("Ошибка при заполнении БД " + str(e))
 
 psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
 # psql.dropAllTables()
@@ -1449,10 +1479,10 @@ psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, hos
 # psql.create_roles()
 # psql.create_users()
 # psql.fill_users_oo_logins()
-psql.fill_kt()
-psql.fill_ks()
+# psql.fill_kt()
+# psql.fill_ks()
 # psql.fill_distributio_of_tasks_by_positions_of_codifiers()
 # psql.fill_result_for_task()
 # psql.create_index_on_result_for_task()
-psql.fill_ks_kt()
-
+# psql.fill_ks_kt()
+# psql.fill_schools_in_risk()

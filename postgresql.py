@@ -1,4 +1,5 @@
 import psycopg2
+from openpyxl import Workbook
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
@@ -48,9 +49,58 @@ class Postgresql:
             return False
         return True
 
-    def get_all_parallels(self):
+    def get_count_students(self):
         try:
-            self._cur.execute(f"""SELECT parallel FROM parallels""")
+            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM students")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+            return 0
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_count_oo(self):
+        try:
+            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM oo WHERE year = '2021'")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+            return 0
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_count_of_subject(self):
+        try:
+            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM subjects")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+            return 0
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_count_of_parallels(self):
+        try:
+            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM parallels")
+            res, = self._cur.fetchone()
+            if res:
+                return res
+            return 0
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_all_parallels(self, year):
+        try:
+            self._cur.execute(f"""
+            SELECT parallel FROM parallels 
+                WHERE parallel in 
+                (
+                    SELECT DISTINCT parallel FROM oo_parallels 
+                        WHERE id_oo in 
+                        (
+                            SELECT id_oo FROM oo WHERE year = '{year}'
+                        )
+                );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -81,16 +131,18 @@ class Postgresql:
             return []
 
     def get_subject_name(self, id_subjects):
+
         try:
             if id_subjects:
                 self._cur.execute(f"SELECT subject_name FROM subjects"
                                   f" WHERE id_subjects = {id_subjects}")
                 res = self._cur.fetchone()
                 if res:
-                    return res
+                    return res[0].replace("_", " ")
+                return ""
         except psycopg2.Error as e:
             print("Ошибка получения статей из БД " + str(e))
-        return []
+
 
     def get_subjects_for_oo_parallels(self, id_oo_parallels):
         try:
@@ -99,7 +151,7 @@ class Postgresql:
                                   f" WHERE id_oo_parallels = {id_oo_parallels}")
                 res = self._cur.fetchall()
                 if res:
-                    return [[x[0], self.get_subject_name(x[1])[0].replace("_", " ")] for x in res]
+                    return [[x[0], self.get_subject_name(x[1])] for x in res]
 
         except psycopg2.Error as e:
             print("Ошибка получения статей из БД " + str(e))
@@ -120,20 +172,37 @@ class Postgresql:
     def get_id_oo_parallels_subjects(self, id_subjects, id_oo_parallels):
         try:
             self._cur.execute(
-                f" SELECT id_oo_parallels_subjects FROM oo_parallels_subjects WHERE id_oo_parallels = {id_oo_parallels}"
+                f" SELECT id_oo_parallels_subjects FROM oo_parallels_subjects "
+                f" WHERE id_oo_parallels = {id_oo_parallels}"
                 f" AND id_subjects = {id_subjects}")
             res, = self._cur.fetchone()
             return res
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_district_for_report_type_2(self, parallel, id_subjects):
+    def get_district_for_report_type_2(self, parallel, id_subjects, year):
         try:
-            self._cur.execute(f"""SELECT id_district, district_name FROM district WHERE id_district IN (SELECT DISTINCT id_district FROM name_of_the_settlement 
-                                    WHERE id_name_of_the_settlement IN 
-                                        (SELECT DISTINCT id_name_of_the_settlement FROM oo 
-                                            WHERE id_oo in (SELECT id_oo FROM oo_parallels WHERE parallel = {parallel} AND id_oo_parallels in 
-                                                        (SELECT id_oo_parallels FROM oo_parallels_subjects WHERE id_subjects = {id_subjects}))));""")
+            self._cur.execute(f"""
+            SELECT id_district, district_name FROM district 
+            WHERE id_district IN 
+            (
+                SELECT DISTINCT id_district FROM name_of_the_settlement 
+                WHERE id_name_of_the_settlement IN 
+                (
+                    SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                    WHERE year = '{year}' 
+                    AND id_oo in 
+                    (
+                        SELECT id_oo FROM oo_parallels 
+                        WHERE parallel = {parallel} 
+                        AND id_oo_parallels in 
+                        (
+                            SELECT id_oo_parallels FROM oo_parallels_subjects 
+                            WHERE id_subjects = {id_subjects}
+                        )
+                    )
+                )
+            );""")
 
             res = self._cur.fetchall()
             if res:
@@ -142,15 +211,25 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения муниципалитетов из БД " + str(e))
 
-    def get_districts(self, id_user):
+    def get_districts(self, id_user, year):
         try:
             self._cur.execute(
-                f"""SELECT id_district, district_name FROM district WHERE id_district IN (SELECT DISTINCT id_district FROM name_of_the_settlement 
-                        WHERE id_name_of_the_settlement IN 
-                            (SELECT DISTINCT id_name_of_the_settlement FROM oo 
-                                WHERE oo_login in 
-                                    (SELECT oo_login FROM users_oo_logins 
-                                        WHERE id_user = {id_user})));""")
+                f"""
+                SELECT id_district, district_name FROM district 
+                WHERE id_district IN 
+                (
+                    SELECT DISTINCT id_district FROM name_of_the_settlement 
+                    WHERE id_name_of_the_settlement IN 
+                    (
+                        SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                        WHERE year = '{year}'
+                        AND oo_login in 
+                        (
+                            SELECT oo_login FROM users_oo_logins 
+                            WHERE id_user = {id_user}
+                        )
+                    )
+                );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -158,7 +237,7 @@ class Postgresql:
             print("Ошибка получения муниципалитетов из БД " + str(e))
         return []
 
-    def get_subjects(self, parallel, id_user, id_district):
+    def get_subjects(self, parallel, id_user, id_district, year):
         try:
             if id_district != "all":
                 self._cur.execute(f"""
@@ -166,22 +245,25 @@ class Postgresql:
                 WHERE id_subjects in 
                 (
                     SELECT id_subjects FROM oo_parallels_subjects 
-                        WHERE id_oo_parallels in 
+                    WHERE id_oo_parallels in 
                         (
                             SELECT id_oo_parallels FROM oo_parallels 
-                                WHERE id_oo in 
+                            WHERE id_oo in 
                                 (
                                     SELECT id_oo FROM oo 
-                                        WHERE id_name_of_the_settlement in 
+                                    WHERE id_name_of_the_settlement in 
                                         (
-                                            SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district}
+                                            SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                            WHERE id_district = {id_district}
                                         )
                                 )
                                 AND parallel = {parallel} 
                                 AND id_oo in 
                                 (
-                                    (SELECT id_oo FROM oo 
-                                        WHERE year='2021' AND oo_login in 
+                                    (
+                                    SELECT id_oo FROM oo 
+                                    WHERE year='{year}' 
+                                    AND oo_login in 
                                             (
                                                 SELECT oo_login FROM users_oo_logins 
                                                 WHERE id_user = {id_user}
@@ -189,20 +271,30 @@ class Postgresql:
                                     )
                                 )
                         )
-                )
-            ;
-                """)
+                );""")
             else:
-                self._cur.execute(f"""SELECT id_subjects, subject_name FROM subjects 
-                                        WHERE id_subjects IN 
-                                            (SELECT DISTINCT id_subjects FROM oo_parallels_subjects 
-                                                WHERE id_oo_parallels IN 
-                                                    (SELECT id_oo_parallels FROM oo_parallels 
-                                                        WHERE parallel={parallel} AND id_oo in 
-                                                            (SELECT id_oo FROM oo 
-                                                                WHERE year='2021' AND oo_login in 
-                                                                    (SELECT oo_login FROM users_oo_logins 
-                                                                        WHERE id_user = {id_user}))));""")
+                self._cur.execute(f"""
+                SELECT id_subjects, subject_name FROM subjects 
+                    WHERE id_subjects IN 
+                        (
+                            SELECT DISTINCT id_subjects FROM oo_parallels_subjects 
+                            WHERE id_oo_parallels IN 
+                            (
+                                SELECT id_oo_parallels FROM oo_parallels 
+                                WHERE parallel={parallel} 
+                                AND id_oo in 
+                                    (
+                                        SELECT id_oo FROM oo 
+                                        WHERE year='{year}' 
+                                        AND oo_login in 
+                                            (
+                                                SELECT oo_login FROM users_oo_logins 
+                                                WHERE id_user = {id_user}
+                                            )
+                                    )
+                            )
+                        )
+                    ;""")
             res = self._cur.fetchall()
             if res:
                 return [[x[0], x[1].replace("_", " ")] for x in res]
@@ -210,9 +302,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-
-
-    def get_comparison_of_ratings_for_all_districts(self, id_subjects, parallel):
+    def get_comparison_of_ratings_for_all_districts(self, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""SELECT result, COUNT(result) FROM
                                     (SELECT id_students,
@@ -235,9 +325,9 @@ class Postgresql:
                                                     (SELECT id_oo_parallels FROM oo_parallels 
                                                         WHERE parallel={parallel} AND id_oo in 
                                                             (SELECT id_oo FROM oo 
-                                                                WHERE year='2021'))
+                                                                WHERE year='{year}'))
                                                 AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects, mark_for_last_semester) AS t1
-                                
+
                                         LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
                                                 WHERE id_oo_parallels IN 
                                                     (SELECT id_oo_parallels FROM oo_parallels 
@@ -274,7 +364,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_comparison_of_ratings_for_all_schools_in_district(self, id_district, id_subjects, parallel):
+    def get_comparison_of_ratings_for_all_schools_in_district(self, id_district, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""
             SELECT result, COUNT(result) FROM
@@ -298,18 +388,18 @@ class Postgresql:
                             (SELECT id_oo_parallels FROM oo_parallels 
                                 WHERE parallel={parallel} AND id_oo in 
                                     (SELECT id_oo FROM oo 
-                                        WHERE year='2021'
+                                        WHERE year='{year}'
                                             AND id_name_of_the_settlement in 
                                                 (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                                                     WHERE id_district = {id_district})))
                         AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects, mark_for_last_semester) AS t1
-        
+
                 LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
                         WHERE id_oo_parallels IN 
                             (SELECT id_oo_parallels FROM oo_parallels 
                                 WHERE parallel={parallel} AND id_oo in 
                                     (SELECT id_oo FROM oo 
-                                        WHERE year='2021'
+                                        WHERE year='{year}'
                                             AND id_name_of_the_settlement in 
                                                 (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                                                     WHERE id_district = {id_district})))
@@ -345,7 +435,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_count_students_mark_for_all_districts(self, id_subjects, parallel):
+    def get_count_students_mark_for_all_districts(self, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""SELECT value, COUNT(value) FROM
                                     (SELECT id_students,sum_marks,
@@ -363,15 +453,15 @@ class Postgresql:
                                                     (SELECT id_oo_parallels FROM oo_parallels 
                                                         WHERE parallel={parallel} AND id_oo in 
                                                             (SELECT id_oo FROM oo 
-                                                                WHERE year='2021'))
+                                                                WHERE year='{year}'))
                                                 AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects) AS t1
-                                
+
                                         LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
                                                 WHERE id_oo_parallels IN 
                                                     (SELECT id_oo_parallels FROM oo_parallels 
                                                         WHERE parallel={parallel} AND id_oo in 
                                                             (SELECT id_oo FROM oo 
-                                                                WHERE year='2021'))
+                                                                WHERE year='{year}'))
                                                 AND id_subjects={id_subjects}) AS t2 
                                         USING (id_oo_parallels_subjects))) AS t3) AS t4 GROUP BY value ORDER BY (value);""")
             res = self._cur.fetchall()
@@ -407,15 +497,18 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_parallels(self, id_user, id_district):
+    def get_parallels(self, id_user, id_district, year):
         try:
             self._cur.execute(f"""SELECT DISTINCT parallel FROM oo_parallels WHERE id_oo in 
-                                    (SELECT id_oo FROM oo WHERE oo_login in 
+                                    (SELECT id_oo FROM oo 
+                                        WHERE oo_login in 
                                         (SELECT oo_login FROM users_oo_logins 
-                                                    WHERE id_user = {id_user})
+                                            WHERE id_user = {id_user})
                                         AND id_name_of_the_settlement IN 
-                                                (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                                                    WHERE id_district = {id_district}));""")
+                                            (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                                WHERE id_district = {id_district})
+                                        AND year = '{year}'
+                                    );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -423,21 +516,22 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_oo_from_district(self, id_district, id_user):
+    def get_oo_from_district(self, id_district, id_user, year):
         try:
             self._cur.execute(f"""
             SELECT id_oo, oo_name FROM oo 
                 WHERE id_oo NOT IN 
                 (SELECT id_oo FROM oo_levels_of_the_educational_program 
                     WHERE id_levels_of_the_educational_program = 4 AND value = 'Да') 
-            AND id_name_of_the_settlement IN 
+                AND id_name_of_the_settlement IN 
                 (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                     WHERE id_district = {id_district}) 
-            AND id_oo IN 
+                AND id_oo IN 
                 (SELECT id_oo FROM oo_parallels)
-            AND oo_login in 
+                AND oo_login in 
                 (SELECT oo_login FROM users_oo_logins 
-                    WHERE id_user = {id_user});""")
+                    WHERE id_user = {id_user})
+                AND year = '{year}';""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -538,7 +632,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_count_students_mark_for_all_school_in_district(self, id_district, id_subjects, parallel):
+    def get_count_students_mark_for_all_school_in_district(self, id_district, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""SELECT value, COUNT(value) FROM
                                                 (SELECT id_students,sum_marks,
@@ -556,7 +650,7 @@ class Postgresql:
                                                                 (SELECT id_oo_parallels FROM oo_parallels 
                                                                     WHERE parallel={parallel} AND id_oo in 
                                                                         (SELECT id_oo FROM oo 
-                                                                            WHERE year='2021'
+                                                                            WHERE year='{year}'
                                                                                 AND id_name_of_the_settlement in 
                                                                                     (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                                                                                         WHERE id_district = {id_district})))
@@ -567,7 +661,7 @@ class Postgresql:
                                                                 (SELECT id_oo_parallels FROM oo_parallels 
                                                                     WHERE parallel={parallel} AND id_oo in 
                                                                         (SELECT id_oo FROM oo 
-                                                                            WHERE year='2021'
+                                                                            WHERE year='{year}'
                                                                                 AND id_name_of_the_settlement in 
                                                                                     (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                                                                                         WHERE id_district = {id_district})))
@@ -733,7 +827,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_result_vpr_for_all_school_in_district(self, id_district, id_subjects, parallel):
+    def get_result_vpr_for_all_school_in_district(self, id_district, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""
             SELECT value, COUNT(value) FROM
@@ -752,19 +846,19 @@ class Postgresql:
                             (SELECT id_oo_parallels FROM oo_parallels 
                                 WHERE parallel={parallel} AND id_oo in 
                                     (SELECT id_oo FROM oo 
-                                        WHERE year='2021'
+                                        WHERE year='{year}'
                                             AND id_name_of_the_settlement in 
                                                 (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                                                     WHERE id_district = {id_district})))
-        
+
                         AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects) AS t1
-        
+
                 LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
                         WHERE id_oo_parallels IN 
                             (SELECT id_oo_parallels FROM oo_parallels 
                                 WHERE parallel={parallel} AND id_oo in 
                                     (SELECT id_oo FROM oo 
-                                        WHERE year='2021'
+                                        WHERE year='{year}'
                                             AND id_name_of_the_settlement in 
                                                 (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                                                     WHERE id_district = {id_district})))
@@ -821,7 +915,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_result_vpr_for_all_districts(self, id_subjects, parallel):
+    def get_result_vpr_for_all_districts(self, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""SELECT value, COUNT(value) FROM
                                     (SELECT id_students,sum_marks,
@@ -839,7 +933,7 @@ class Postgresql:
                                                     (SELECT id_oo_parallels FROM oo_parallels 
                                                         WHERE parallel={parallel} AND id_oo in 
                                                             (SELECT id_oo FROM oo 
-                                                                WHERE year='2021'))
+                                                                WHERE year='{year}'))
                                                 AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects) AS t1
 
                                         LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
@@ -847,7 +941,7 @@ class Postgresql:
                                                     (SELECT id_oo_parallels FROM oo_parallels 
                                                         WHERE parallel={parallel} AND id_oo in 
                                                             (SELECT id_oo FROM oo 
-                                                                WHERE year='2021'))
+                                                                WHERE year='{year}'))
                                                 AND id_subjects={id_subjects}) AS t2 
                                         USING (id_oo_parallels_subjects))) AS t3) AS t4 GROUP BY value ORDER BY (value);""")
             res = self._cur.fetchall()
@@ -901,62 +995,28 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_count_students(self):
+    def get_districts_for_schools_in_risk(self, id_user, year):
         try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM students")
-            res, = self._cur.fetchone()
-            if res:
-                return res
-            return 0
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
-    def get_count_oo(self):
-        try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM oo WHERE year = '2021'")
-            res, = self._cur.fetchone()
-            if res:
-                return res
-            return 0
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
-    def get_count_of_subject(self):
-        try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM subjects")
-            res, = self._cur.fetchone()
-            if res:
-                return res
-            return 0
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
-    def get_count_of_parallels(self):
-        try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM parallels")
-            res, = self._cur.fetchone()
-            if res:
-                return res
-            return 0
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
-    def get_districts_for_schools_in_risk(self, id_user):
-        try:
-            self._cur.execute(f"""SELECT id_district, district_name FROM district 
-                                    WHERE id_district in 
-                                        (SELECT id_district FROM name_of_the_settlement 
-                                            WHERE id_name_of_the_settlement in 
-                                            (SELECT id_name_of_the_settlement FROM oo WHERE oo_login = ANY('{{sch224188, sch224235, sch224332, sch220163, sch224143,
-                                                sch224313, sch220150, sch224362, sch224234, sch220175,
-                                                sch223763, sch226062, sch224259, sch220198, sch224199,
-                                                sch224263, sch220128, sch223615, sch224246, sch223953,
-                                                sch223197, sch224286, sch223646, sch224395, sch220161,
-                                                sch224361, sch226065, sch224353, sch226059, sch224397,
-                                                sch224238, sch223610, sch224208, sch224268, sch224205,
-                                                sch223687}}'::text[])
-                                            AND oo_login in (SELECT oo_login FROM users_oo_logins 
-                                                                        WHERE id_user = {id_user})));""")
+            self._cur.execute(f"""
+            SELECT id_district, district_name FROM district 
+            WHERE id_district in 
+                (
+                    SELECT id_district FROM name_of_the_settlement 
+                    WHERE id_name_of_the_settlement in 
+                    (
+                        SELECT id_name_of_the_settlement FROM oo 
+                        WHERE id_oo in 
+                        (
+                            SELECT id_oo FROM schools_in_risk 
+                            WHERE year = '{year}'
+                        )
+                        AND oo_login in 
+                        (
+                            SELECT oo_login FROM users_oo_logins 
+                            WHERE id_user = {id_user}
+                        )
+                    )
+                );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -964,25 +1024,105 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_oo_by_district_for_schools_in_risk(self, id_district, id_user):
+    def get_oo_by_district_for_schools_in_risk(self, year, id_district, id_user):
 
         try:
-            self._cur.execute(f"""SELECT id_oo, oo_name FROM oo 
-                                    WHERE id_name_of_the_settlement in 
-                                        (SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district})
-                                    AND oo_login = ANY('{{sch224188, sch224235, sch224332, sch220163, sch224143,
-                                                sch224313, sch220150, sch224362, sch224234, sch220175,
-                                                sch223763, sch226062, sch224259, sch220198, sch224199,
-                                                sch224263, sch220128, sch223615, sch224246, sch223953,
-                                                sch223197, sch224286, sch223646, sch224395, sch220161,
-                                                sch224361, sch226065, sch224353, sch226059, sch224397,
-                                                sch224238, sch223610, sch224208, sch224268, sch224205,
-                                                sch223687}}'::text[])
-                                    AND oo_login in (SELECT oo_login FROM users_oo_logins 
-                                                                        WHERE id_user = {id_user});""")
+            self._cur.execute(f"""
+            SELECT id_oo, oo_name FROM oo 
+            WHERE id_name_of_the_settlement in 
+            (
+                SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                WHERE id_district = {id_district}
+            )
+            AND id_oo in 
+            (
+                SELECT id_oo FROM schools_in_risk 
+                WHERE year = '{year}'
+            )
+            AND oo_login in 
+            (
+                SELECT oo_login FROM users_oo_logins 
+                WHERE id_user = {id_user}
+            );""")
             res = self._cur.fetchall()
             if res:
                 return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_parallels_for_schools_in_risk(self, year, id_district, id_oo):
+        try:
+            if id_district == "all":
+                self._cur.execute(f"""
+                SELECT DISTINCT parallel FROM schools_in_risk 
+                WHERE year = '{year}'
+                order by (parallel);""")
+
+            elif id_oo == "all":
+                self._cur.execute(f"""
+                SELECT DISTINCT parallel FROM schools_in_risk 
+                WHERE year = '{year}' 
+                AND id_oo in 
+                (
+                    SELECT id_oo FROM oo 
+                    WHERE id_name_of_the_settlement in 
+                    (
+                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                        WHERE id_district = {id_district}
+                    )
+                )
+                order by (parallel) ;""")
+
+            else:
+                self._cur.execute(f"""
+                SELECT DISTINCT parallel FROM schools_in_risk 
+                WHERE year = '{year}' 
+                AND id_oo = {id_oo}
+                order by (parallel) ;""")
+
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_subject_for_school_in_risk(self, year, id_district, id_oo, parallel):
+        try:
+            if id_district == "all":
+                self._cur.execute(f"""
+                SELECT DISTINCT id_subjects FROM schools_in_risk 
+                WHERE year = '{year}' 
+                AND parallel = {parallel}
+                ;""")
+
+            elif id_oo == "all":
+                self._cur.execute(f"""
+                SELECT DISTINCT id_subjects FROM schools_in_risk 
+                WHERE year = '{year}' 
+                AND parallel = {parallel}
+                AND id_oo in 
+                (
+                    SELECT id_oo FROM oo 
+                    WHERE id_name_of_the_settlement in 
+                    (
+                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                        WHERE id_district = {id_district}
+                    )
+                )
+                ;""")
+
+            else:
+                self._cur.execute(f"""
+                SELECT DISTINCT id_subjects FROM schools_in_risk 
+                WHERE year = '{year}' 
+                AND parallel = {parallel}
+                AND id_oo = {id_oo}
+                ;""")
+            res = self._cur.fetchall()
+            if res:
+                return [(x[0], self.get_subject_name(id_subjects=x[0])) for x in res]
             return []
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
@@ -994,6 +1134,16 @@ class Postgresql:
             if res:
                 return res
             return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_district_name(self, id_district):
+        try:
+            self._cur.execute(f"""SELECT district_name FROM district WHERE id_district = {id_district};""")
+            res = self._cur.fetchone()
+            if res:
+                return res[0]
+            return ""
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -1019,13 +1169,37 @@ class Postgresql:
             """)
             res, = self._cur.fetchone()
             if res:
+                return res.replace("_", " ")
+            return None
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_district_by_id_oo(self, id_oo):
+        try:
+            self._cur.execute(f"""
+            SELECT district_name FROM district 
+            WHERE id_district in 
+            (
+                SELECT id_district FROM name_of_the_settlement 
+                WHERE id_name_of_the_settlement in 
+                (
+                    SELECT id_name_of_the_settlement FROM oo 
+                    WHERE id_oo = {id_oo}
+                )
+            );""")
+            res, = self._cur.fetchone()
+            if res:
                 return res
             return None
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_schools_in_risk_for_oo(self, id_oo_parallels_subjects, id_oo_parallels):
+    def get_schools_in_risk_for_oo(self, id_oo, id_subjects, parallel):
         try:
+            id_oo_parallels = self.get_id_oo_parallels(parallel=parallel,
+                                                       id_oo=id_oo)
+            id_oo_parallels_subjects = self.get_id_oo_parallels_subjects(id_subjects=id_subjects,
+                                                                         id_oo_parallels=id_oo_parallels)
             self._cur.execute(f"""
             SELECT id_oo_parallels, 
                 max(mark_count) filter (where value = 2) as vpr_two, 
@@ -1052,7 +1226,7 @@ class Postgresql:
                     WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}) AS t2
                 USING (id_oo_parallels_subjects)) AS t3)
             AS t4 GROUP BY value, id_oo_parallels ORDER BY (value)) AS vpr
-        
+
         LEFT JOIN 
             (SELECT id_oo_parallels, 
                     max(mark_count_for_last_semester) filter (where mark_for_last_semester = 2) as l_s_two, 
@@ -1101,54 +1275,70 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_schools_in_risk_for_district(self, id_district, parallel, schools):
+    def get_schools_in_risk_for_district(self, year, id_district, parallel, id_subjects):
         try:
             self._cur.execute(f"""
-        SELECT id_oo_parallels FROM oo_parallels 
+            SELECT id_oo, oo_name FROM oo 
             WHERE id_oo in 
-            (SELECT id_oo FROM oo WHERE oo_login = ANY('{schools}'::text[])
-                AND id_name_of_the_settlement in (SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district}))
-            AND parallel = {parallel};""")
+            (
+                SELECT id_oo FROM schools_in_risk 
+                WHERE year = '{year}' 
+                AND parallel = {parallel} 
+                AND id_subjects = {id_subjects}  
+                AND id_oo in 
+                (
+                    SELECT id_oo FROM oo 
+                    WHERE id_name_of_the_settlement in 
+                    (
+                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                        WHERE id_district = {id_district}
+                    )
+                )
+            )
+            ;""")
             res = self._cur.fetchall()
 
             schools_array = {}
             if res:
-                for id_oo_parallels, in res:
-                    school_name = self.get_oo_name_from_oo_parallels(id_oo_parallels)
-                    district_name = self.get_district_by_id_oo_parallels(id_oo_parallels)
+                for id_oo, oo_name in res:
+                    district_name = self.get_district_name(id_district)
                     if district_name not in schools_array:
-                        schools_array[district_name] = [school_name]
+                        schools_array[district_name] = [oo_name]
                     else:
-                        schools_array[district_name].append(school_name)
+                        schools_array[district_name].append(oo_name)
 
             return schools_array
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_schools_in_risk_for_all(self, parallel, schools):
+    def get_schools_in_risk_for_all(self, year, parallel, id_subjects):
         try:
             self._cur.execute(f"""
-        SELECT id_oo_parallels FROM oo_parallels 
+            SELECT id_oo, oo_name FROM oo 
             WHERE id_oo in 
-            (SELECT id_oo FROM oo WHERE oo_login = ANY('{schools}'::text[]))
-            AND parallel = {parallel};""")
+            (
+                SELECT id_oo FROM schools_in_risk 
+                WHERE year = '{year}' 
+                AND parallel = {parallel} 
+                AND id_subjects = {id_subjects}  
+            )
+            ;""")
             res = self._cur.fetchall()
 
             schools_array = {}
             if res:
-                for id_oo_parallels, in res:
-                    school_name = self.get_oo_name_from_oo_parallels(id_oo_parallels)
-                    district_name = self.get_district_by_id_oo_parallels(id_oo_parallels)
+                for id_oo, oo_name in res:
+                    district_name = self.get_district_by_id_oo(id_oo)
                     if district_name not in schools_array:
-                        schools_array[district_name.replace("_", " ")] = [school_name]
+                        schools_array[district_name.replace("_", " ")] = [oo_name]
                     else:
-                        schools_array[district_name.replace("_", " ")].append(school_name)
+                        schools_array[district_name.replace("_", " ")].append(oo_name)
 
             return schools_array
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_task_description_for_all(self, id_subjects, parallel, year='2021'):
+    def get_task_description_for_all(self, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""
             SELECT task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count FROM 
@@ -1178,7 +1368,8 @@ class Postgresql:
             if res:
                 for task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace("None","")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace(
+                            "None", "")
 
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
@@ -1190,7 +1381,8 @@ class Postgresql:
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                            res_dict[task_number]["values"][key]["%"] = round(
+                                (res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
                 for task_number in res_dict:
                     if "Выполнили" not in res_dict[task_number]["values"]:
                         res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
@@ -1202,7 +1394,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_task_description_for_district(self, id_district, id_subjects, parallel, year='2021'):
+    def get_task_description_for_district(self, id_district, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""
             SELECT task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count FROM 
@@ -1231,7 +1423,8 @@ class Postgresql:
             if res:
                 for task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace("None","")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace(
+                            "None", "")
 
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
@@ -1243,7 +1436,8 @@ class Postgresql:
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                            res_dict[task_number]["values"][key]["%"] = round(
+                                (res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
                 for task_number in res_dict:
                     if "Выполнили" not in res_dict[task_number]["values"]:
                         res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
@@ -1267,7 +1461,7 @@ class Postgresql:
             ((SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
                 WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
                      GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark) AS t1
-            
+
             LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
                     WHERE id_subjects IN 
                     (SELECT id_subjects FROM oo_parallels_subjects 
@@ -1279,7 +1473,7 @@ class Postgresql:
                             WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}))) AS t2
                 USING(id_distributio_of_tasks_by_positions_of_codifiers))) AS t3  
                 group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value ORDER BY (task_number)) as t6
-            
+
             LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
                     WHERE id_subjects IN 
                     (SELECT id_subjects FROM oo_parallels_subjects 
@@ -1296,7 +1490,8 @@ class Postgresql:
             if res:
                 for task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace("None","")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace(
+                            "None", "")
                         res_dict[task_number] = {"task_number_from_kim": task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
@@ -1307,7 +1502,8 @@ class Postgresql:
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                            res_dict[task_number]["values"][key]["%"] = round(
+                                (res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
                 for task_number in res_dict:
                     if "Выполнили" not in res_dict[task_number]["values"]:
                         res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
@@ -1319,7 +1515,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_task_description_for_one_task_for_all(self, id_subjects, parallel, task_number, year='2021'):
+    def get_task_description_for_one_task_for_all(self, id_subjects, parallel, task_number, year):
         try:
             self._cur.execute(f"""
             SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, level, fgos, poop_noo, max_mark, value, count FROM 
@@ -1351,22 +1547,26 @@ class Postgresql:
             if res:
                 for id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, lvl, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace("None","")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace(
+                            "None", "")
 
                         res_dict[task_number] = {"task_number_from_kim": "Задание " + task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
                                                  "values": {value: {"count": count, "%": 100}},
-                                                 "kt": self.get_description_from_kt(id_distributio_of_tasks_by_positions_of_codifiers),
-                                                 "ks": self.get_description_from_ks(id_distributio_of_tasks_by_positions_of_codifiers),
-                                                 "level": lvl.replace("None","")}
+                                                 "kt": self.get_description_from_kt(
+                                                     id_distributio_of_tasks_by_positions_of_codifiers),
+                                                 "ks": self.get_description_from_ks(
+                                                     id_distributio_of_tasks_by_positions_of_codifiers),
+                                                 "level": lvl.replace("None", "")}
                     else:
                         res_dict[task_number]["values"][value] = {"count": count}
                         all_stud = 0
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                            res_dict[task_number]["values"][key]["%"] = round(
+                                (res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
                 for task_number in res_dict:
                     if "Выполнили" not in res_dict[task_number]["values"]:
                         res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
@@ -1378,7 +1578,8 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_task_description_for_one_task_for_district(self, id_district, id_subjects, parallel, task_number, year='2021'):
+    def get_task_description_for_one_task_for_district(self, id_district, id_subjects, parallel, task_number,
+                                                       year):
         try:
             self._cur.execute(f"""
             SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, level, fgos, poop_noo, max_mark, value, count FROM 
@@ -1412,22 +1613,26 @@ class Postgresql:
             if res:
                 for id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, lvl, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace("None","")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace(
+                            "None", "")
 
                         res_dict[task_number] = {"task_number_from_kim": "Задание " + task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
                                                  "values": {value: {"count": count, "%": 100}},
-                                                 "kt": self.get_description_from_kt(id_distributio_of_tasks_by_positions_of_codifiers),
-                                                 "ks": self.get_description_from_ks(id_distributio_of_tasks_by_positions_of_codifiers),
-                                                 "level": lvl.replace("None","")}
+                                                 "kt": self.get_description_from_kt(
+                                                     id_distributio_of_tasks_by_positions_of_codifiers),
+                                                 "ks": self.get_description_from_ks(
+                                                     id_distributio_of_tasks_by_positions_of_codifiers),
+                                                 "level": lvl.replace("None", "")}
                     else:
                         res_dict[task_number]["values"][value] = {"count": count}
                         all_stud = 0
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                            res_dict[task_number]["values"][key]["%"] = round(
+                                (res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
                 for task_number in res_dict:
                     if "Выполнили" not in res_dict[task_number]["values"]:
                         res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
@@ -1451,7 +1656,7 @@ class Postgresql:
             ((SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
                 WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} AND task_number = {task_number}
                      GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark) AS t1
-            
+
             LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
                     WHERE id_subjects IN 
                     (SELECT id_subjects FROM oo_parallels_subjects 
@@ -1464,7 +1669,7 @@ class Postgresql:
                     AND task_number = {task_number}) AS t2
                 USING(id_distributio_of_tasks_by_positions_of_codifiers))) AS t3  
                 group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value ORDER BY (task_number)) as t6
-            
+
             LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, level, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
                     WHERE id_subjects IN 
                     (SELECT id_subjects FROM oo_parallels_subjects 
@@ -1482,22 +1687,26 @@ class Postgresql:
             if res:
                 for id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, lvl, fgos, poop_noo, max_mark, value, count in res:
                     if task_number not in res_dict:
-                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace("None","")
+                        text = f"{fgos.strip()}  {poop_noo.strip()}".replace("\n", " ").replace("_x0002_", "").replace(
+                            "None", "")
 
                         res_dict[task_number] = {"task_number_from_kim": "Задание " + task_number_from_kim,
                                                  "text": text,
                                                  "max_mark": max_mark,
                                                  "values": {value: {"count": count, "%": 100}},
-                                                 "kt": self.get_description_from_kt(id_distributio_of_tasks_by_positions_of_codifiers),
-                                                 "ks": self.get_description_from_ks(id_distributio_of_tasks_by_positions_of_codifiers),
-                                                 "level": lvl.replace("None","")}
+                                                 "kt": self.get_description_from_kt(
+                                                     id_distributio_of_tasks_by_positions_of_codifiers),
+                                                 "ks": self.get_description_from_ks(
+                                                     id_distributio_of_tasks_by_positions_of_codifiers),
+                                                 "level": lvl.replace("None", "")}
                     else:
                         res_dict[task_number]["values"][value] = {"count": count}
                         all_stud = 0
                         for key, key_value in res_dict[task_number]["values"].items():
                             all_stud += res_dict[task_number]["values"][key]["count"]
                         for key, key_value in res_dict[task_number]["values"].items():
-                            res_dict[task_number]["values"][key]["%"] = round((res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
+                            res_dict[task_number]["values"][key]["%"] = round(
+                                (res_dict[task_number]["values"][key]["count"] / all_stud) * 100, 1)
                 for task_number in res_dict:
                     if "Выполнили" not in res_dict[task_number]["values"]:
                         res_dict[task_number]["values"]["Выполнили"] = {"count": 0, "%": 0}
@@ -1520,9 +1729,9 @@ class Postgresql:
 
             if res:
                 if len(res) > 1:
-                    return [x[0] for x in res if x[0].replace("None","") != ""]
+                    return [x[0] for x in res if x[0].replace("None", "") != ""]
                 else:
-                    return [x[0].replace("None","") for x in res]
+                    return [x[0].replace("None", "") for x in res]
 
             return []
         except psycopg2.Error as e:
@@ -1539,44 +1748,74 @@ class Postgresql:
 
             if res:
                 if len(res) > 1:
-                    return [x[0] for x in res if x[0].replace("None","") != ""]
+                    return [x[0] for x in res if x[0].replace("None", "") != ""]
                 else:
-                    return [x[0].replace("None","") for x in res]
+                    return [x[0].replace("None", "") for x in res]
 
             return []
 
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-
-    def get_task_numbers(self, id_subjects, parallel):
+    def get_task_number_from_kim(self, id_subjects, parallel, year):
         try:
-            self._cur.execute(f"SELECT task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers WHERE id_subjects = {id_subjects} AND parallel = {parallel};")
+            self._cur.execute(
+                f"SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers "
+                f"WHERE id_subjects = {id_subjects} "
+                f"AND parallel = {parallel} "
+                f"AND year='{year}' order by (task_number);")
             res = self._cur.fetchall()
 
             if res:
-                return [x[0] for x in res]
+                return res
             return []
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_task_numbers_by_id_oo_parallels_subjects(self, id_oo_parallels_subjects):
+    def get_task_number_from_kim_by_id_oo_parallels_subjects(self, id_oo_parallels_subjects):
         try:
             self._cur.execute(
                 f"""
-                SELECT task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers 
+                SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers 
                 WHERE id_subjects IN 
-                    (SELECT id_subjects FROM oo_parallels_subjects WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects})
+                    (
+                        SELECT id_subjects FROM oo_parallels_subjects WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                    )
                 AND parallel IN 
-                    (SELECT parallel FROM oo_parallels 
+                    (
+                        SELECT parallel FROM oo_parallels 
                         WHERE id_oo_parallels IN 
-                            (SELECT id_oo_parallels FROM oo_parallels_subjects 
-                                WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}));""")
+                            (
+                                SELECT id_oo_parallels FROM oo_parallels_subjects 
+                                WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                            )
+                    ) order by (task_number);""")
             res = self._cur.fetchall()
 
             if res:
-                return [x[0] for x in res]
+                return res
             return []
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
+    def get_max_mark(self, subject_name, parallel, task_number_from_kim):
+        self._cur.execute(f"""
+            select max_mark from distributio_of_tasks_by_positions_of_codifiers 
+                where id_subjects = {self.get_subject_id(subject_name=subject_name)} 
+                and parallel = {parallel} 
+                and task_number_from_kim = '{task_number_from_kim}'""")
+        res = self._cur.fetchone()
+        if res:
+            return res[0]
+        return
+
+    def get_task_number(self, task_number_from_kim, id_subjects, parallel):
+        self._cur.execute(f"""
+            select task_number from distributio_of_tasks_by_positions_of_codifiers 
+                where task_number_from_kim = '{task_number_from_kim}' 
+                and id_subjects = {id_subjects} and parallel = {parallel};
+        """)
+        res = self._cur.fetchone()
+        if res:
+            return res[0]
+        return

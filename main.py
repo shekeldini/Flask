@@ -62,6 +62,7 @@ def close_db(error):
     if hasattr(g, "link_db"):
         g.link_db.close()
 
+
 @app.route("/api/export/")
 @login_required
 def export():
@@ -99,6 +100,7 @@ def export():
         }
     )
 
+
 @app.route('/download/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download(filename):
@@ -115,25 +117,27 @@ def task_description():
     return render_template('task_description.html', title="Описание заданий")
 
 
-@app.route("/api/task_description/get_task_numbers/<id_oo>/<int:parallel>/<int:id_subject>",
+@app.route("/api/task_description/get_task_numbers/<year>/<id_oo>/<int:parallel>/<int:id_subject>",
            methods=["POST", "GET"])
 @login_required
-def task_description_get_task_numbers(id_oo, parallel, id_subject):
-    task_numbers_array= [{'id': "all", 'name': "Все задания"}]
+def api_task_description_get_task_numbers(year, id_oo, parallel, id_subject):
+    task_numbers_array = [{'id': "all", 'name': "Все задания"}]
 
     if id_oo != "all":
-        task_numbers = dbase.get_task_numbers_by_id_oo_parallels_subjects(id_subject)
+        task_numbers = dbase.get_task_number_from_kim_by_id_oo_parallels_subjects(id_subject)
     else:
-        task_numbers = dbase.get_task_numbers(id_subjects=id_subject, parallel=parallel)
+        task_numbers = dbase.get_task_number_from_kim(id_subjects=id_subject,
+                                                      parallel=parallel,
+                                                      year=year)
 
-    for key, value in enumerate(task_numbers):
-        task_numbers_array.append({'id': key + 1, 'name': value})
+    for key, value in task_numbers:
+        task_numbers_array.append({'id': key, 'name': value})
     return jsonify({'task_numbers': task_numbers_array})
 
 
 @app.route("/api/task_description/get_reports/<task_number>", methods=["POST", "GET"])
 @login_required
-def task_description_get_reports(task_number):
+def api_task_description_get_reports(task_number):
     if task_number == "all":
         return jsonify({'reports': [{'id': 4, 'name': "Описание работы"}]})
     else:
@@ -151,188 +155,61 @@ def school_in_risk():
     return render_template('school_in_risk.html', title="Школы в зоне риска")
 
 
-@app.route("/districts_for_schools_in_risk")
+@app.route("/api/school_in_risk/get_districts/<year>")
 @login_required
-def districts_for_school_in_risk():
-    districts = dbase.get_districts_for_schools_in_risk(current_user.get_id())
+def api_districts_for_school_in_risk(year):
+    districts = dbase.get_districts_for_schools_in_risk(id_user=current_user.get_id(),
+                                                        year=year)
     district_array = []
     if current_user.get_id_role() in {1, 2}:
         district_array.append({'id': "all", 'name': "Все муниципалитеты"})
 
-    for district in districts:
-        district_obj = {'id': district[0], 'name': district[1].replace("_", " ")}
+    for id_district, district in districts:
+        district_obj = {'id': id_district, 'name': district.replace("_", " ")}
         district_array.append(district_obj)
     return jsonify({'districts': district_array})
 
 
-@app.route('/oo_for_schools_in_risk/<id_district>')
+@app.route('/api/school_in_risk/get_oo/<year>/<id_district>')
 @login_required
-def oo_for_schools_in_risk(id_district):
+def api_get_oo_for_schools_in_risk(year, id_district):
     oo_array = []
     if id_district == "all":
         oo_array.append({'id': "all", 'name': "Все ОО"})
         return jsonify({'oo': oo_array})
     oo = dbase.get_oo_by_district_for_schools_in_risk(id_district=id_district,
-                                                      id_user=current_user.get_id())
+                                                      id_user=current_user.get_id(),
+                                                      year=year)
     if current_user.get_id_role() in {1, 2, 3} and len(oo) > 1:
         oo_array.append({'id': "all", 'name': "Все ОО"})
 
-    for school in oo:
-        oo_obj = {'id': school[0], 'name': school[1]}
+    for id_school, school in oo:
+        oo_obj = {'id': id_school, 'name': school}
         oo_array.append(oo_obj)
     return jsonify({'oo': oo_array})
 
 
-@app.route('/all_parallels_for_schools_in_risk/')
+@app.route('/api/school_in_risk/get_parallels/<year>/<id_district>/<id_oo>')
 @login_required
-def all_parallels_for_schools_in_risk():
+def api_get_parallels_for_schools_in_risk(year, id_district, id_oo):
     parallels_array = []
-    for parallel in [4, 5]:
+    for parallel in dbase.get_parallels_for_schools_in_risk(year=year,
+                                                            id_district=id_district,
+                                                            id_oo=id_oo):
         parallels_array.append({'id': parallel, 'name': parallel})
     return jsonify({'parallels': parallels_array})
 
 
-@app.route('/parallels_by_oo_for_schools_in_risk/<id_oo>')
+@app.route('/api/school_in_risk/get_subject/<year>/<id_district>/<id_oo>/<parallel>')
 @login_required
-def parallels_by_oo_for_schools_in_risk(id_oo):
-    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
-                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
-                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
-                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
-                                  "sch226065"],
-                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
-                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
-                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
-                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
-                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
-               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
-                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
-                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
-                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
-                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
-                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
-    oo_login = dbase.get_school_login(id_oo=id_oo)
-    parallels_array = []
-    for parallel in schools:
-        for sbj in schools[parallel]:
-            if oo_login in schools[parallel][sbj]:
-                parallels_array.append({'id': dbase.get_id_oo_parallels(parallel=parallel,
-                                                                        id_oo=id_oo),
-                                        'name': parallel})
-                break
-    return jsonify({'parallels': parallels_array})
-
-
-@app.route('/parallels_by_district_for_schools_in_risk/<id_district>')
-@login_required
-def parallels_by_district_for_schools_in_risk(id_district):
-    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
-                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
-                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
-                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
-                                  "sch226065"],
-                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
-                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
-                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
-                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
-                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
-               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
-                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
-                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
-                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
-                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
-                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
-
-    oo_array = dbase.get_oo_by_district_for_schools_in_risk(id_district=id_district,
-                                                            id_user=current_user.get_id())
-    parallels_array = []
-    for oo in oo_array:
-        oo_login = dbase.get_school_login(id_oo=oo[0])
-        for parallel in schools:
-            for sbj in schools[parallel]:
-                if oo_login in schools[parallel][sbj]:
-                    if {'id': parallel, 'name': parallel} not in parallels_array:
-                        parallels_array.append({'id': parallel, 'name': parallel})
-                    break
-    return jsonify({'parallels': parallels_array})
-
-
-@app.route('/all_subject_for_schools_in_risk/')
-@login_required
-def all_subject_for_schools_in_risk():
+def api_get_subject_for_schools_in_risk(year, id_district, id_oo, parallel):
     subject_array = []
-    for subject in ["Математика", "Русский язык"]:
-        subject_array.append({'id': dbase.get_subject_id(subject), 'name': subject})
+    for id_subject, subject in dbase.get_subject_for_school_in_risk(year=year,
+                                                                    id_district=id_district,
+                                                                    id_oo=id_oo,
+                                                                    parallel=parallel):
+        subject_array.append({'id': id_subject, 'name': subject})
     return jsonify({'subjects': subject_array})
-
-
-@app.route('/sbj_by_oo_for_schools_in_risk/<id_oo>/<parallel>')
-@login_required
-def sbj_by_oo_for_schools_in_risk(id_oo, parallel):
-    id_oo_parallel = int(parallel)
-    parallel = dbase.get_parallel_by_id_oo_parallels(id_oo_parallel)
-
-    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
-                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
-                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
-                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
-                                  "sch226065"],
-                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
-                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
-                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
-                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
-                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
-               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
-                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
-                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
-                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
-                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
-                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
-    oo_login = dbase.get_school_login(id_oo=id_oo)
-    parallels_array = []
-
-    for sbj in schools[parallel]:
-        if oo_login in schools[parallel][sbj]:
-            id_oo_parallels_subjects = dbase.get_id_oo_parallels_subjects(
-                id_oo_parallels=id_oo_parallel,
-                id_subjects=dbase.get_subject_id(sbj))
-
-            parallels_array.append({'id': id_oo_parallels_subjects, 'name': sbj})
-
-    return jsonify({'subjects': parallels_array})
-
-
-@app.route('/sbj_by_district_for_schools_in_risk/<id_district>/<parallel>')
-@login_required
-def sbj_by_district_for_schools_in_risk(id_district, parallel):
-    parallel = int(parallel)
-    schools = {4: {"Математика": ["sch220150", "sch220175", "sch220198", "sch223197", "sch223610", "sch223615",
-                                  "sch223763", "sch223953", "sch224143", "sch224188", "sch224199", "sch224208",
-                                  "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
-                                  "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
-                                  "sch226065"],
-                   "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
-                                    "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
-                                    "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
-                                    "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
-                                    "sch224362", "sch224397", "sch226062", "sch226065"]},
-               5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
-                                  "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
-                                  "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
-                   "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
-                                    "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
-                                    "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}
-
-    oo_array = dbase.get_oo_by_district_for_schools_in_risk(id_district=id_district,
-                                                            id_user=current_user.get_id())
-    sbj_array = []
-    for oo in oo_array:
-        oo_login = dbase.get_school_login(id_oo=oo[0])
-        for sbj in schools[parallel]:
-            if oo_login in schools[parallel][sbj]:
-                if {'id': dbase.get_subject_id(sbj), 'name': sbj} not in sbj_array:
-                    sbj_array.append({'id': dbase.get_subject_id(sbj), 'name': sbj})
-    return jsonify({'subjects': sbj_array})
 
 
 @app.route("/vpr_analysis", methods=["POST", "GET"])
@@ -345,9 +222,9 @@ def vpr_analysis():
     return render_template('vpr_analysis.html', title="Аналитика ВПР")
 
 
-@app.route("/get_reports")
+@app.route("/api/get_reports")
 @login_required
-def get_reports():
+def api_get_reports():
     reports = ["Статистика по отметкам", "Сравнение отметок с отметками по журналу", "Результаты ВПР"]
     reports_array = []
     for report_id, report in enumerate(reports):
@@ -356,10 +233,22 @@ def get_reports():
     return jsonify({'reports': reports_array})
 
 
-@app.route("/get_districts")
+@app.route("/api/get_year")
 @login_required
-def get_districts():
-    districts = dbase.get_districts(current_user.get_id())
+def api_get_year():
+    available_years = [2021]
+    years_array = []
+    for year in available_years:
+        year_obj = {'id': year, 'name': year}
+        years_array.append(year_obj)
+    return jsonify({'year': years_array})
+
+
+@app.route("/api/get_districts/<int:year>")
+@login_required
+def api_get_districts(year):
+    districts = dbase.get_districts(id_user=current_user.get_id(),
+                                    year=year)
     district_array = []
     if current_user.get_id_role() in {1, 2}:
         district_array.append({'id': "all", 'name': "Все муниципалитеты"})
@@ -370,14 +259,16 @@ def get_districts():
     return jsonify({'districts': district_array})
 
 
-@app.route('/oo/<id_district>')
+@app.route('/api/get_oo/<int:year>/<id_district>')
 @login_required
-def oo_by_name_of_the_settlement(id_district):
+def api_oo_by_name_of_the_settlement(year, id_district):
     oo_array = []
     if id_district == "all":
         oo_array.append({'id': "all", 'name': "Все ОО"})
         return jsonify({'oo': oo_array})
-    oo = dbase.get_oo_from_district(id_district, current_user.get_id())
+    oo = dbase.get_oo_from_district(id_district=id_district,
+                                    id_user=current_user.get_id(),
+                                    year=year)
     if current_user.get_id_role() in {1, 2, 3} and len(oo) > 1:
         oo_array.append({'id': "all", 'name': "Все ОО"})
 
@@ -387,60 +278,58 @@ def oo_by_name_of_the_settlement(id_district):
     return jsonify({'oo': oo_array})
 
 
-@app.route('/parallels_for_district/<id_district>')
+@app.route('/api/get_parallels/<int:year>/<id_district>/<id_oo>')
 @login_required
-def parallels_for_district(id_district):
-    parallels = dbase.get_parallels(id_user=current_user.get_id(),
-                                    id_district=id_district)
-    parallels_array = []
-    for parallel in sorted(parallels, key=lambda x: x[0]):
-        parallels_obj = {'id': parallel, 'name': parallel}
-        parallels_array.append(parallels_obj)
-    return jsonify({'parallels': parallels_array})
-
-
-@app.route('/parallels/<id_oo>')
-@login_required
-def parallels_for_oo(id_oo):
-    if id_oo == "all":
-        parallels = dbase.get_all_parallels()
+def api_get_parallels(year, id_district, id_oo):
+    if id_oo == "all" and id_district != "all":
+        parallels = dbase.get_parallels(id_user=current_user.get_id(),
+                                        id_district=id_district,
+                                        year=year)
         parallels_array = []
         for parallel in sorted(parallels, key=lambda x: x[0]):
             parallels_obj = {'id': parallel, 'name': parallel}
             parallels_array.append(parallels_obj)
         return jsonify({'parallels': parallels_array})
     else:
-        parallels = dbase.get_parallels_for_oo(id_oo)
-        parallels_array = []
-        for parallel in sorted(parallels, key=lambda x: x[1]):
-            parallels_obj = {'id': parallel[0], 'name': parallel[1]}
-            parallels_array.append(parallels_obj)
+        if id_oo == "all":
+            parallels = dbase.get_all_parallels(year=year)
+            parallels_array = []
+            for parallel in sorted(parallels, key=lambda x: x[0]):
+                parallels_obj = {'id': parallel, 'name': parallel}
+                parallels_array.append(parallels_obj)
+            return jsonify({'parallels': parallels_array})
+        else:
+            parallels = dbase.get_parallels_for_oo(id_oo)
+            parallels_array = []
+            for parallel in sorted(parallels, key=lambda x: x[1]):
+                parallels_obj = {'id': parallel[0], 'name': parallel[1]}
+                parallels_array.append(parallels_obj)
 
-        return jsonify({'parallels': parallels_array})
+            return jsonify({'parallels': parallels_array})
 
 
-@app.route('/all_subjects/<id_district>/<parallel>')
+@app.route('/api/get_subjects/<year>/<id_district>/<id_oo>/<parallel>')
 @login_required
-def all_subjects(id_district, parallel):
-    subjects = dbase.get_subjects(parallel, current_user.get_id(), id_district)
-    subjects_array = []
-    for subject in sorted(subjects, key=lambda x: x[1]):
-        subjects_obj = {'id': subject[0], 'name': subject[1]}
-        subjects_array.append(subjects_obj)
+def api_get_subjects(year, id_district, id_oo, parallel):
+    if id_district == "all" or id_oo == "all":
+        subjects = dbase.get_subjects(parallel=parallel,
+                                      id_user=current_user.get_id(),
+                                      id_district=id_district,
+                                      year=year)
+        subjects_array = []
+        for subject in sorted(subjects, key=lambda x: x[1]):
+            subjects_obj = {'id': subject[0], 'name': subject[1]}
+            subjects_array.append(subjects_obj)
 
-    return jsonify({'subjects': subjects_array})
+        return jsonify({'subjects': subjects_array})
+    else:
+        subjects = dbase.get_subjects_for_oo_parallels(id_oo_parallels=parallel)
+        subjects_array = []
+        for subject in sorted(subjects, key=lambda x: x[1]):
+            subjects_obj = {'id': subject[0], 'name': subject[1]}
+            subjects_array.append(subjects_obj)
 
-
-@app.route('/subjects/<id_oo_parallels>')
-@login_required
-def subjects_for_oo_parallels(id_oo_parallels):
-    subjects = dbase.get_subjects_for_oo_parallels(id_oo_parallels)
-    subjects_array = []
-    for subject in sorted(subjects, key=lambda x: x[1]):
-        subjects_obj = {'id': subject[0], 'name': subject[1]}
-        subjects_array.append(subjects_obj)
-
-    return jsonify({'subjects': subjects_array})
+        return jsonify({'subjects': subjects_array})
 
 
 @app.route("/")

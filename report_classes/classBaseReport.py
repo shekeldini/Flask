@@ -1,5 +1,6 @@
 class BaseReport:
     def __init__(self, request, dbase, user):
+        self._year = request["year"]
         self._district = request["district"]
         self._oo = request["oo"]
         self._parallel = request["parallel"]
@@ -8,3 +9,4 @@ class BaseReport:
         self._request = request
         self._dbase = dbase
         self._user = user
+

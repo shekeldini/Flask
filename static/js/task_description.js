@@ -1,3 +1,4 @@
+year_select = document.getElementById('year');
 district_select = document.getElementById('district');
 oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
@@ -5,26 +6,51 @@ subject_select = document.getElementById('subject');
 task_select = document.getElementById('task');
 report_select = document.getElementById('report');
 
-
-fetch('get_districts').then(function(response){
+fetch('api/get_year').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
-                        for (district of data.districts) {
-                                optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                        for (year of data.year) {
+                                optionHTML += '<option value="' + year.id+'">' + year.name + '</option>'
                         }
-                        district_select.innerHTML = optionHTML;
+                        year_select.innerHTML = optionHTML;
 
-                        if (district_select.length == 1){
-                                district_select.defaultSelected = district_select[0];
-                                district_select.onchange();
+                        if (year_select.length == 1){
+                                year_select.defaultSelected = year_select[0];
+                                year_select.onchange();
                         }
                         else{
-                                district_select.value = "";
+                                year_select.value = "";
                         }
 
                 });
 });
 
+year_select.onchange = function(){
+    district_select.innerHTML = "";
+    parallel_select.innerHTML = "";
+    subject_select.innerHTML = "";
+    task_select.innerHTML = "";
+    report_select.innerHTML = "";
+    year = year_select.value;
+    fetch('api/get_districts/' + year).then(function(response){
+                    response.json().then(function(data) {
+                            optionHTML = '';
+                            for (district of data.districts) {
+                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                            }
+                            district_select.innerHTML = optionHTML;
+
+                            if (district_select.length == 1){
+                                    district_select.defaultSelected = district_select[0];
+                                    district_select.onchange();
+                            }
+                            else{
+                                    district_select.value = "";
+                            }
+
+                    });
+    });
+};
 
 
 district_select.onchange = function(){
@@ -32,9 +58,9 @@ district_select.onchange = function(){
         subject_select.innerHTML = "";
         task_select.innerHTML = "";
         report_select.innerHTML = "";
-
+        year = year_select.value;
         district = district_select.value;
-        fetch('oo/' + district).then(function(response){
+        fetch('api/get_oo/' + year + "/" + district).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (oo of data.oo) {
@@ -58,31 +84,20 @@ oo_select.onchange = function(){
         subject_select.innerHTML = "";
         task_select.innerHTML = "";
         report_select.innerHTML = "";
-
+        year = year_select.value;
+        district = district_select.value;
         oo = oo_select.value;
-        if (oo == "all" && district_select.value != "all"){
-               fetch('parallels_for_district/' + district_select.value).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (parallel of data.parallels) {
-                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                                }
-                                parallel_select.innerHTML = optionHTML;
-                                parallel_select.value = "";
-                        });
-                }); 
-        }else{
-                fetch('parallels/' + oo).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (parallel of data.parallels) {
-                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                                }
-                                parallel_select.innerHTML = optionHTML;
-                                parallel_select.value = "";
-                        });
+        fetch('api/get_parallels/'+ year + "/"+ district + "/" + oo).then(function(response){
+                response.json().then(function(data) {
+                        optionHTML = '';
+                        for (parallel of data.parallels) {
+                                optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
+                        }
+                        parallel_select.innerHTML = optionHTML;
+                        parallel_select.value = "";
                 });
-        }
+        });
+        
 
 };
 
@@ -90,40 +105,32 @@ oo_select.onchange = function(){
 parallel_select.onchange = function(){
         task_select.innerHTML = "";
         report_select.innerHTML = "";
-
+        year = year_select.value;
+        district = district_select.value;
+        oo = oo_select.value;
         parallel = parallel_select.value;
-        if (district_select.value == "all" || oo_select.value == "all"){
-                 fetch('all_subjects/'+ district_select.value + "/" + parallel).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (subject of data.subjects) {
-                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-                                }
-                                subject_select.innerHTML = optionHTML;
-                                subject_select.value = "";
-                        });
+        
+        fetch('api/get_subjects/'+ year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
+                response.json().then(function(data) {
+                        optionHTML = '';
+                        for (subject of data.subjects) {
+                                optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
+                        }
+                        subject_select.innerHTML = optionHTML;
+                        subject_select.value = "";
                 });
-        }else{
-                fetch('subjects/' + parallel).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (subject of data.subjects) {
-                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-                                }
-                                subject_select.innerHTML = optionHTML;
-                                subject_select.value = "";
-                        });
-                });
-        };
+        });
+        
 };
 
 
 subject_select.onchange = function(){
 report_select.innerHTML = "";
+year = year_select.value;
 id_oo = oo_select.value;
 parallel = parallel_select.value;
 id_subject = subject_select.value;
-fetch('/api/task_description/get_task_numbers/' + id_oo + '/' + parallel + '/' + id_subject).then(function(response){
+fetch('/api/task_description/get_task_numbers/'+ year + '/' + id_oo + '/' + parallel + '/' + id_subject).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (task of data.task_numbers) {
@@ -145,7 +152,12 @@ fetch('/api/task_description/get_reports/' + task_number).then(function(response
                                 optionHTML += '<option value="' + report.id+'">' + report.name + '</option>'
                         }
                         report_select.innerHTML = optionHTML;
-                        report_select.value = "";
+                        if (report_select.length == 1){
+                                report_select.defaultSelected = report_select[0];
+                        }
+                        else{
+                                report_select.value = "";
+                        }
                 });
         });
 };
@@ -206,16 +218,16 @@ function createTable_type_5(jsonObj){
         for (var i = 0; i < titles.length; i++){
                 var tr = document.createElement('tr');
                 var td = document.createElement('td');
-		td.className = "textLeft";
+                td.className = "textLeft";
                 td.appendChild(document.createTextNode(titles[i]));
                 tr.appendChild(td);
 
                 var td = document.createElement('td');
-		td.width = "85%";
-		td.className = "textLeft";
-		//td.style.setProperty("text-align", "justify", "important");
-		td.style.paddingRight = "5px";
-		
+                td.width = "85%";
+                td.className = "textLeft";
+                //td.style.setProperty("text-align", "justify", "important");
+                td.style.paddingRight = "5px";
+                
                 td.colSpan = col_span;
                 td.appendChild(document.createTextNode(values_for_titles[i]));
                 tr.appendChild(td);
@@ -225,7 +237,7 @@ function createTable_type_5(jsonObj){
         let kt_row_span = dict_values["kt"].length;
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.rowSpan = ks_row_span;
         td.appendChild(document.createTextNode("Проверяемые элементы содержания"));
         tr.appendChild(td);
@@ -239,8 +251,8 @@ function createTable_type_5(jsonObj){
                 for (var i=1; i<ks_row_span; i++){
                         var tr = document.createElement('tr');
                         var td = document.createElement('td');
-			td.className = "textLeft";
-			td.colSpan = col_span;
+                        td.className = "textLeft";
+                        td.colSpan = col_span;
                         td.appendChild(document.createTextNode(i + 1 +") " + dict_values["ks"][i]));
                         tr.appendChild(td);
                         tbdy.appendChild(tr);
@@ -249,12 +261,12 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.rowSpan = kt_row_span;
         td.appendChild(document.createTextNode("Проверяемые требования"));
         tr.appendChild(td);
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.colSpan = col_span;
         td.appendChild(document.createTextNode(1+ ") " + dict_values["kt"][0]));
         tr.appendChild(td);
@@ -263,9 +275,9 @@ function createTable_type_5(jsonObj){
                 for (var i=1; i<kt_row_span; i++){
                         var tr = document.createElement('tr');
                         var td = document.createElement('td');
-			td.className = "textLeft";
-			td.colSpan = col_span;
-		        
+                        td.className = "textLeft";
+                        td.colSpan = col_span;
+                        
                         td.appendChild(document.createTextNode(i + 1 + ") " + dict_values["kt"][i]));
                         tr.appendChild(td);
                         tbdy.appendChild(tr);
@@ -273,18 +285,18 @@ function createTable_type_5(jsonObj){
         }
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         tr.appendChild(td);
         for (name of names){
                 var td = document.createElement('td');
-		td.className = "textWeight";
+                td.className = "textWeight";
                 td.appendChild(document.createTextNode(name));
                 tr.appendChild(td);
         }
         tbdy.appendChild(tr);
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.appendChild(document.createTextNode("Выполнили кол-во"));
         tr.appendChild(td);
         for (key of keys){
@@ -296,7 +308,7 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.appendChild(document.createTextNode("Не выполнили кол-во"));
         tr.appendChild(td);
         for (key of keys){
@@ -308,7 +320,7 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.appendChild(document.createTextNode("Выполнили в %"));
         tr.appendChild(td);
         for (key of keys){
@@ -320,7 +332,7 @@ function createTable_type_5(jsonObj){
 
         var tr = document.createElement('tr');
         var td = document.createElement('td');
-	td.className = "textLeft";
+        td.className = "textLeft";
         td.appendChild(document.createTextNode("Не выполнили %"));
         tr.appendChild(td);
         for (key of keys){
@@ -389,32 +401,32 @@ function createTable_type_4(jsonObj){
          tr.appendChild(td);
          for (category of ["Выполнили кол-во", "Не выполнили кол-во", "Выполнили в %", "Не выполнили в %"]){
                 var td2 = document.createElement('td');
-		//td2.style.minWidth = "120px";
-		//td2.style.verticalAlign = "top";
-		//td2.style.paddingTop = "5px";
-		td2.className = "task-title__small";
+                //td2.style.minWidth = "120px";
+                //td2.style.verticalAlign = "top";
+                //td2.style.paddingTop = "5px";
+                td2.className = "task-title__small";
                 td2.appendChild(document.createTextNode(category));
                 tr2.appendChild(td2);
-	 }
+         }
   }
 
   tbdy.appendChild(tr);
   tbdy.appendChild(tr2);
   for (var i = 1; i < Object.keys(jsonObj.values_array.all.values).length + 1; i++){
           var td = document.createElement('td');
-	  var tr = document.createElement('tr');
-	  if (i % 2 == 0) {
+          var tr = document.createElement('tr');
+          if (i % 2 == 0) {
             tr.className = "dark"
           } else {
-	     tr.className = "white"
+             tr.className = "white"
           };
           td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].task_number_from_kim));
           tr.appendChild(td);
 
           var td = document.createElement('td');
-	  //td.style.textAlign = "left";
+          //td.style.textAlign = "left";
           //td.style.minWidth = "460px";
-	  td.className = "mobiles";
+          td.className = "mobiles";
           td.appendChild(document.createTextNode(jsonObj.values_array.all.values[i].text));
           tr.appendChild(td);
 
@@ -491,7 +503,7 @@ function createTable_type_4(jsonObj){
 
 $(document).ready(function(){
         $("#submit_btn").click(function(){
-
+                var year = $('#year').val();
                 var id_district = $('#district').val();
                 var id_oo = $('#oo').val();
                 var id_oo_parallels = $('#parallel').val();
@@ -501,6 +513,10 @@ $(document).ready(function(){
 
 
                 var sendInfo = {
+                year: {
+                        'id': year,
+                        "name": $( "#year option:selected" ).text()
+                        },
                 district: {
                         'id': id_district,
                         "name": $( "#district option:selected" ).text()
@@ -589,7 +605,7 @@ $(document).ready(function(){
                         marker = JSON.stringify(data);
                         var jsonObj = JSON.parse(marker);
                         $(".TwoPage").remove();
-			draw_report(id_report, jsonObj);
+                        draw_report(id_report, jsonObj);
                         $("#submit_btn").attr("disabled", false);
 
         },
@@ -606,28 +622,36 @@ $(document).ready(function(){
         $("#clear_btn").click(function(){
                 $(".error").remove();
                 $(".TwoPage").remove();
-	        district_select.style.border = ""
+                district_select.style.border = ""
                 oo_select.style.border = ""
                 parallel_select.style.border = ""
                 subject_select.style.border = ""
-                task_select.style.border = "";
-                report_select.style.border = "";
-		oo_select.innerHTML = "";
+                report_select.style.border = ""
+                district_select.innerHTML = "";
+                oo_select.innerHTML = "";
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
                 task_select.innerHTML = "";
                 report_select.innerHTML = "";
 
-                district = district_select.value;
-                fetch('oo/' + district).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (oo of data.oo) {
-                                        optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
-                                }
-                                oo_select.innerHTML = optionHTML;
-                                oo_select.value = "";
-                        });
+                year = year_select.value;
+                fetch('api/get_districts/' + year).then(function(response){
+                    response.json().then(function(data) {
+                            optionHTML = '';
+                            for (district of data.districts) {
+                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                            }
+                            district_select.innerHTML = optionHTML;
+
+                            if (district_select.length == 1){
+                                    district_select.defaultSelected = district_select[0];
+                                    district_select.onchange();
+                            }
+                            else{
+                                    district_select.value = "";
+                            }
+
+                    });
                 });
         });
 });

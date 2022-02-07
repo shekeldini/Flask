@@ -441,3 +441,17 @@ CONSTRAINT "C16" FOREIGN KEY (id_user)
 CONSTRAINT "C17" FOREIGN KEY (oo_login)
     REFERENCES oo_logins (oo_login)
 );
+
+CREATE TABLE IF NOT EXISTS schools_in_risk(
+year VARCHAR (4) NOT NULL,
+parallel INTEGER NOT NULL,
+id_subjects INTEGER NOT NULL,
+id_oo INTEGER NOT NULL,
+CONSTRAINT "K43" PRIMARY KEY (year, parallel, id_subjects, id_oo),
+CONSTRAINT "C52" FOREIGN KEY (parallel)
+    REFERENCES parallels (parallel),
+CONSTRAINT "C53" FOREIGN KEY (id_subjects)
+    REFERENCES subjects (id_subjects),
+CONSTRAINT "C54" FOREIGN KEY (id_oo)
+    REFERENCES oo (id_oo)
+);

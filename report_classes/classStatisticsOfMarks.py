@@ -29,11 +29,13 @@ class StatisticsOfMarks(BaseReport):
                 percents_district, count_of_all_students_district = self._dbase.get_count_students_mark_for_all_school_in_district(
                     id_district=self._district["id"],
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                    parallel=self._parallel["name"])
+                    parallel=self._parallel["name"],
+                    year=self._year["name"])
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                    parallel=self._parallel["name"])
+                    parallel=self._parallel["name"],
+                    year=self._year["name"])
 
                 percents["oo"]["name"] = self._oo["name"]
                 percents["oo"]["value"] = percents_oo
@@ -77,11 +79,13 @@ class StatisticsOfMarks(BaseReport):
                 percents_district, count_of_all_students_district = self._dbase.get_count_students_mark_for_all_school_in_district(
                     id_district=self._district["id"],
                     id_subjects=self._subject["id"],
-                    parallel=self._parallel["id"])
+                    parallel=self._parallel["id"],
+                    year=self._year["name"])
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
                     id_subjects=self._dbase.get_subject_id(self._subject["name"]),
-                    parallel=self._parallel["name"])
+                    parallel=self._parallel["name"],
+                    year=self._year["name"])
 
                 percents["district"]["name"] = self._district["name"]
                 percents["district"]["value"] = percents_district
@@ -120,7 +124,8 @@ class StatisticsOfMarks(BaseReport):
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
                     id_subjects=self._subject["id"],
-                    parallel=self._parallel["id"])
+                    parallel=self._parallel["id"],
+                    year=self._year["name"])
 
                 percents["all_districts"]["name"] = "Все муниципалитеты"
                 percents["all_districts"]["value"] = percents_all

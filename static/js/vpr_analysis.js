@@ -1,37 +1,63 @@
+year_select = document.getElementById('year');
 district_select = document.getElementById('district');
 oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
 report_select = document.getElementById('report');
 
-fetch('get_districts').then(function(response){
+fetch('api/get_year').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
-                        for (district of data.districts) {
-                                optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                        for (year of data.year) {
+                                optionHTML += '<option value="' + year.id+'">' + year.name + '</option>'
                         }
-                        district_select.innerHTML = optionHTML;
+                        year_select.innerHTML = optionHTML;
 
-                        if (district_select.length == 1){
-                                district_select.defaultSelected = district_select[0];
-                                district_select.onchange();
+                        if (year_select.length == 1){
+                                year_select.defaultSelected = year_select[0];
+                                year_select.onchange();
                         }
                         else{
-                                district_select.value = "";
+                                year_select.value = "";
                         }
 
                 });
 });
 
+year_select.onchange = function(){
+    district_select.innerHTML = "";
+    parallel_select.innerHTML = "";
+    subject_select.innerHTML = "";
+    report_select.innerHTML = "";
+    year = year_select.value;
+    fetch('api/get_districts/' + year).then(function(response){
+                    response.json().then(function(data) {
+                            optionHTML = '';
+                            for (district of data.districts) {
+                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                            }
+                            district_select.innerHTML = optionHTML;
+
+                            if (district_select.length == 1){
+                                    district_select.defaultSelected = district_select[0];
+                                    district_select.onchange();
+                            }
+                            else{
+                                    district_select.value = "";
+                            }
+
+                    });
+    });
+};
 
 
 district_select.onchange = function(){
         parallel_select.innerHTML = "";
         subject_select.innerHTML = "";
         report_select.innerHTML = "";
-
+        year = year_select.value;
         district = district_select.value;
-        fetch('oo/' + district).then(function(response){
+        fetch('api/get_oo/' + year + "/" + district).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (oo of data.oo) {
@@ -54,67 +80,47 @@ oo_select.onchange = function(){
 
         subject_select.innerHTML = "";
         report_select.innerHTML = "";
-
+        year = year_select.value;
+        district = district_select.value;
         oo = oo_select.value;
-        if (oo == "all" && district_select.value != "all"){
-               fetch('parallels_for_district/' + district_select.value).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (parallel of data.parallels) {
-                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                                }
-                                parallel_select.innerHTML = optionHTML;
-                                parallel_select.value = "";
-                        });
-                }); 
-        }else{
-                fetch('parallels/' + oo).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (parallel of data.parallels) {
-                                        optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
-                                }
-                                parallel_select.innerHTML = optionHTML;
-                                parallel_select.value = "";
-                        });
+        fetch('api/get_parallels/'+ year + "/"+ district + "/" + oo).then(function(response){
+                response.json().then(function(data) {
+                        optionHTML = '';
+                        for (parallel of data.parallels) {
+                                optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
+                        }
+                        parallel_select.innerHTML = optionHTML;
+                        parallel_select.value = "";
                 });
-        }
+        });
+        
 
 };
 
 
 parallel_select.onchange = function(){
         report_select.innerHTML = "";
-
+        year = year_select.value;
+        district = district_select.value;
+        oo = oo_select.value;
         parallel = parallel_select.value;
-        if (district_select.value == "all" || oo_select.value == "all"){
-                 fetch('all_subjects/'+ district_select.value + "/" + parallel).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (subject of data.subjects) {
-                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-                                }
-                                subject_select.innerHTML = optionHTML;
-                                subject_select.value = "";
-                        });
+        
+        fetch('api/get_subjects/'+ year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
+                response.json().then(function(data) {
+                        optionHTML = '';
+                        for (subject of data.subjects) {
+                                optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
+                        }
+                        subject_select.innerHTML = optionHTML;
+                        subject_select.value = "";
                 });
-        }else{
-                fetch('subjects/' + parallel).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (subject of data.subjects) {
-                                        optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
-                                }
-                                subject_select.innerHTML = optionHTML;
-                                subject_select.value = "";
-                        });
-                });
-        };
+        });
+        
 };
 
 
 subject_select.onchange = function(){
-fetch('get_reports').then(function(response){
+fetch('api/get_reports').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (report of data.reports) {
@@ -312,34 +318,34 @@ function draw_report(report_type, json_data){
                 createTable_type_0(json_data);
         }
         if (report_type == 1){
-	        let content_text = json_data.plot_settings.content;
-	       	let title_text = json_data.plot_settings.title;
-	        let x_axis = json_data.plot_settings.x_axis;
-	        let y_axis = json_data.plot_settings.y_axis;
+            let content_text = json_data.plot_settings.content;
+            let title_text = json_data.plot_settings.title;
+            let x_axis = json_data.plot_settings.x_axis;
+            let y_axis = json_data.plot_settings.y_axis;
 
                 let index = 0;
                 if (Object.keys(json_data.percents).length > 1){
                         draw_report_type_1_all(json_data, content_text, title_text, x_axis, y_axis);
                         index += 1;
                 }
-		if (Object.keys(json_data.percents).length <= 2){
-                	for([key, sub_content_list] of Object.entries(json_data.plot_settings.sub_content)){
-                        	if( key != "all"){
-                        	draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
-                        	createTable_type_1(json_data, key, index);
-                        	index += 1;
-                        	}
-                	}
-		}else{
-			 let key = "oo";
-			 let sub_content_list = json_data.plot_settings.sub_content[key];
-			 draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
+        if (Object.keys(json_data.percents).length <= 2){
+                    for([key, sub_content_list] of Object.entries(json_data.plot_settings.sub_content)){
+                            if( key != "all"){
+                            draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
+                            createTable_type_1(json_data, key, index);
+                            index += 1;
+                            }
+                    }
+        }else{
+             let key = "oo";
+             let sub_content_list = json_data.plot_settings.sub_content[key];
+             draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
                          createTable_type_1(json_data, key, index);
                          index += 1;
-		}
+        }
         }
         if (report_type == 2){
-		createTable_type_2(json_data);
+        createTable_type_2(json_data);
         }
 }
 
@@ -703,10 +709,10 @@ function createTable_type_2(jsonObj){
 
 
   for (var i=0; i<2; i++){
-	 var td = document.createElement('td');
- 	 td.rowSpan = "2";
- 	 td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
- 	 tr.appendChild(td);
+     var td = document.createElement('td');
+     td.rowSpan = "2";
+     td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
+     tr.appendChild(td);
 
   }
   var td = document.createElement('td');
@@ -745,7 +751,7 @@ function createTable_type_2(jsonObj){
                         var td = document.createElement('td');
                         td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].value[field]));
                         tr.appendChild(td);
-			}
+            }
                 tbdy.appendChild(tr);
         }
   }
@@ -791,7 +797,7 @@ function createTable_type_2(jsonObj){
                 }
                 tbdy.appendChild(tr);
         }
-	
+    
 let items = Object.keys(jsonObj.table_settings.values.all_districts.districts)
 
 function predicate_1(item) {
@@ -825,7 +831,7 @@ let result = []
 result = result.concat(result_1.a.sort(), result_2.a.sort(), result_3.b.sort(), result_3.a.sort())
 
         //for ([key, dict_values] of Object.entries(jsonObj.table_settings.values.all_districts.districts)){
-	for (key of result) {
+    for (key of result) {
                 let tr = document.createElement('tr');
                 var td = document.createElement('td');
                 td.appendChild(document.createTextNode(key));
@@ -856,7 +862,7 @@ let dict_values = jsonObj.table_settings.values.all_districts.districts[key];
 
 $(document).ready(function(){
         $("#submit_btn").click(function(){
-
+                var id_year = $('#year').val();
                 var id_district = $('#district').val();
                 var id_oo = $('#oo').val();
                 var id_oo_parallels = $('#parallel').val();
@@ -865,6 +871,10 @@ $(document).ready(function(){
 
 
                 var sendInfo = {
+                year: {
+                        'id': year,
+                        "name": $( "#year option:selected" ).text()
+                        },
                 district: {
                         'id': id_district,
                         "name": $( "#district option:selected" ).text()
@@ -876,8 +886,8 @@ $(document).ready(function(){
                         },
 
                 parallel: {
-                                'id': id_oo_parallels,
-                                "name": $( "#parallel option:selected" ).text()
+                            'id': id_oo_parallels,
+                            "name": $( "#parallel option:selected" ).text()
                         },
 
                 subject: {
@@ -890,7 +900,13 @@ $(document).ready(function(){
                         }
                 };
         $(".error").remove();
-	if(id_district == null || id_oo == null || id_oo_parallels == null || id_oo_parallels_subjects == null || id_report == null) {
+    if(id_year == null || id_district == null || id_oo == null || id_oo_parallels == null || id_oo_parallels_subjects == null || id_report == null) {
+               if (id_year == null){
+                year_select.style.border = "2px solid red"
+               } else {
+                    year_select.style.border = "2px solid #7ecd7e"
+
+               }
                if (id_district == null){
                 district_select.style.border = "2px solid red"
                } else {
@@ -923,7 +939,7 @@ $(document).ready(function(){
                        report_select.style.border = "2px solid red"
                } 
         }else {
-		district_select.style.border = "";
+        district_select.style.border = "";
                 oo_select.style.border = "";
                 parallel_select.style.border = "";
                 subject_select.style.border = "";
@@ -956,25 +972,35 @@ $(document).ready(function(){
         $("#clear_btn").click(function(){
                 $(".error").remove();
                 $(".TwoPage").remove();
-		district_select.style.border = ""
+                district_select.style.border = ""
                 oo_select.style.border = ""
                 parallel_select.style.border = ""
                 subject_select.style.border = ""
                 report_select.style.border = ""
+                district_select.innerHTML = "";
+                oo_select.innerHTML = "";
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
                 report_select.innerHTML = "";
 
-                district = district_select.value;
-                fetch('oo/' + district).then(function(response){
-                        response.json().then(function(data) {
-                                optionHTML = '';
-                                for (oo of data.oo) {
-                                        optionHTML += '<option value="' + oo.id+'">' + oo.name + '</option>'
-                                }
-                                oo_select.innerHTML = optionHTML;
-                                oo_select.value = "";
-                        });
-                });
+                year = year_select.value;
+                fetch('api/get_districts/' + year).then(function(response){
+                    response.json().then(function(data) {
+                            optionHTML = '';
+                            for (district of data.districts) {
+                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
+                            }
+                            district_select.innerHTML = optionHTML;
+
+                            if (district_select.length == 1){
+                                    district_select.defaultSelected = district_select[0];
+                                    district_select.onchange();
+                            }
+                            else{
+                                    district_select.value = "";
+                            }
+
+                    });
+    });
         });
 });
