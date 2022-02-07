@@ -192,7 +192,8 @@ function createTable_type_5(jsonObj){
   let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
   "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
   "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_task_id=" + task_select.value + "&filter_task_name=" + $( "#task option:selected" ).text() +
-  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() ;
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + parallel_select.value + 
+  "&filter_year_name=" + $( "#year option:selected" ).text();
   btn.setAttribute("href", btn_url);
   let col_span = Object.keys(jsonObj.values_array).length
   if (col_span == 3){
@@ -376,7 +377,8 @@ function createTable_type_4(jsonObj){
   let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
   "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
   "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_task_id=" + task_select.value + "&filter_task_name=" + $( "#task option:selected" ).text() +
-  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() ;
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + parallel_select.value + 
+  "&filter_year_name=" + $( "#year option:selected" ).text();
 
   btn.setAttribute("href", btn_url);
   let text = document.createTextNode('Описание контрольных измерительных материалов');

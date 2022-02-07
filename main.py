@@ -69,6 +69,9 @@ def export():
     export_data = {"report": {"id": request.args.get("filter_report_id"),
                               "name": request.args.get("filter_report_name")},
 
+                   "year": {"id": request.args.get("filter_year_id"),
+                            "name": request.args.get("filter_year_name")},
+
                    "district": {"id": request.args.get("filter_district_id"),
                                 "name": request.args.get("filter_district_name")},
 
