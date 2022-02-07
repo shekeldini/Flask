@@ -4,7 +4,7 @@ oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
 
-fetch('api/get_year').then(function(response){
+fetch('api/select/get_year').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (year of data.year) {

@@ -225,7 +225,7 @@ def vpr_analysis():
     return render_template('vpr_analysis.html', title="Аналитика ВПР")
 
 
-@app.route("/api/get_reports")
+@app.route("/api/vpr_analysis/get_reports")
 @login_required
 def api_get_reports():
     reports = ["Статистика по отметкам", "Сравнение отметок с отметками по журналу", "Результаты ВПР"]
@@ -236,7 +236,7 @@ def api_get_reports():
     return jsonify({'reports': reports_array})
 
 
-@app.route("/api/get_year")
+@app.route("/api/select/get_year")
 @login_required
 def api_get_year():
     available_years = [2021]
@@ -247,7 +247,7 @@ def api_get_year():
     return jsonify({'year': years_array})
 
 
-@app.route("/api/get_districts/<int:year>")
+@app.route("/api/select/get_districts/<int:year>")
 @login_required
 def api_get_districts(year):
     districts = dbase.get_districts(id_user=current_user.get_id(),
@@ -262,7 +262,7 @@ def api_get_districts(year):
     return jsonify({'districts': district_array})
 
 
-@app.route('/api/get_oo/<int:year>/<id_district>')
+@app.route('/api/select/get_oo/<int:year>/<id_district>')
 @login_required
 def api_oo_by_name_of_the_settlement(year, id_district):
     oo_array = []
@@ -281,7 +281,7 @@ def api_oo_by_name_of_the_settlement(year, id_district):
     return jsonify({'oo': oo_array})
 
 
-@app.route('/api/get_parallels/<int:year>/<id_district>/<id_oo>')
+@app.route('/api/select/get_parallels/<int:year>/<id_district>/<id_oo>')
 @login_required
 def api_get_parallels(year, id_district, id_oo):
     if id_oo == "all" and id_district != "all":
@@ -311,7 +311,7 @@ def api_get_parallels(year, id_district, id_oo):
             return jsonify({'parallels': parallels_array})
 
 
-@app.route('/api/get_subjects/<year>/<id_district>/<id_oo>/<parallel>')
+@app.route('/api/select/get_subjects/<year>/<id_district>/<id_oo>/<parallel>')
 @login_required
 def api_get_subjects(year, id_district, id_oo, parallel):
     if id_district == "all" or id_oo == "all":

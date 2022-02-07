@@ -6,7 +6,7 @@ subject_select = document.getElementById('subject');
 task_select = document.getElementById('task');
 report_select = document.getElementById('report');
 
-fetch('api/get_year').then(function(response){
+fetch('api/select/get_year').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (year of data.year) {
@@ -32,7 +32,7 @@ year_select.onchange = function(){
     task_select.innerHTML = "";
     report_select.innerHTML = "";
     year = year_select.value;
-    fetch('api/get_districts/' + year).then(function(response){
+    fetch('api/select/get_districts/' + year).then(function(response){
                     response.json().then(function(data) {
                             optionHTML = '';
                             for (district of data.districts) {
@@ -60,7 +60,7 @@ district_select.onchange = function(){
         report_select.innerHTML = "";
         year = year_select.value;
         district = district_select.value;
-        fetch('api/get_oo/' + year + "/" + district).then(function(response){
+        fetch('api/select/get_oo/' + year + "/" + district).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (oo of data.oo) {
@@ -87,7 +87,7 @@ oo_select.onchange = function(){
         year = year_select.value;
         district = district_select.value;
         oo = oo_select.value;
-        fetch('api/get_parallels/'+ year + "/"+ district + "/" + oo).then(function(response){
+        fetch('api/select/get_parallels/'+ year + "/"+ district + "/" + oo).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (parallel of data.parallels) {
@@ -110,7 +110,7 @@ parallel_select.onchange = function(){
         oo = oo_select.value;
         parallel = parallel_select.value;
         
-        fetch('api/get_subjects/'+ year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
+        fetch('api/select/get_subjects/'+ year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (subject of data.subjects) {
