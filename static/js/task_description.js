@@ -131,7 +131,7 @@ subject_select.onchange = function(){
         id_oo = oo_select.value;
         parallel = parallel_select.value;
         id_subject = subject_select.value;
-        fetch('/api/task_description/get_task_numbers/'+ year + '/' + id_oo + '/' + parallel + '/' + id_subject).then(function(response){
+        fetch('/api/select/task_description/get_task_numbers/?filter_year_id='+ year + '&filter_oo_id=' + id_oo + '&filter_parallel_id=' + parallel + '&filter_subject_id=' + id_subject).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (task of data.task_numbers) {
@@ -146,7 +146,7 @@ subject_select.onchange = function(){
 
 task_select.onchange = function(){
 task_number = task_select.value;
-fetch('/api/task_description/get_reports/' + task_number).then(function(response){
+fetch('/api/select/task_description/get_reports/?filter_task_number=' + task_number).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (report of data.reports) {

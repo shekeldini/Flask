@@ -1,6 +1,6 @@
 import psycopg2
 from openpyxl import Workbook
-from postgresql import Postgresql
+from data_base.postgresql import Postgresql
 from config import *
 
 

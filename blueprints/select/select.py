@@ -1,16 +1,23 @@
-from flask import Blueprint, request, url_for, redirect, flash, session, g, jsonify
+from flask import Blueprint, request, g, jsonify
 from flask_login import login_required, current_user
-from postgresql import Postgresql
+from data_base.postgresql import Postgresql
+from blueprints.task_description.task_description import blueprint_task_description
+from blueprints.vpr_analysis.vpr_analysis import blueprint_vpr_analysis
+from blueprints.school_in_risk.school_in_risk import blueprint_school_in_risk
 
 dbase: Postgresql
 
-select = Blueprint(
+blueprint_select = Blueprint(
     'select',
     __name__
 )
+blueprint_select.register_blueprint(blueprint_task_description, url_prefix="/task_description")
+blueprint_select.register_blueprint(blueprint_vpr_analysis, url_prefix="/vpr_analysis")
+blueprint_select.register_blueprint(blueprint_school_in_risk, url_prefix="/school_in_risk")
 
 
-@select.before_request
+
+@blueprint_select.before_request
 def before_request():
     """Установление соединения с БД перед выполением запроса"""
     global dbase
@@ -18,14 +25,14 @@ def before_request():
     dbase = Postgresql(db_connect)
 
 
-@select.teardown_request
+@blueprint_select.teardown_request
 def teardown_request(request):
     global dbase
     dbase = None
     return request
 
 
-@select.route("/get_year/")
+@blueprint_select.route("/get_year/")
 @login_required
 def api_get_year():
     available_years = [2021]
@@ -36,7 +43,7 @@ def api_get_year():
     return jsonify({'year': years_array})
 
 
-@select.route("/get_districts/")
+@blueprint_select.route("/get_districts/")
 @login_required
 def api_get_districts():
     years = request.args.get("filter_year_id").split(",")
@@ -63,7 +70,7 @@ def api_get_districts():
     return jsonify({'districts': district_array})
 
 
-@select.route('/get_oo/')
+@blueprint_select.route('/get_oo/')
 @login_required
 def get_oo():
     years = request.args.get("filter_year_id").split(",")
@@ -102,10 +109,10 @@ def get_oo():
     return jsonify({'oo': oo_array})
 
 
-@select.route('/get_parallels/')
+@blueprint_select.route('/get_parallels/')
 @login_required
 def api_get_parallels():
-    years = request.args.get("filter_year_id").split("%")
+    years = request.args.get("filter_year_id").split(",")
     id_district = request.args.get("filter_district_id")
     id_oo = request.args.get("filter_oo_id")
     parallels_array = []
@@ -171,10 +178,10 @@ def api_get_parallels():
             return jsonify({'parallels': parallels_array})
 
 
-@select.route('/get_subjects/')
+@blueprint_select.route('/get_subjects/')
 @login_required
 def api_get_subjects():
-    years = request.args.get("filter_year_id").split("%")
+    years = request.args.get("filter_year_id").split(",")
     id_district = request.args.get("filter_district_id")
     oo_login = request.args.get("filter_oo_id")
     parallel = request.args.get("filter_parallel_id")

@@ -1,6 +1,6 @@
 from flask import Blueprint, g, jsonify
 from flask_login import login_required
-from postgresql import Postgresql
+from data_base.postgresql import Postgresql
 
 dbase: Postgresql
 

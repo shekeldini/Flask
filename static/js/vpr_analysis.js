@@ -120,7 +120,7 @@ parallel_select.onchange = function(){
 
 
 subject_select.onchange = function(){
-fetch('api/vpr_analysis/get_reports').then(function(response){
+fetch('api/select/vpr_analysis/get_reports').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (report of data.reports) {

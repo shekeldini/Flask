@@ -1,6 +1,6 @@
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, g, jsonify, request
 from flask_login import login_required
-from postgresql import Postgresql
+from data_base.postgresql import Postgresql
 
 dbase: Postgresql
 
@@ -14,8 +14,8 @@ blueprint_task_description = Blueprint(
 def before_request():
     """Установление соединения с БД перед выполением запроса"""
     global dbase
-    db_connect = g.get('link_db')
-    dbase = Postgresql(db_connect)
+    db_connection = g.get('link_db')
+    dbase = Postgresql(db_connection)
 
 
 @blueprint_task_description.teardown_request
@@ -25,27 +25,30 @@ def teardown_request(request):
     return request
 
 
-@blueprint_task_description.route("/get_task_numbers/<year>/<id_oo>/<int:parallel>/<int:id_subject>",
-                        methods=["POST", "GET"])
+@blueprint_task_description.route("/get_task_numbers/")
 @login_required
-def api_task_description_get_task_numbers(year, id_oo, parallel, id_subject):
+def api_task_description_get_task_numbers():
+    years = request.args.get("filter_year_id").split(",")
+    oo_login = request.args.get("filter_oo_id")
+    parallel = request.args.get("filter_parallel_id")
+    id_subjects = request.args.get("filter_subject_id")
+
     task_numbers_array = [{'id': "all", 'name': "Все задания"}]
 
-    if id_oo != "all":
-        task_numbers = dbase.get_task_number_from_kim_by_id_oo_parallels_subjects(id_subject)
-    else:
-        task_numbers = dbase.get_task_number_from_kim(id_subjects=id_subject,
-                                                      parallel=parallel,
-                                                      year=year)
+    task_numbers = dbase.get_task_number_from_kim_by_id_oo_parallels_subjects(year=years[0],
+                                                                              oo_login=oo_login,
+                                                                              parallel=parallel,
+                                                                              id_subjects=id_subjects)
 
     for key, value in task_numbers:
         task_numbers_array.append({'id': key, 'name': value})
     return jsonify({'task_numbers': task_numbers_array})
 
 
-@blueprint_task_description.route("/get_reports/<task_number>", methods=["POST", "GET"])
+@blueprint_task_description.route("/get_reports/")
 @login_required
-def api_task_description_get_reports(task_number):
+def api_task_description_get_reports():
+    task_number = request.args.get("filter_task_number")
     if task_number == "all":
         return jsonify({'reports': [{'id': 4, 'name': "Описание работы"}]})
     else:

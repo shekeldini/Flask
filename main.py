@@ -4,12 +4,10 @@ from flask import Flask, render_template, url_for, request, flash, redirect, abo
     send_from_directory
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
 from classReportController import ReportController
 from classUserLogin import UserLogin
 from forms import LoginForm
-from postgresql import Postgresql
-
+from data_base.postgresql import Postgresql
 from config import *
 from blueprints.api import blueprint_api
 
@@ -27,12 +25,12 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = "Авторизируйтесь для доступа к закрытым страницам"
 login_manager.login_message_category = "invalid"
-dbase: Postgresql
+db_connection = None
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    return UserLogin().fromDB(user_id, dbase)
+    return UserLogin().fromDB(user_id, Postgresql(db_connection))
 
 
 def connect_db():
@@ -58,9 +56,8 @@ def get_db():
 @app.before_request
 def before_request():
     """Установление соединения с БД перед выполнением запроса"""
-    global dbase
-    db = get_db()
-    dbase = Postgresql(db)
+    global db_connection
+    db_connection = get_db()
 
 
 @app.teardown_appcontext
@@ -81,7 +78,7 @@ def download(filename):
 @login_required
 def task_description():
     if request.method == "POST":
-        report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
+        report = ReportController(request=request.get_json(), connection=db_connection, user=current_user)
         return jsonify(report.get_report())
     return render_template('task_description.html', title="Описание заданий")
 
@@ -92,7 +89,7 @@ def school_in_risk():
     if current_user.get_id_role() not in (1, 2, 3):
         return abort(403)
     if request.method == "POST":
-        report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
+        report = ReportController(request=request.get_json(), connection=db_connection, user=current_user)
         return jsonify(report.get_report())
     return render_template('school_in_risk.html', title="Школы в зоне риска")
 
@@ -101,7 +98,7 @@ def school_in_risk():
 @login_required
 def vpr_analysis():
     if request.method == "POST":
-        report = ReportController(request=request.get_json(), dbase=dbase, user=current_user)
+        report = ReportController(request=request.get_json(), connection=db_connection, user=current_user)
         return jsonify(report.get_report())
 
     return render_template('vpr_analysis.html', title="Аналитика ВПР")
@@ -109,6 +106,7 @@ def vpr_analysis():
 
 @app.route("/")
 def index():
+    dbase = Postgresql(db_connection)
     if current_user.is_authenticated:
         return render_template('index.html',
                                count_of_students=dbase.get_count_students(),
@@ -142,6 +140,7 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
+        dbase = Postgresql(db_connection)
         user = dbase.get_user_by_login(form.login.data)
         if user:
             user_password = user[5]
@@ -177,6 +176,7 @@ def userava():
 @login_required
 def upload():
     if request.method == "POST":
+        dbase = Postgresql(db_connection)
         file = request.files['file']
         if file and current_user.verifyExt(file.filename):
             try:
