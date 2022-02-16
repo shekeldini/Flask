@@ -157,6 +157,7 @@ class StatisticsOfMarks(BaseReport):
                         "oo": self._oo,
                         "percents": percents,
                         }
+
     def export_report(self):
         report = self.get_report()
         file_name = 'Statistics Of Marks.xlsx'

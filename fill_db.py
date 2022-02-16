@@ -3,7 +3,7 @@ import psycopg2
 import time
 import math
 import threading
-from postgresql import Postgresql
+from data_base.postgresql import Postgresql
 from werkzeug.security import generate_password_hash
 from glob import glob
 from config import *

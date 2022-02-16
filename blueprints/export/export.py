@@ -2,7 +2,7 @@ from io import BytesIO
 
 from flask import Blueprint, request, g, Response
 from flask_login import login_required, current_user
-from postgresql import Postgresql
+from data_base.postgresql import Postgresql
 from classReportController import ReportController
 
 dbase: Postgresql

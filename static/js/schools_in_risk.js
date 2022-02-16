@@ -26,7 +26,7 @@ year_select.onchange = function(){
     parallel_select.innerHTML = "";
     subject_select.innerHTML = "";
     year = year_select.value;
-    fetch('/api/school_in_risk/get_districts/' + year).then(function(response){
+    fetch('/api/select/school_in_risk/get_districts/' + year).then(function(response){
                     response.json().then(function(data) {
                             optionHTML = '';
                             for (district of data.districts) {
@@ -52,7 +52,7 @@ district_select.onchange = function(){
         subject_select.innerHTML = "";
         year = year_select.value;
         district = district_select.value;
-        fetch('/api/school_in_risk/get_oo/'+ year + '/' + district).then(function(response){
+        fetch('/api/select/school_in_risk/get_oo/'+ year + '/' + district).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (oo of data.oo) {
@@ -76,7 +76,7 @@ oo_select.onchange = function(){
     year = year_select.value;
 	district = district_select.value;
     oo = oo_select.value;
-    fetch('/api/school_in_risk/get_parallels/' + year + '/' + district +'/' + oo).then(function(response){
+    fetch('/api/select/school_in_risk/get_parallels/' + year + '/' + district +'/' + oo).then(function(response){
             response.json().then(function(data) {
                     optionHTML = '';
                     for (parallel of data.parallels) {
@@ -95,7 +95,7 @@ parallel_select.onchange = function(){
     district = district_select.value;
     oo = oo_select.value;
     parallel = parallel_select.value;
-    fetch('/api/school_in_risk/get_subject/' + year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
+    fetch('/api/select/school_in_risk/get_subject/' + year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
             response.json().then(function(data) {
                     optionHTML = '';
                     for (subject of data.subjects) {
