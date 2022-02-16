@@ -216,18 +216,6 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_id_oo(self, oo_login, year="2021"):
-        try:
-            self._cur.execute(
-                f"SELECT id_oo FROM oo WHERE oo_login = '{oo_login}' and year = '{year}'")
-            res, = self._cur.fetchone()
-            if not res:
-                print("id_oo не был найден")
-                return None
-            return res
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
     def get_id_subjects(self, subject_name):
         try:
             subject_name = subject_name.replace(" ", "_")

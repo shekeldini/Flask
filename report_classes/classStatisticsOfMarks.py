@@ -21,19 +21,24 @@ class StatisticsOfMarks(BaseReport):
                 count_of_all_students = {"all_districts": {},
                                          "district": {},
                                          "oo": {}}
-
+                id_oo = self._dbase.get_id_oo(oo_login=self._oo["id"],
+                                              year=self._year["name"])
+                id_oo_parallels = self._dbase.get_id_oo_parallels(parallel=self._parallel['name'],
+                                                                  id_oo=id_oo)
+                id_oo_parallels_subjects = self._dbase.get_id_oo_parallels_subjects(id_subjects=self._subject["id"],
+                                                                                    id_oo_parallels=id_oo_parallels)
                 percents_oo, count_of_all_students_oo = self._dbase.get_count_students_mark(
-                    id_oo_parallels_subjects=self._subject["id"],
-                    id_oo_parallels=self._parallel["id"])
+                    id_oo_parallels_subjects=id_oo_parallels_subjects,
+                    id_oo_parallels=id_oo_parallels)
 
                 percents_district, count_of_all_students_district = self._dbase.get_count_students_mark_for_all_school_in_district(
                     id_district=self._district["id"],
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     year=self._year["name"])
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     year=self._year["name"])
 
@@ -83,7 +88,7 @@ class StatisticsOfMarks(BaseReport):
                     year=self._year["name"])
 
                 percents_all, count_of_all_students_all = self._dbase.get_count_students_mark_for_all_districts(
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     year=self._year["name"])
 

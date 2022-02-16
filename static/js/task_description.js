@@ -6,7 +6,7 @@ subject_select = document.getElementById('subject');
 task_select = document.getElementById('task');
 report_select = document.getElementById('report');
 
-fetch('api/select/get_year').then(function(response){
+fetch('api/select/get_year/').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (year of data.year) {
@@ -32,7 +32,7 @@ year_select.onchange = function(){
     task_select.innerHTML = "";
     report_select.innerHTML = "";
     year = year_select.value;
-    fetch('api/select/get_districts/' + year).then(function(response){
+    fetch('api/select/get_districts/?filter_year_id=' + year).then(function(response){
                     response.json().then(function(data) {
                             optionHTML = '';
                             for (district of data.districts) {
@@ -60,7 +60,7 @@ district_select.onchange = function(){
         report_select.innerHTML = "";
         year = year_select.value;
         district = district_select.value;
-        fetch('api/select/get_oo/' + year + "/" + district).then(function(response){
+        fetch('api/select/get_oo/?filter_year_id=' + year + "&filter_district_id=" + district).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (oo of data.oo) {
@@ -87,7 +87,7 @@ oo_select.onchange = function(){
         year = year_select.value;
         district = district_select.value;
         oo = oo_select.value;
-        fetch('api/select/get_parallels/'+ year + "/"+ district + "/" + oo).then(function(response){
+        fetch('api/select/get_parallels/?filter_year_id='+ year + "&filter_district_id="+ district + "&filter_oo_id=" + oo).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (parallel of data.parallels) {
@@ -97,7 +97,7 @@ oo_select.onchange = function(){
                         parallel_select.value = "";
                 });
         });
-        
+
 
 };
 
@@ -109,8 +109,8 @@ parallel_select.onchange = function(){
         district = district_select.value;
         oo = oo_select.value;
         parallel = parallel_select.value;
-        
-        fetch('api/select/get_subjects/'+ year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
+
+        fetch('api/select/get_subjects/?filter_year_id='+ year + '&filter_district_id=' + district + '&filter_oo_id=' + oo + '&filter_parallel_id=' + parallel).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (subject of data.subjects) {
@@ -120,17 +120,18 @@ parallel_select.onchange = function(){
                         subject_select.value = "";
                 });
         });
-        
+
 };
 
 
 subject_select.onchange = function(){
-report_select.innerHTML = "";
-year = year_select.value;
-id_oo = oo_select.value;
-parallel = parallel_select.value;
-id_subject = subject_select.value;
-fetch('/api/task_description/get_task_numbers/'+ year + '/' + id_oo + '/' + parallel + '/' + id_subject).then(function(response){
+        task_select.innerHTML = "";
+        report_select.innerHTML = "";
+        year = year_select.value;
+        id_oo = oo_select.value;
+        parallel = parallel_select.value;
+        id_subject = subject_select.value;
+        fetch('/api/task_description/get_task_numbers/'+ year + '/' + id_oo + '/' + parallel + '/' + id_subject).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (task of data.task_numbers) {
@@ -192,7 +193,7 @@ function createTable_type_5(jsonObj){
   let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
   "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
   "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_task_id=" + task_select.value + "&filter_task_name=" + $( "#task option:selected" ).text() +
-  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + parallel_select.value + 
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + year_select.value + 
   "&filter_year_name=" + $( "#year option:selected" ).text();
   btn.setAttribute("href", btn_url);
   let col_span = Object.keys(jsonObj.values_array).length
@@ -374,10 +375,10 @@ function createTable_type_4(jsonObj){
   let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
 
-  let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
+ let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
   "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
   "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_task_id=" + task_select.value + "&filter_task_name=" + $( "#task option:selected" ).text() +
-  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + parallel_select.value + 
+  "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + year_select.value + 
   "&filter_year_name=" + $( "#year option:selected" ).text();
 
   btn.setAttribute("href", btn_url);

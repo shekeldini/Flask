@@ -5,7 +5,7 @@ parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
 report_select = document.getElementById('report');
 
-fetch('api/select/get_year').then(function(response){
+fetch('api/select/get_year/').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (year of data.year) {
@@ -30,7 +30,7 @@ year_select.onchange = function(){
     subject_select.innerHTML = "";
     report_select.innerHTML = "";
     year = year_select.value;
-    fetch('api/select/get_districts/' + year).then(function(response){
+    fetch('api/select/get_districts/?filter_year_id=' + year).then(function(response){
                     response.json().then(function(data) {
                             optionHTML = '';
                             for (district of data.districts) {
@@ -57,7 +57,7 @@ district_select.onchange = function(){
         report_select.innerHTML = "";
         year = year_select.value;
         district = district_select.value;
-        fetch('api/select/get_oo/' + year + "/" + district).then(function(response){
+        fetch('api/select/get_oo/?filter_year_id=' + year + "&filter_district_id=" + district).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (oo of data.oo) {
@@ -83,7 +83,7 @@ oo_select.onchange = function(){
         year = year_select.value;
         district = district_select.value;
         oo = oo_select.value;
-        fetch('api/select/get_parallels/'+ year + "/"+ district + "/" + oo).then(function(response){
+        fetch('api/select/get_parallels/?filter_year_id='+ year + "&filter_district_id="+ district + "&filter_oo_id=" + oo).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (parallel of data.parallels) {
@@ -93,7 +93,7 @@ oo_select.onchange = function(){
                         parallel_select.value = "";
                 });
         });
-        
+
 
 };
 
@@ -104,8 +104,8 @@ parallel_select.onchange = function(){
         district = district_select.value;
         oo = oo_select.value;
         parallel = parallel_select.value;
-        
-        fetch('api/select/get_subjects/'+ year + '/' + district + '/' + oo + '/' + parallel).then(function(response){
+
+        fetch('api/select/get_subjects/?filter_year_id='+ year + '&filter_district_id=' + district + '&filter_oo_id=' + oo + '&filter_parallel_id=' + parallel).then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (subject of data.subjects) {
@@ -115,7 +115,7 @@ parallel_select.onchange = function(){
                         subject_select.value = "";
                 });
         });
-        
+
 };
 
 
@@ -131,6 +131,7 @@ fetch('api/vpr_analysis/get_reports').then(function(response){
                 });
         });
 };
+
 
 
 function draw_report_type_0(json_data){
@@ -275,8 +276,8 @@ function createTable_type_0(jsonObj) {
 
   let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
   "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
-  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + parallel_select.value + 
-  "&filter_year_name=" + $( "#year option:selected" ).text();
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + 
+  "&filter_year_id=" + year_select.value + "&filter_year_name=" + $( "#year option:selected" ).text();
 
   btn.setAttribute("href", btn_url);
   let text = document.createTextNode('Таблица результатов:');
@@ -319,34 +320,34 @@ function draw_report(report_type, json_data){
                 createTable_type_0(json_data);
         }
         if (report_type == 1){
-            let content_text = json_data.plot_settings.content;
-            let title_text = json_data.plot_settings.title;
-            let x_axis = json_data.plot_settings.x_axis;
-            let y_axis = json_data.plot_settings.y_axis;
+	        let content_text = json_data.plot_settings.content;
+	       	let title_text = json_data.plot_settings.title;
+	        let x_axis = json_data.plot_settings.x_axis;
+	        let y_axis = json_data.plot_settings.y_axis;
 
                 let index = 0;
                 if (Object.keys(json_data.percents).length > 1){
                         draw_report_type_1_all(json_data, content_text, title_text, x_axis, y_axis);
                         index += 1;
                 }
-        if (Object.keys(json_data.percents).length <= 2){
-                    for([key, sub_content_list] of Object.entries(json_data.plot_settings.sub_content)){
-                            if( key != "all"){
-                            draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
-                            createTable_type_1(json_data, key, index);
-                            index += 1;
-                            }
-                    }
-        }else{
-             let key = "oo";
-             let sub_content_list = json_data.plot_settings.sub_content[key];
-             draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
+		if (Object.keys(json_data.percents).length <= 2){
+                	for([key, sub_content_list] of Object.entries(json_data.plot_settings.sub_content)){
+                        	if( key != "all"){
+                        	draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
+                        	createTable_type_1(json_data, key, index);
+                        	index += 1;
+                        	}
+                	}
+		}else{
+			 let key = "oo";
+			 let sub_content_list = json_data.plot_settings.sub_content[key];
+			 draw_report_type_1(json_data, content_text, title_text, x_axis, y_axis, key, sub_content_list, index);
                          createTable_type_1(json_data, key, index);
                          index += 1;
-        }
+		}
         }
         if (report_type == 2){
-        createTable_type_2(json_data);
+		createTable_type_2(json_data);
         }
 }
 
@@ -605,9 +606,8 @@ function createTable_type_1(jsonObj, key, index){
 
   let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
   "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
-  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_table_type=" + key + "&filter_year_id=" + parallel_select.value + 
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_table_type=" + key + "&filter_year_id=" + year_select.value + 
   "&filter_year_name=" + $( "#year option:selected" ).text(); 
-
   btn.setAttribute("href", btn_url);
 
   let text = document.createTextNode('Таблица результатов:');
@@ -668,9 +668,8 @@ function createTable_type_2(jsonObj){
 
   let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
   "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
-  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + parallel_select.value + 
+  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + "&filter_year_id=" + year_select.value + 
   "&filter_year_name=" + $( "#year option:selected" ).text();
-
   btn.setAttribute("href", btn_url);
 
 
@@ -712,10 +711,10 @@ function createTable_type_2(jsonObj){
 
 
   for (var i=0; i<2; i++){
-     var td = document.createElement('td');
-     td.rowSpan = "2";
-     td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
-     tr.appendChild(td);
+	 var td = document.createElement('td');
+ 	 td.rowSpan = "2";
+ 	 td.appendChild(document.createTextNode(jsonObj.table_settings.titles[i]));
+ 	 tr.appendChild(td);
 
   }
   var td = document.createElement('td');
@@ -754,7 +753,7 @@ function createTable_type_2(jsonObj){
                         var td = document.createElement('td');
                         td.appendChild(document.createTextNode(jsonObj.table_settings.values[key].value[field]));
                         tr.appendChild(td);
-            }
+			}
                 tbdy.appendChild(tr);
         }
   }
@@ -800,7 +799,7 @@ function createTable_type_2(jsonObj){
                 }
                 tbdy.appendChild(tr);
         }
-    
+	
 let items = Object.keys(jsonObj.table_settings.values.all_districts.districts)
 
 function predicate_1(item) {
@@ -834,7 +833,7 @@ let result = []
 result = result.concat(result_1.a.sort(), result_2.a.sort(), result_3.b.sort(), result_3.a.sort())
 
         //for ([key, dict_values] of Object.entries(jsonObj.table_settings.values.all_districts.districts)){
-    for (key of result) {
+	for (key of result) {
                 let tr = document.createElement('tr');
                 var td = document.createElement('td');
                 td.appendChild(document.createTextNode(key));

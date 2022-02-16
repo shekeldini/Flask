@@ -111,7 +111,7 @@ class Postgresql:
 
     def get_parallels_for_oo(self, id_oo):
         try:
-            self._cur.execute(f"SELECT id_oo_parallels, parallel FROM oo_parallels WHERE id_oo = {id_oo}")
+            self._cur.execute(f"SELECT parallel FROM oo_parallels WHERE id_oo = {id_oo}")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -144,18 +144,49 @@ class Postgresql:
             print("Ошибка получения статей из БД " + str(e))
 
 
-    def get_subjects_for_oo_parallels(self, id_oo_parallels):
+    def get_subjects_for_oo(self, oo_login, parallel, id_user, year):
         try:
-            if id_oo_parallels:
-                self._cur.execute(f"SELECT id_oo_parallels_subjects, id_subjects FROM oo_parallels_subjects"
-                                  f" WHERE id_oo_parallels = {id_oo_parallels}")
-                res = self._cur.fetchall()
-                if res:
-                    return [[x[0], self.get_subject_name(x[1])] for x in res]
-
+            self._cur.execute(f"""
+            SELECT id_subjects, subject_name FROM subjects 
+            WHERE id_subjects in 
+            (
+                SELECT id_subjects FROM oo_parallels_subjects 
+                WHERE id_oo_parallels in 
+                (
+                    SELECT id_oo_parallels FROM oo_parallels 
+                    WHERE parallel = {parallel} 
+                    AND id_oo in 
+                    (
+                        SELECT id_oo FROM oo 
+                        WHERE year='{year}' 
+                        AND oo_login = '{oo_login}'
+                        AND oo_login in 
+                        (
+                            SELECT oo_login FROM users_oo_logins 
+                            WHERE id_user = {id_user}
+                        )
+                    )
+                )
+            );""")
+            res = self._cur.fetchall()
+            if res:
+                return [[id_subjects, subject_name.replace("_", " ")] for id_subjects, subject_name in res]
+            return []
         except psycopg2.Error as e:
             print("Ошибка получения статей из БД " + str(e))
         return []
+
+    def get_id_oo(self, oo_login, year="2021"):
+        try:
+            self._cur.execute(
+                f"SELECT id_oo FROM oo WHERE oo_login = '{oo_login}' and year = '{year}'")
+            res, = self._cur.fetchone()
+            if not res:
+                print("id_oo не был найден")
+                return None
+            return res
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
 
     def get_id_oo_parallels(self, parallel, id_oo):
         try:
@@ -466,7 +497,6 @@ class Postgresql:
                                         USING (id_oo_parallels_subjects))) AS t3) AS t4 GROUP BY value ORDER BY (value);""")
             res = self._cur.fetchall()
             if res:
-
                 mark_dict = {x[0]: x[1] for x in res}
                 count_of_all_mark = sum(mark_dict.values())
                 if mark_dict.get(2) is None:

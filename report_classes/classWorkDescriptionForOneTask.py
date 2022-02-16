@@ -10,18 +10,25 @@ class WorkDescriptionForOneTask(BaseReport):
     def get_report(self):
         if self._district["id"] != "all":
             if self._oo["id"] != "all":
-                oo = self._dbase.get_task_description_for_one_task_for_oo(id_oo_parallels_subjects=self._subject["id"],
+                id_oo = self._dbase.get_id_oo(oo_login=self._oo["id"],
+                                              year=self._year["name"])
+                id_oo_parallels = self._dbase.get_id_oo_parallels(parallel=self._parallel['name'],
+                                                                  id_oo=id_oo)
+                id_oo_parallels_subjects = self._dbase.get_id_oo_parallels_subjects(id_subjects=self._subject["id"],
+                                                                                    id_oo_parallels=id_oo_parallels)
+
+                oo = self._dbase.get_task_description_for_one_task_for_oo(id_oo_parallels_subjects=id_oo_parallels_subjects,
                                                                           task_number=self.task["id"])
 
                 district = self._dbase.get_task_description_for_one_task_for_district(
                     id_district=self._district["id"],
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     task_number=self.task["id"],
                     year=self._year["name"])
 
                 all_ = self._dbase.get_task_description_for_one_task_for_all(
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     task_number=self.task["id"],
                     year=self._year["name"])
@@ -34,13 +41,13 @@ class WorkDescriptionForOneTask(BaseReport):
             elif self._oo["id"] == "all":
                 district = self._dbase.get_task_description_for_one_task_for_district(
                     id_district=self._district["id"],
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     task_number=self.task["id"],
                     year=self._year["name"])
 
                 all_ = self._dbase.get_task_description_for_one_task_for_all(
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     task_number=self.task["id"],
                     year=self._year["name"])
@@ -52,7 +59,7 @@ class WorkDescriptionForOneTask(BaseReport):
         elif self._district["id"] == "all":
             if self._oo["id"] == "all":
                 all_ = self._dbase.get_task_description_for_one_task_for_all(
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     task_number=self.task["id"],
                     year=self._year["name"])

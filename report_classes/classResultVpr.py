@@ -15,19 +15,24 @@ class ResultVpr(BaseReport):
                 percents = {"all_districts": {},
                             "district": {},
                             "oo": {}}
-
+                id_oo = self._dbase.get_id_oo(oo_login=self._oo["id"],
+                                              year=self._year["name"])
+                id_oo_parallels = self._dbase.get_id_oo_parallels(parallel=self._parallel['name'],
+                                                                  id_oo=id_oo)
+                id_oo_parallels_subjects = self._dbase.get_id_oo_parallels_subjects(id_subjects=self._subject["id"],
+                                                                                    id_oo_parallels=id_oo_parallels)
                 percents_oo = self._dbase.get_result_vpr(
-                    id_oo_parallels_subjects=self._subject["id"],
-                    id_oo_parallels=self._parallel["id"])
+                    id_oo_parallels_subjects=id_oo_parallels_subjects,
+                    id_oo_parallels=id_oo_parallels)
 
                 percents_district = self._dbase.get_result_vpr_for_all_school_in_district(
                     id_district=self._district["id"],
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     year=self._year["name"])
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     year=self._year["name"])
 
@@ -63,7 +68,7 @@ class ResultVpr(BaseReport):
                         id_district=self._district["id"],
                         id_user=self._user.get_id(),
                         parallel=self._parallel["id"],
-                        id_subjects=self._dbase.get_subject_id(self._subject["name"])):
+                        id_subjects=self._subject["id"]):
                     school_name = self._dbase.get_oo_name_from_oo_parallels(id_oo_parallels=id_oo_parallels)
 
                     school_percents = self._dbase.get_result_vpr(id_oo_parallels_subjects=id_oo_parallels_subjects,
@@ -72,7 +77,7 @@ class ResultVpr(BaseReport):
                     percents["district"]["schools"][school_name] = school_percents
 
                 percents_all = self._dbase.get_result_vpr_for_all_districts(
-                    id_subjects=self._dbase.get_subject_id(self._subject["name"]),
+                    id_subjects=self._subject["id"],
                     parallel=self._parallel["name"],
                     year=self._year["name"])
 
