@@ -11,27 +11,52 @@ class DataBaseWorkDescription(Postgresql):
         try:
             self._cur.execute(f"""
             SELECT task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count FROM 
-            (SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value, COUNT(value) as count FROM
-            (SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number,task_number_from_kim, max_mark, 
-                CASE WHEN mark = max_mark THEN 'Выполнили'
+            (
+                SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value, COUNT(value) as count FROM
+                (
+                    SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number,task_number_from_kim, max_mark, 
+                    CASE 
+                    WHEN mark = max_mark THEN 'Выполнили'
                     ELSE 'Не выполнили'
-                END AS value FROM
-            ((SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
-                WHERE id_oo_parallels_subjects IN 
-                    (SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
-                        WHERE id_oo_parallels IN 
-                            (SELECT id_oo_parallels FROM oo_parallels 
-                                WHERE parallel={parallel} AND id_oo in 
-                                    (SELECT id_oo FROM oo 
-                                        WHERE year='{year}'))
-                        AND id_subjects={id_subjects}) GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark) AS t1
-            LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
-                    WHERE id_subjects = {id_subjects} AND parallel = {parallel}) AS t2
-                USING(id_distributio_of_tasks_by_positions_of_codifiers))) AS t3  group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value ORDER BY (task_number)) as t5
-            LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
-                    WHERE id_subjects = {id_subjects} AND parallel = {parallel}) AS t4 USING(id_distributio_of_tasks_by_positions_of_codifiers) 
-                    group by task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count 
-                    ORDER BY (task_number);""")
+                    END AS value FROM
+                    (
+                        (
+                            SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
+                            WHERE id_subjects={id_subjects} 
+                            AND id_oo_parallels_subjects IN 
+                            (
+                                SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+                                WHERE id_oo_parallels IN 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels 
+                                    WHERE parallel={parallel} 
+                                    AND id_oo in 
+                                    (
+                                        SELECT id_oo FROM oo 
+                                        WHERE year='{year}'
+                                    )
+                                )
+                            ) GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark
+                        ) AS t1
+                        LEFT JOIN 
+                        (
+                            SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
+                            WHERE id_subjects = {id_subjects} 
+                            AND parallel = {parallel}
+                        ) AS t2
+                        USING(id_distributio_of_tasks_by_positions_of_codifiers)
+                    )
+                ) AS t3  group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value ORDER BY (task_number)
+            ) as t5
+            LEFT JOIN 
+            (
+                SELECT id_distributio_of_tasks_by_positions_of_codifiers, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
+                WHERE id_subjects = {id_subjects} 
+                AND parallel = {parallel}
+            ) AS t4 
+            USING(id_distributio_of_tasks_by_positions_of_codifiers) 
+            group by task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count 
+            ORDER BY (task_number);""")
             res = self._cur.fetchall()
             res_dict = {}
             if res:
@@ -67,26 +92,59 @@ class DataBaseWorkDescription(Postgresql):
         try:
             self._cur.execute(f"""
             SELECT task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count FROM 
-            (SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value, COUNT(value) as count FROM
-            (SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number,task_number_from_kim, max_mark, 
-                CASE WHEN mark = max_mark THEN 'Выполнили'
+            (
+                SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value, COUNT(value) as count FROM
+                (
+                    SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number,task_number_from_kim, max_mark, 
+                    CASE 
+                    WHEN mark = max_mark THEN 'Выполнили'
                     ELSE 'Не выполнили'
-                END AS value FROM
-            ((SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
-                WHERE id_oo_parallels_subjects IN 
-                    (SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
-                        WHERE id_oo_parallels IN 
-                            (SELECT id_oo_parallels FROM oo_parallels 
-                                WHERE parallel={parallel} AND id_oo in 
-                                    (SELECT id_oo FROM oo 
-                                        WHERE year='{year}' AND id_name_of_the_settlement in (SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district})))
-                        AND id_subjects={id_subjects}) GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark) AS t1
-            LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
-                    WHERE id_subjects = {id_subjects} AND parallel = {parallel}) AS t2
-                USING(id_distributio_of_tasks_by_positions_of_codifiers))) AS t3  group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value ORDER BY (task_number)) as t5
-            LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
-                    WHERE id_subjects = {id_subjects} AND parallel = {parallel}) AS t4 USING(id_distributio_of_tasks_by_positions_of_codifiers) group by task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count ORDER BY (task_number);
-            """)
+                    END AS value FROM
+                    (
+                        (
+                            SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
+                            WHERE id_subjects={id_subjects} 
+                            AND id_oo_parallels_subjects IN 
+                            (
+                                SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+                                WHERE id_oo_parallels IN 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels 
+                                    WHERE parallel={parallel} 
+                                    AND id_oo IN 
+                                    (
+                                        SELECT id_oo FROM oo 
+                                        WHERE year='{year}' 
+                                        AND id_name_of_the_settlement IN 
+                                        (
+                                            SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                            WHERE id_district = {id_district}
+                                        )
+                                    )
+                                )
+                            ) GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark
+                        ) AS t1
+                        LEFT JOIN 
+                        (
+                            SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
+                            WHERE id_subjects = {id_subjects} 
+                            AND parallel = {parallel}
+                        ) AS t2
+                        USING(id_distributio_of_tasks_by_positions_of_codifiers)
+                    )
+                ) AS t3 
+                group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value 
+                ORDER BY (task_number)
+            ) as t5
+            LEFT JOIN 
+            (
+                SELECT id_distributio_of_tasks_by_positions_of_codifiers, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
+                WHERE id_subjects = {id_subjects} 
+                AND parallel = {parallel}
+            ) AS t4 
+            USING(id_distributio_of_tasks_by_positions_of_codifiers) 
+            group by task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count 
+            ORDER BY (task_number);""")
             res = self._cur.fetchall()
             res_dict = {}
             if res:
@@ -122,38 +180,65 @@ class DataBaseWorkDescription(Postgresql):
         try:
             self._cur.execute(f"""
             SELECT task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count FROM 
-            (SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value, COUNT(value) as count FROM
-            (SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number,task_number_from_kim, max_mark, 
-                CASE WHEN mark = max_mark THEN 'Выполнили'
+            (
+                SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value, COUNT(value) as count FROM
+                (
+                    SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number,task_number_from_kim, max_mark, 
+                    CASE 
+                    WHEN mark = max_mark THEN 'Выполнили'
                     ELSE 'Не выполнили'
-                END AS value FROM
-            ((SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
-                WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
-                     GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark) AS t1
-
-            LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
-                    WHERE id_subjects IN 
-                    (SELECT id_subjects FROM oo_parallels_subjects 
-                        WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}) 
-                    AND parallel IN 
-                    (SELECT parallel FROM oo_parallels 
-                        WHERE id_oo_parallels IN 
-                        (SELECT id_oo_parallels FROM oo_parallels_subjects 
-                            WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}))) AS t2
-                USING(id_distributio_of_tasks_by_positions_of_codifiers))) AS t3  
-                group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value ORDER BY (task_number)) as t6
-
-            LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
-                    WHERE id_subjects IN 
-                    (SELECT id_subjects FROM oo_parallels_subjects 
-                        WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects})
-                    AND parallel IN 
-                    (SELECT parallel FROM oo_parallels 
-                        WHERE id_oo_parallels IN 
-                        (SELECT id_oo_parallels FROM oo_parallels_subjects 
-                            WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}))) AS T2
-                USING(id_distributio_of_tasks_by_positions_of_codifiers) 
-                group by task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count ORDER BY (task_number);""")
+                    END AS value FROM
+                    (
+                        (
+                            SELECT id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark FROM result_for_task 
+                            WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                            GROUP BY id_result_for_task, id_distributio_of_tasks_by_positions_of_codifiers, task_number, mark
+                        ) AS t1
+                        LEFT JOIN 
+                        (
+                            SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
+                            WHERE id_subjects IN 
+                            (
+                                SELECT id_subjects FROM oo_parallels_subjects 
+                                WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                            ) 
+                            AND parallel IN 
+                            (
+                                SELECT parallel FROM oo_parallels 
+                                WHERE id_oo_parallels IN 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels_subjects 
+                                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                                )
+                            )
+                        ) AS t2
+                        USING(id_distributio_of_tasks_by_positions_of_codifiers)
+                    )
+                ) AS t3  
+                group by id_distributio_of_tasks_by_positions_of_codifiers, task_number, task_number_from_kim, max_mark, value 
+                ORDER BY (task_number)
+            ) as t6
+            LEFT JOIN 
+            (
+                SELECT id_distributio_of_tasks_by_positions_of_codifiers, fgos, poop_noo FROM distributio_of_tasks_by_positions_of_codifiers 
+                WHERE id_subjects IN 
+                (
+                    SELECT id_subjects FROM oo_parallels_subjects 
+                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                )
+                AND parallel IN 
+                (
+                    SELECT parallel FROM oo_parallels 
+                    WHERE id_oo_parallels IN 
+                    (
+                        SELECT id_oo_parallels FROM oo_parallels_subjects 
+                        WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                    )
+                )
+            ) AS T2
+            USING(id_distributio_of_tasks_by_positions_of_codifiers) 
+            group by task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, count 
+            ORDER BY (task_number);""")
             res = self._cur.fetchall()
             res_dict = {}
             if res:

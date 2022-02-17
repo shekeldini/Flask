@@ -1,5 +1,4 @@
 import psycopg2
-from openpyxl import Workbook
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
@@ -11,7 +10,10 @@ class Postgresql:
 
     def get_user(self, id_user):
         try:
-            self._cur.execute(f"SELECT * FROM users WHERE id_user = {id_user} LIMIT 1")
+            self._cur.execute(f"""
+            SELECT * FROM users 
+            WHERE id_user = {id_user} 
+            LIMIT 1;""")
             res = self._cur.fetchone()
             if not res:
                 print("Пользователь не найден")
@@ -25,7 +27,10 @@ class Postgresql:
 
     def get_user_by_login(self, login):
         try:
-            self._cur.execute(f"SELECT * FROM users WHERE login = '{login}' LIMIT 1")
+            self._cur.execute(f"""
+            SELECT * FROM users 
+            WHERE login = '{login}' 
+            LIMIT 1;""")
             res = self._cur.fetchone()
 
             if not res:
@@ -43,7 +48,7 @@ class Postgresql:
 
         try:
             binary = psycopg2.Binary(avatar)
-            self._cur.execute(f"UPDATE users SET avatar = {binary} WHERE id_user = {user_id}")
+            self._cur.execute(f"UPDATE users SET avatar = {binary} WHERE id_user = {user_id};")
         except psycopg2.Error as e:
             print("Ошибка обновления аватара в БД: " + str(e))
             return False
@@ -51,7 +56,7 @@ class Postgresql:
 
     def get_count_students(self):
         try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM students")
+            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM students;")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -59,9 +64,11 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_count_oo(self):
+    def get_count_oo(self, year="2021"):
         try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM oo WHERE year = '2021'")
+            self._cur.execute(f"""
+            SELECT COUNT(*) AS count_row FROM oo 
+            WHERE year = '{year}';""")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -71,7 +78,7 @@ class Postgresql:
 
     def get_count_of_subject(self):
         try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM subjects")
+            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM subjects;")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -81,7 +88,7 @@ class Postgresql:
 
     def get_count_of_parallels(self):
         try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM parallels")
+            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM parallels;")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -93,14 +100,15 @@ class Postgresql:
         try:
             self._cur.execute(f"""
             SELECT parallel FROM parallels 
-                WHERE parallel in 
+            WHERE parallel in 
+            (
+                SELECT DISTINCT parallel FROM oo_parallels 
+                WHERE id_oo in 
                 (
-                    SELECT DISTINCT parallel FROM oo_parallels 
-                        WHERE id_oo in 
-                        (
-                            SELECT id_oo FROM oo WHERE year = '{year}'
-                        )
-                );""")
+                    SELECT id_oo FROM oo 
+                    WHERE year = '{year}'
+                )
+            );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -111,7 +119,9 @@ class Postgresql:
 
     def get_parallels_for_oo(self, id_oo):
         try:
-            self._cur.execute(f"SELECT parallel FROM oo_parallels WHERE id_oo = {id_oo}")
+            self._cur.execute(f"""
+            SELECT parallel FROM oo_parallels 
+            WHERE id_oo = {id_oo};""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -122,7 +132,9 @@ class Postgresql:
     def get_subject_id(self, subject_name):
         try:
             self._cur.execute(
-                f"SELECT id_subjects FROM subjects WHERE subject_name = '{subject_name.replace(' ', '_')}'")
+                f"""
+                SELECT id_subjects FROM subjects 
+                WHERE subject_name = '{subject_name.replace(' ', '_')}';""")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -134,8 +146,9 @@ class Postgresql:
 
         try:
             if id_subjects:
-                self._cur.execute(f"SELECT subject_name FROM subjects"
-                                  f" WHERE id_subjects = {id_subjects}")
+                self._cur.execute(f"""
+                SELECT subject_name FROM subjects
+                WHERE id_subjects = {id_subjects};""")
                 res = self._cur.fetchone()
                 if res:
                     return res[0].replace("_", " ")
@@ -178,7 +191,10 @@ class Postgresql:
     def get_id_oo(self, oo_login, year="2021"):
         try:
             self._cur.execute(
-                f"SELECT id_oo FROM oo WHERE oo_login = '{oo_login}' and year = '{year}'")
+                f"""
+                SELECT id_oo FROM oo 
+                WHERE oo_login = '{oo_login}' 
+                AND year = '{year}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_oo не был найден")
@@ -190,7 +206,10 @@ class Postgresql:
     def get_id_oo_parallels(self, parallel, id_oo):
         try:
             self._cur.execute(
-                f"SELECT id_oo_parallels FROM oo_parallels WHERE parallel = {parallel} AND id_oo = {id_oo}")
+                f"""
+                SELECT id_oo_parallels FROM oo_parallels 
+                WHERE parallel = {parallel} 
+                AND id_oo = {id_oo};""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_oo_parallels не был найден")
@@ -201,10 +220,10 @@ class Postgresql:
 
     def get_id_oo_parallels_subjects(self, id_subjects, id_oo_parallels):
         try:
-            self._cur.execute(
-                f" SELECT id_oo_parallels_subjects FROM oo_parallels_subjects "
-                f" WHERE id_oo_parallels = {id_oo_parallels}"
-                f" AND id_subjects = {id_subjects}")
+            self._cur.execute(f"""
+            SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+            WHERE id_oo_parallels = {id_oo_parallels} 
+            AND id_subjects = {id_subjects};""")
             res, = self._cur.fetchone()
             return res
         except psycopg2.Error as e:
@@ -279,52 +298,51 @@ class Postgresql:
                         (
                             SELECT id_oo_parallels FROM oo_parallels 
                             WHERE id_oo in 
-                                (
-                                    SELECT id_oo FROM oo 
-                                    WHERE id_name_of_the_settlement in 
-                                        (
-                                            SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                                            WHERE id_district = {id_district}
-                                        )
-                                )
-                                AND parallel = {parallel} 
-                                AND id_oo in 
-                                (
+                            (
+                                SELECT id_oo FROM oo 
+                                WHERE id_name_of_the_settlement in 
                                     (
+                                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                        WHERE id_district = {id_district}
+                                    )
+                                )
+                            AND parallel = {parallel} 
+                            AND id_oo in 
+                            (
+                                (
                                     SELECT id_oo FROM oo 
                                     WHERE year='{year}' 
                                     AND oo_login in 
-                                            (
-                                                SELECT oo_login FROM users_oo_logins 
-                                                WHERE id_user = {id_user}
-                                            )
+                                    (
+                                        SELECT oo_login FROM users_oo_logins 
+                                        WHERE id_user = {id_user}
                                     )
                                 )
+                            )
                         )
                 );""")
             else:
                 self._cur.execute(f"""
                 SELECT id_subjects, subject_name FROM subjects 
-                    WHERE id_subjects IN 
+                WHERE id_subjects IN 
+                (
+                    SELECT DISTINCT id_subjects FROM oo_parallels_subjects 
+                    WHERE id_oo_parallels IN 
+                    (
+                        SELECT id_oo_parallels FROM oo_parallels 
+                        WHERE parallel={parallel} 
+                        AND id_oo in 
                         (
-                            SELECT DISTINCT id_subjects FROM oo_parallels_subjects 
-                            WHERE id_oo_parallels IN 
+                            SELECT id_oo FROM oo 
+                            WHERE year='{year}' 
+                            AND oo_login in 
                             (
-                                SELECT id_oo_parallels FROM oo_parallels 
-                                WHERE parallel={parallel} 
-                                AND id_oo in 
-                                    (
-                                        SELECT id_oo FROM oo 
-                                        WHERE year='{year}' 
-                                        AND oo_login in 
-                                            (
-                                                SELECT oo_login FROM users_oo_logins 
-                                                WHERE id_user = {id_user}
-                                            )
-                                    )
+                                SELECT oo_login FROM users_oo_logins 
+                                WHERE id_user = {id_user}
                             )
                         )
-                    ;""")
+                    )
+                );""")
             res = self._cur.fetchall()
             if res:
                 return [[x[0], x[1].replace("_", " ")] for x in res]
@@ -334,16 +352,22 @@ class Postgresql:
 
     def get_parallels(self, id_user, id_district, year):
         try:
-            self._cur.execute(f"""SELECT DISTINCT parallel FROM oo_parallels WHERE id_oo in 
-                                    (SELECT id_oo FROM oo 
-                                        WHERE oo_login in 
-                                        (SELECT oo_login FROM users_oo_logins 
-                                            WHERE id_user = {id_user})
-                                        AND id_name_of_the_settlement IN 
-                                            (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                                                WHERE id_district = {id_district})
-                                        AND year = '{year}'
-                                    );""")
+            self._cur.execute(f"""
+            SELECT DISTINCT parallel FROM oo_parallels WHERE id_oo in 
+            (
+                SELECT id_oo FROM oo 
+                WHERE year = '{year}' 
+                AND oo_login in 
+                (
+                    SELECT oo_login FROM users_oo_logins 
+                    WHERE id_user = {id_user}
+                )
+                AND id_name_of_the_settlement IN 
+                (
+                    SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                    WHERE id_district = {id_district}
+                ) 
+            );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -355,18 +379,26 @@ class Postgresql:
         try:
             self._cur.execute(f"""
             SELECT id_oo, oo_name FROM oo 
-                WHERE id_oo NOT IN 
-                (SELECT id_oo FROM oo_levels_of_the_educational_program 
-                    WHERE id_levels_of_the_educational_program = 4 AND value = 'Да') 
-                AND id_name_of_the_settlement IN 
-                (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                    WHERE id_district = {id_district}) 
-                AND id_oo IN 
-                (SELECT id_oo FROM oo_parallels)
-                AND oo_login in 
-                (SELECT oo_login FROM users_oo_logins 
-                    WHERE id_user = {id_user})
-                AND year = '{year}';""")
+            WHERE year = '{year}' 
+            AND id_oo NOT IN 
+            (
+                SELECT id_oo FROM oo_levels_of_the_educational_program 
+                WHERE id_levels_of_the_educational_program = 4 AND value = 'Да'
+            ) 
+            AND id_name_of_the_settlement IN 
+            (
+                SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                WHERE id_district = {id_district}
+            ) 
+            AND id_oo IN 
+            (
+                SELECT id_oo FROM oo_parallels
+            )
+            AND oo_login in 
+            (
+                SELECT oo_login FROM users_oo_logins 
+                WHERE id_user = {id_user}
+            );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -379,20 +411,32 @@ class Postgresql:
         try:
             self._cur.execute(f"""
             SELECT id_oo_parallels_subjects, id_oo_parallels FROM oo_parallels_subjects 
-                WHERE id_oo_parallels in 
-                    (SELECT id_oo_parallels FROM oo_parallels 
-                        WHERE id_oo in (SELECT id_oo FROM oo 
-                            WHERE id_oo NOT IN 
-                            (SELECT id_oo FROM oo_levels_of_the_educational_program 
-                                WHERE id_levels_of_the_educational_program = 4 AND value = 'Да') 
-                        AND id_name_of_the_settlement IN 
-                            (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                                WHERE id_district = {id_district}) 
-                        AND parallel = {parallel}
-                        AND oo_login in 
-                            (SELECT oo_login FROM users_oo_logins 
-                                WHERE id_user = {id_user}))) 
-                AND id_subjects = {id_subjects};""")
+            WHERE id_subjects = {id_subjects} 
+            AND id_oo_parallels in 
+            (
+                SELECT id_oo_parallels FROM oo_parallels 
+                WHERE parallel = {parallel} 
+                AND id_oo in 
+                (
+                    SELECT id_oo FROM oo 
+                    WHERE id_oo NOT IN 
+                    (
+                        SELECT id_oo FROM oo_levels_of_the_educational_program 
+                        WHERE id_levels_of_the_educational_program = 4 
+                        AND value = 'Да'
+                    ) 
+                    AND id_name_of_the_settlement IN 
+                    (
+                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                        WHERE id_district = {id_district}
+                    ) 
+                    AND oo_login in 
+                    (
+                        SELECT oo_login FROM users_oo_logins 
+                        WHERE id_user = {id_user}
+                    )
+                )
+            );""")
             res = self._cur.fetchall()
             if res:
                 return res
@@ -403,8 +447,13 @@ class Postgresql:
 
     def get_oo_name_from_oo_parallels(self, id_oo_parallels):
         try:
-            self._cur.execute(f"""SELECT oo_name FROM oo WHERE id_oo in 
-                                    (SELECT id_oo FROM oo_parallels WHERE id_oo_parallels = {id_oo_parallels})""")
+            self._cur.execute(f"""
+            SELECT oo_name FROM oo 
+            WHERE id_oo in 
+            (
+                SELECT id_oo FROM oo_parallels 
+                WHERE id_oo_parallels = {id_oo_parallels}
+            );""")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -414,7 +463,9 @@ class Postgresql:
 
     def get_school_login(self, id_oo):
         try:
-            self._cur.execute(f"""SELECT oo_login FROM oo WHERE id_oo = {id_oo};""")
+            self._cur.execute(f"""
+            SELECT oo_login FROM oo 
+            WHERE id_oo = {id_oo};""")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -424,7 +475,9 @@ class Postgresql:
 
     def get_district_name(self, id_district):
         try:
-            self._cur.execute(f"""SELECT district_name FROM district WHERE id_district = {id_district};""")
+            self._cur.execute(f"""
+            SELECT district_name FROM district 
+            WHERE id_district = {id_district};""")
             res = self._cur.fetchone()
             if res:
                 return res[0]
@@ -434,7 +487,9 @@ class Postgresql:
 
     def get_parallel_by_id_oo_parallels(self, id_oo_parallels):
         try:
-            self._cur.execute(f"SELECT parallel FROM oo_parallels WHERE id_oo_parallels = {id_oo_parallels}")
+            self._cur.execute(f"""
+            SELECT parallel FROM oo_parallels 
+            WHERE id_oo_parallels = {id_oo_parallels};""")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -446,12 +501,19 @@ class Postgresql:
         try:
             self._cur.execute(f"""
             SELECT district_name FROM district 
-                WHERE id_district in 
-                    (SELECT id_district FROM name_of_the_settlement 
-                        WHERE id_name_of_the_settlement in 
-                        (SELECT id_name_of_the_settlement FROM oo 
-                            WHERE id_oo in (SELECT id_oo FROM oo_parallels WHERE id_oo_parallels = {id_oo_parallels})));
-            """)
+            WHERE id_district in 
+            (
+                SELECT id_district FROM name_of_the_settlement 
+                WHERE id_name_of_the_settlement in 
+                (
+                    SELECT id_name_of_the_settlement FROM oo 
+                    WHERE id_oo in 
+                    (
+                        SELECT id_oo FROM oo_parallels 
+                        WHERE id_oo_parallels = {id_oo_parallels}
+                    )
+                )
+            );""")
             res, = self._cur.fetchone()
             if res:
                 return res.replace("_", " ")
@@ -482,10 +544,12 @@ class Postgresql:
     def get_description_from_ks(self, id_distributio_of_tasks_by_positions_of_codifiers):
         try:
             self._cur.execute(
-                f'''SELECT description as "Проверяемые элементы содержания" from ks 
-                        WHERE id_ks in 
-                            (select distinct id_ks from ks_kt 
-                                WHERE id_distributio_of_tasks_by_positions_of_codifiers = {id_distributio_of_tasks_by_positions_of_codifiers});''')
+                f'''SELECT description as "Проверяемые элементы содержания" FROM ks 
+                    WHERE id_ks in 
+                    (
+                        SELECT distinct id_ks FROM ks_kt 
+                        WHERE id_distributio_of_tasks_by_positions_of_codifiers = {id_distributio_of_tasks_by_positions_of_codifiers}
+                    );''')
             res = self._cur.fetchall()
 
             if res:
@@ -501,10 +565,12 @@ class Postgresql:
     def get_description_from_kt(self, id_distributio_of_tasks_by_positions_of_codifiers):
         try:
             self._cur.execute(
-                f'''SELECT description as "Проверяемые элементы содержания" from kt 
-                        WHERE id_kt in 
-                            (select distinct id_kt from ks_kt 
-                                WHERE id_distributio_of_tasks_by_positions_of_codifiers = {id_distributio_of_tasks_by_positions_of_codifiers});''')
+                f'''SELECT description as "Проверяемые элементы содержания" FROM kt 
+                    WHERE id_kt in 
+                    (
+                        SELECT distinct id_kt FROM ks_kt 
+                        WHERE id_distributio_of_tasks_by_positions_of_codifiers = {id_distributio_of_tasks_by_positions_of_codifiers}
+                    );''')
             res = self._cur.fetchall()
 
             if res:
@@ -521,10 +587,12 @@ class Postgresql:
     def get_task_number_from_kim(self, id_subjects, parallel, year):
         try:
             self._cur.execute(
-                f"SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers "
-                f"WHERE id_subjects = {id_subjects} "
-                f"AND parallel = {parallel} "
-                f"AND year='{year}' order by (task_number);")
+                f"""
+                SELECT task_number, task_number_FROM_kim FROM distributio_of_tasks_by_positions_of_codifiers 
+                WHERE id_subjects = {id_subjects} 
+                AND parallel = {parallel} 
+                AND year = '{year}' 
+                ORDER BY (task_number);""")
             res = self._cur.fetchall()
 
             if res:
@@ -544,7 +612,7 @@ class Postgresql:
                                                                              id_oo_parallels=id_oo_parallels)
                 self._cur.execute(
                     f"""
-                    SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers 
+                    SELECT task_number, task_number_FROM_kim FROM distributio_of_tasks_by_positions_of_codifiers 
                     WHERE id_subjects IN 
                         (
                             SELECT id_subjects FROM oo_parallels_subjects WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
@@ -557,13 +625,15 @@ class Postgresql:
                                     SELECT id_oo_parallels FROM oo_parallels_subjects 
                                     WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
                                 )
-                        ) order by (task_number);""")
+                        ) ORDER BY (task_number);""")
             else:
                 self._cur.execute(
-                    f"SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers "
-                    f"WHERE id_subjects = {id_subjects} "
-                    f"AND parallel = {parallel} "
-                    f"AND year='{year}' order by (task_number);")
+                    f"""
+                    SELECT task_number, task_number_FROM_kim FROM distributio_of_tasks_by_positions_of_codifiers 
+                    WHERE id_subjects = {id_subjects} 
+                    AND parallel = {parallel} 
+                    AND year = '{year}' 
+                    ORDER BY (task_number);""")
 
             res = self._cur.fetchall()
 
@@ -573,23 +643,23 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_max_mark(self, subject_name, parallel, task_number_from_kim):
+    def get_max_mark(self, subject_name, parallel, task_number_FROM_kim):
         self._cur.execute(f"""
-            select max_mark from distributio_of_tasks_by_positions_of_codifiers 
-                where id_subjects = {self.get_subject_id(subject_name=subject_name)} 
-                and parallel = {parallel} 
-                and task_number_from_kim = '{task_number_from_kim}'""")
+            SELECT max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
+            WHERE id_subjects = {self.get_subject_id(subject_name=subject_name)} 
+            AND parallel = {parallel} 
+            AND task_number_FROM_kim = '{task_number_FROM_kim}';""")
         res = self._cur.fetchone()
         if res:
             return res[0]
         return
 
-    def get_task_number(self, task_number_from_kim, id_subjects, parallel):
+    def get_task_number(self, task_number_FROM_kim, id_subjects, parallel):
         self._cur.execute(f"""
-            select task_number from distributio_of_tasks_by_positions_of_codifiers 
-                where task_number_from_kim = '{task_number_from_kim}' 
-                and id_subjects = {id_subjects} and parallel = {parallel};
-        """)
+            SELECT task_number FROM distributio_of_tasks_by_positions_of_codifiers 
+            WHERE task_number_FROM_kim = '{task_number_FROM_kim}' 
+            AND id_subjects = {id_subjects} 
+            AND parallel = {parallel};""")
         res = self._cur.fetchone()
         if res:
             return res[0]

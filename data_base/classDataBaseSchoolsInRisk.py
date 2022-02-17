@@ -121,16 +121,14 @@ class DataBaseSchoolsInRisk(Postgresql):
                         SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                         WHERE id_district = {id_district}
                     )
-                )
-                ;""")
+                );""")
 
             else:
                 self._cur.execute(f"""
                 SELECT DISTINCT id_subjects FROM schools_in_risk 
                 WHERE year = '{year}' 
                 AND parallel = {parallel}
-                AND id_oo = {id_oo}
-                ;""")
+                AND id_oo = {id_oo};""")
             res = self._cur.fetchall()
             if res:
                 return [(x[0], self.get_subject_name(id_subjects=x[0])) for x in res]
@@ -148,8 +146,7 @@ class DataBaseSchoolsInRisk(Postgresql):
                 WHERE year = '{year}' 
                 AND parallel = {parallel} 
                 AND id_subjects = {id_subjects}  
-            )
-            ;""")
+            );""")
             res = self._cur.fetchall()
 
             schools_array = {}
@@ -184,8 +181,7 @@ class DataBaseSchoolsInRisk(Postgresql):
                         WHERE id_district = {id_district}
                     )
                 )
-            )
-            ;""")
+            );""")
             res = self._cur.fetchall()
 
             schools_array = {}
@@ -193,9 +189,9 @@ class DataBaseSchoolsInRisk(Postgresql):
                 for id_oo, oo_name in res:
                     district_name = self.get_district_name(id_district)
                     if district_name not in schools_array:
-                        schools_array[district_name] = [oo_name]
+                        schools_array[district_name.replace("_", " ")] = [oo_name]
                     else:
-                        schools_array[district_name].append(oo_name)
+                        schools_array[district_name.replace("_", " ")].append(oo_name)
 
             return schools_array
         except psycopg2.Error as e:
@@ -209,44 +205,57 @@ class DataBaseSchoolsInRisk(Postgresql):
                                                                          id_oo_parallels=id_oo_parallels)
             self._cur.execute(f"""
             SELECT id_oo_parallels, 
-                max(mark_count) filter (where value = 2) as vpr_two, 
-                max(mark_count) filter (where value = 3) as vpr_three, 
-                max(mark_count) filter (where value = 4) as vpr_four, 
-                max(mark_count) filter (where value = 5) as vpr_five, 
-                l_s_two, l_s_three, l_s_four, l_s_five FROM 
-        (SELECT id_oo_parallels, value, COUNT(value) as mark_count FROM
-            (SELECT id_oo_parallels,sum_marks,
-                CASE WHEN sum_marks<mark_three THEN 2
+            max(mark_count) filter (where value = 2) as vpr_two, 
+            max(mark_count) filter (where value = 3) as vpr_three, 
+            max(mark_count) filter (where value = 4) as vpr_four, 
+            max(mark_count) filter (where value = 5) as vpr_five, 
+            l_s_two, l_s_three, l_s_four, l_s_five FROM 
+            (
+                SELECT id_oo_parallels, value, COUNT(value) as mark_count FROM
+                (
+                    SELECT id_oo_parallels,sum_marks,
+                    CASE 
+                    WHEN sum_marks<mark_three THEN 2
                     WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
                     WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
                     WHEN sum_marks>=mark_five THEN 5
                     ELSE 0
-                END AS value
-                FROM (SELECT id_students, id_oo_parallels, sum_marks, mark_three, mark_four, mark_five  
-                FROM (SELECT id_students, id_oo_parallels, id_oo_parallels_subjects, SUM(mark) as sum_marks 
-                    FROM result_for_task 
-                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} AND id_oo_parallels = {id_oo_parallels}
-                    GROUP BY id_students, id_oo_parallels, id_oo_parallels_subjects) AS t1
-                LEFT JOIN 
-                    (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five 
-                    FROM oo_parallels_subjects 
-                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}) AS t2
-                USING (id_oo_parallels_subjects)) AS t3)
-            AS t4 GROUP BY value, id_oo_parallels ORDER BY (value)) AS vpr
-
-        LEFT JOIN 
-            (SELECT id_oo_parallels, 
-                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 2) as l_s_two, 
-                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 3) as l_s_three, 
-                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 4) as l_s_four, 
-                    max(mark_count_for_last_semester) filter (where mark_for_last_semester = 5) as l_s_five FROM 
-            (SELECT id_oo_parallels, mark_for_last_semester, COUNT(mark_for_last_semester) AS mark_count_for_last_semester
-                FROM (SELECT DISTINCT id_oo_parallels, id_students, id_oo_parallels_subjects, mark_for_last_semester 
-                    FROM result_for_task 
-                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} AND id_oo_parallels = {id_oo_parallels}) 
-                    AS t1 GROUP BY id_oo_parallels, mark_for_last_semester) AS t2 GROUP BY id_oo_parallels) AS l_s
-            USING (id_oo_parallels)
-             GROUP BY id_oo_parallels, l_s_two, l_s_three, l_s_four, l_s_five;""")
+                    END AS value FROM 
+                    (
+                        SELECT id_students, id_oo_parallels, sum_marks, mark_three, mark_four, mark_five FROM 
+                        (
+                            SELECT id_students, id_oo_parallels, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
+                            WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} 
+                            AND id_oo_parallels = {id_oo_parallels}
+                            GROUP BY id_students, id_oo_parallels, id_oo_parallels_subjects
+                        ) AS t1
+                        LEFT JOIN 
+                        (
+                            SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
+                            WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                        ) AS t2 
+                        USING (id_oo_parallels_subjects)
+                    ) AS t3
+                ) AS t4 GROUP BY value, id_oo_parallels ORDER BY (value)
+            ) AS vpr 
+            LEFT JOIN 
+            (
+                SELECT id_oo_parallels, 
+                max(mark_count_for_last_semester) filter (where mark_for_last_semester = 2) as l_s_two, 
+                max(mark_count_for_last_semester) filter (where mark_for_last_semester = 3) as l_s_three, 
+                max(mark_count_for_last_semester) filter (where mark_for_last_semester = 4) as l_s_four, 
+                max(mark_count_for_last_semester) filter (where mark_for_last_semester = 5) as l_s_five FROM 
+                (
+                    SELECT id_oo_parallels, mark_for_last_semester, COUNT(mark_for_last_semester) AS mark_count_for_last_semester FROM 
+                    (
+                        SELECT DISTINCT id_oo_parallels, id_students, id_oo_parallels_subjects, mark_for_last_semester FROM result_for_task 
+                        WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} 
+                        AND id_oo_parallels = {id_oo_parallels} 
+                    ) AS t1 GROUP BY id_oo_parallels, mark_for_last_semester 
+                ) AS t2 GROUP BY id_oo_parallels 
+            ) AS l_s 
+            USING (id_oo_parallels) 
+            GROUP BY id_oo_parallels, l_s_two, l_s_three, l_s_four, l_s_five;""")
             res = self._cur.fetchone()
             if res:
                 id_oo_parallels, vpr_two, vpr_three, vpr_four, vpr_five, l_s_two, l_s_three, l_s_four, l_s_five = res
@@ -273,7 +282,7 @@ class DataBaseSchoolsInRisk(Postgresql):
                                          "4": l_s_four,
                                          "5": l_s_five}
 
-                return {"district_name": district_name,
+                return {"district_name": district_name.replace("_", " "),
                         "school_name": school_name,
                         "vpr_results": vpr_results,
                         "last_semester_results": last_semester_results,

@@ -9,33 +9,59 @@ class DataBaseResultVpr(Postgresql):
 
     def get_result_vpr_for_all_districts(self, id_subjects, parallel, year):
         try:
-            self._cur.execute(f"""SELECT value, COUNT(value) FROM
-                                    (SELECT id_students,sum_marks,
-                                            CASE WHEN sum_marks<mark_three THEN 2
-                                                WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
-                                                WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
-                                                WHEN sum_marks>=mark_five THEN 5
-                                                ELSE 0
-                                            END AS value FROM 
-                                (SELECT id_students, sum_marks, mark_three, mark_four, mark_five FROM 
-                                    ((SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
-                                        WHERE id_oo_parallels_subjects IN 
-                                            (SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
-                                                WHERE id_oo_parallels IN 
-                                                    (SELECT id_oo_parallels FROM oo_parallels 
-                                                        WHERE parallel={parallel} AND id_oo in 
-                                                            (SELECT id_oo FROM oo 
-                                                                WHERE year='{year}'))
-                                                AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects) AS t1
-
-                                        LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
-                                                WHERE id_oo_parallels IN 
-                                                    (SELECT id_oo_parallels FROM oo_parallels 
-                                                        WHERE parallel={parallel} AND id_oo in 
-                                                            (SELECT id_oo FROM oo 
-                                                                WHERE year='{year}'))
-                                                AND id_subjects={id_subjects}) AS t2 
-                                        USING (id_oo_parallels_subjects))) AS t3) AS t4 GROUP BY value ORDER BY (value);""")
+            self._cur.execute(f"""
+            SELECT value, COUNT(value) FROM
+            (
+                SELECT id_students,sum_marks,
+                CASE 
+                WHEN sum_marks<mark_three THEN 2
+                WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+                WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+                WHEN sum_marks>=mark_five THEN 5
+                ELSE 0
+                END AS value FROM 
+                (
+                    SELECT id_students, sum_marks, mark_three, mark_four, mark_five FROM 
+                    (
+                        (
+                            SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
+                            WHERE id_subjects={id_subjects} 
+                            AND id_oo_parallels_subjects IN 
+                            (
+                                SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+                                WHERE id_oo_parallels IN 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels 
+                                    WHERE parallel={parallel} 
+                                    AND id_oo in 
+                                    (
+                                        SELECT id_oo FROM oo 
+                                        WHERE year='{year}'
+                                    )
+                                )
+                            ) GROUP BY id_students, id_oo_parallels_subjects
+                        ) AS t1
+            
+                        LEFT JOIN 
+                        (
+                            SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
+                            WHERE id_subjects={id_subjects} 
+                            AND id_oo_parallels IN 
+                            (
+                                SELECT id_oo_parallels FROM oo_parallels 
+                                WHERE parallel={parallel} 
+                                AND id_oo in 
+                                (
+                                    SELECT id_oo FROM oo 
+                                    WHERE year='{year}'
+                                )
+                            )
+                         ) AS t2 
+                        USING (id_oo_parallels_subjects)
+                    )
+                ) AS t3
+            ) AS t4 
+            GROUP BY value ORDER BY (value);""")
             res = self._cur.fetchall()
             if res:
                 mark_dict = {x[0]: x[1] for x in res}
@@ -91,39 +117,64 @@ class DataBaseResultVpr(Postgresql):
         try:
             self._cur.execute(f"""
             SELECT value, COUNT(value) FROM
-            (SELECT id_students,sum_marks,
-                    CASE WHEN sum_marks<mark_three THEN 2
-                        WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
-                        WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
-                        WHEN sum_marks>=mark_five THEN 5
-                        ELSE 0
-                    END AS value FROM 
-        (SELECT id_students, sum_marks, mark_three, mark_four, mark_five FROM 
-            ((SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
-                WHERE id_oo_parallels_subjects IN 
-                    (SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
-                        WHERE id_oo_parallels IN 
-                            (SELECT id_oo_parallels FROM oo_parallels 
-                                WHERE parallel={parallel} AND id_oo in 
-                                    (SELECT id_oo FROM oo 
+            (
+                SELECT id_students,sum_marks,
+                CASE 
+                WHEN sum_marks<mark_three THEN 2
+                WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+                WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+                WHEN sum_marks>=mark_five THEN 5
+                ELSE 0
+                END AS value FROM 
+                (
+                    SELECT id_students, sum_marks, mark_three, mark_four, mark_five FROM 
+                    (
+                        (
+                            SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
+                            WHERE id_subjects={id_subjects} AND id_oo_parallels_subjects IN 
+                            (
+                                SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+                                WHERE id_oo_parallels IN 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels 
+                                    WHERE parallel={parallel} 
+                                    AND id_oo in 
+                                    (
+                                        SELECT id_oo FROM oo 
                                         WHERE year='{year}'
-                                            AND id_name_of_the_settlement in 
-                                                (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                                                    WHERE id_district = {id_district})))
-
-                        AND id_subjects={id_subjects}) GROUP BY id_students, id_oo_parallels_subjects) AS t1
-
-                LEFT JOIN (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
-                        WHERE id_oo_parallels IN 
-                            (SELECT id_oo_parallels FROM oo_parallels 
-                                WHERE parallel={parallel} AND id_oo in 
-                                    (SELECT id_oo FROM oo 
-                                        WHERE year='{year}'
-                                            AND id_name_of_the_settlement in 
-                                                (SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                                                    WHERE id_district = {id_district})))
-                        AND id_subjects={id_subjects}) AS t2 
-                USING (id_oo_parallels_subjects))) AS t3) AS t4 GROUP BY value ORDER BY (value);""")
+                                        AND id_name_of_the_settlement in 
+                                        (
+                                            SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                            WHERE id_district = {id_district}
+                                        )
+                                    )
+                                )
+                            ) GROUP BY id_students, id_oo_parallels_subjects
+                        ) AS t1
+                        LEFT JOIN 
+                        (
+                            SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
+                            WHERE id_subjects={id_subjects} AND id_oo_parallels IN 
+                            (
+                                SELECT id_oo_parallels FROM oo_parallels 
+                                WHERE parallel={parallel} 
+                                AND id_oo in 
+                                (
+                                    SELECT id_oo FROM oo 
+                                    WHERE year='{year}'
+                                    AND id_name_of_the_settlement in 
+                                    (
+                                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                        WHERE id_district = {id_district}
+                                    )
+                                )
+                            )
+                        ) AS t2 
+                        USING (id_oo_parallels_subjects)
+                    )
+                ) AS t3
+            ) AS t4 
+            GROUP BY value ORDER BY (value);""")
             res = self._cur.fetchall()
             if res:
                 mark_dict = {x[0]: x[1] for x in res}
@@ -178,25 +229,33 @@ class DataBaseResultVpr(Postgresql):
     def get_result_vpr(self, id_oo_parallels_subjects, id_oo_parallels):
         try:
             self._cur.execute(f"""
-                    SELECT value, COUNT(value) FROM
-                        (SELECT id_students,sum_marks,
-                                CASE WHEN sum_marks<mark_three THEN 2
-                                    WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
-                                WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
-                                WHEN sum_marks>=mark_five THEN 5
-                                    ELSE 0
-                                END AS value
-                                FROM (SELECT id_students, sum_marks, mark_three, mark_four, mark_five  
-                                FROM (SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks 
-                                    FROM result_for_task 
-                                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} AND id_oo_parallels = {id_oo_parallels}
-                                    GROUP BY id_students, id_oo_parallels_subjects) AS t1
-                                LEFT JOIN 
-                                    (SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five 
-                                    FROM oo_parallels_subjects 
-                                    WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}) AS t2
-                                    USING (id_oo_parallels_subjects)) AS t3)
-                        AS t4 GROUP BY value ORDER BY (value);""")
+            SELECT value, COUNT(value) FROM
+            (
+                SELECT id_students,sum_marks,
+                CASE 
+                WHEN sum_marks<mark_three THEN 2
+                WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+                WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+                WHEN sum_marks>=mark_five THEN 5
+                ELSE 0
+                END AS value FROM 
+                (
+                    SELECT id_students, sum_marks, mark_three, mark_four, mark_five FROM 
+                    (
+                        SELECT id_students, id_oo_parallels_subjects, SUM(mark) as sum_marks FROM result_for_task 
+                        WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} 
+                        AND id_oo_parallels = {id_oo_parallels}
+                        GROUP BY id_students, id_oo_parallels_subjects
+                    ) AS t1
+                    LEFT JOIN 
+                    (
+                        SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
+                        WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+                    ) AS t2
+                    USING (id_oo_parallels_subjects)
+                ) AS t3
+            ) AS t4 
+            GROUP BY value ORDER BY (value);""")
             res = self._cur.fetchall()
             if res:
                 mark_dict = {x[0]: x[1] for x in res}

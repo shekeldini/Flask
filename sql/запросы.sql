@@ -1,25 +1,35 @@
-SELECT task_number, task_number_from_kim, fgos, poop_noo, max_mark, value, COUNT(value) FROM
-            (SELECT task_number,task_number_from_kim, fgos, poop_noo, mark, max_mark, 
-                CASE WHEN mark = max_mark THEN 'Выполнили'
-                    ELSE 'Не выполнили'
-                END AS value FROM
-            (SELECT id_distributio_of_tasks_by_positions_of_codifiers, task_number_from_kim, fgos, poop_noo, id_result_for_task, task_number, mark, max_mark FROM 
-            (SELECT id_distributio_of_tasks_by_positions_of_codifiers, id_result_for_task, task_number, mark FROM
-                (SELECT id_result_for_task, task_number, mark FROM result_for_task 
-                    WHERE id_oo_parallels_subjects IN 
-                        (SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
-                            WHERE id_oo_parallels IN 
-                                (SELECT id_oo_parallels FROM oo_parallels 
-                                    WHERE parallel={parallel} AND id_oo in 
-                                        (SELECT id_oo FROM oo 
-                                            WHERE year='{year}'
-                                            AND id_name_of_the_settlement in (SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district})))
-                            AND id_subjects={id_subjects}) GROUP BY id_result_for_task, id_students, task_number, mark) AS T1
-            
-                LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers, id_result_for_task FROM result_for_task_distributio_of_tasks_by_positions_of_codifiers 
-                        WHERE id_subjects = {id_subjects} AND parallel = {parallel}) AS T2
-                    USING (id_result_for_task) ORDER BY task_number) AS T4
-            
-            LEFT JOIN (SELECT id_distributio_of_tasks_by_positions_of_codifiers,task_number_from_kim, fgos, poop_noo, max_mark FROM distributio_of_tasks_by_positions_of_codifiers) AS T3
-                USING(id_distributio_of_tasks_by_positions_of_codifiers)) AS T5) AS Res group by task_number, task_number_from_kim, fgos, poop_noo, max_mark, value;
-
+SELECT result, COUNT(result) FROM
+(
+    SELECT id_students,
+    CASE 
+    WHEN mark_for_vpr<mark_for_last_semester THEN 'понизил'
+    WHEN mark_for_vpr>mark_for_last_semester THEN 'повысил'
+    WHEN mark_for_vpr=mark_for_last_semester THEN 'подтвердил'
+    END AS result FROM 
+    (
+        SELECT id_students,sum_marks, mark_for_last_semester,
+        CASE 
+        WHEN sum_marks<mark_three THEN 2
+        WHEN sum_marks>=mark_three AND sum_marks<mark_four THEN 3
+        WHEN sum_marks>=mark_four AND sum_marks<mark_five THEN 4
+        WHEN sum_marks>=mark_five THEN 5
+        ELSE 0
+        END AS mark_for_vpr FROM 
+        (
+            SELECT id_students, sum_marks, mark_three, mark_four, mark_five, mark_for_last_semester FROM 
+            (
+                SELECT id_students, id_oo_parallels_subjects, mark_for_last_semester, SUM(mark) as sum_marks FROM result_for_task 
+                WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} 
+                AND id_oo_parallels = {id_oo_parallels}
+                GROUP BY id_students, id_oo_parallels_subjects, mark_for_last_semester
+            ) AS t1
+            LEFT JOIN 
+            (
+                SELECT id_oo_parallels_subjects, mark_three, mark_four, mark_five FROM oo_parallels_subjects 
+                WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
+            ) AS t2
+            USING (id_oo_parallels_subjects)
+        ) AS t3
+    ) AS t4
+) AS t5 
+GROUP BY result;
