@@ -6,7 +6,7 @@ import threading
 from data_base.postgresql import Postgresql
 from werkzeug.security import generate_password_hash
 from glob import glob
-from config import Config
+from configurations.production import Config
 from vpr_analysis import VPR
 
 

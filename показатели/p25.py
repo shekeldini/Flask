@@ -86,9 +86,9 @@ class P25(Postgresql):
                             if task_number:
 
                                 task_number, count, sum_all_marks = self.p25_db(task_number=task_number,
-                                                                              id_subjects=id_subjects,
-                                                                              id_district=id_district,
-                                                                              parallel=parallel)
+                                                                                id_subjects=id_subjects,
+                                                                                id_district=id_district,
+                                                                                parallel=parallel)
 
                                 real_ball += sum_all_marks
                                 max_ball += count * max_mark

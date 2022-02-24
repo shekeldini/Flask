@@ -8,7 +8,7 @@ from classReportController import ReportController
 from classUserLogin import UserLogin
 from forms import LoginForm
 from data_base.postgresql import Postgresql
-from config import Config
+from configurations.production import Config
 from blueprints.api import blueprint_api
 
 app = Flask(__name__)
@@ -107,19 +107,10 @@ def vpr_analysis():
 @app.route("/")
 def index():
     dbase = Postgresql(db_connection)
-    if current_user.is_authenticated:
-        return render_template('index.html',
-                               count_of_students=dbase.get_count_students(),
-                               count_of_oo=dbase.get_count_oo(),
-                               count_of_subject=dbase.get_count_of_subject(),
-                               count_of_parallels=dbase.get_count_of_parallels(),
-                               title="Главная страница")
 
     return render_template('index.html',
-                           count_of_students=dbase.get_count_students(),
-                           count_of_oo=dbase.get_count_oo(),
-                           count_of_subject=dbase.get_count_of_subject(),
-                           count_of_parallels=dbase.get_count_of_parallels(),
+                           count_of_students=dbase.get_count_students(2021),
+                           count_of_oo=dbase.get_count_oo(2021),
                            title="Главная страница")
 
 
@@ -194,4 +185,4 @@ def upload():
 
 
 if __name__ == "__main__":
-    app.run(debug=DEBUG, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0")

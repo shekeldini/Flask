@@ -1,7 +1,7 @@
 import psycopg2
 from openpyxl import Workbook
 from data_base.postgresql import Postgresql
-from config import *
+from  configurations.production import Config
 
 
 class P24(Postgresql):
@@ -70,5 +70,10 @@ class P24(Postgresql):
                 row += 1
         wb.save("П25.xlsx")
 
-psql = P24(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
+
+psql = P24(psycopg2.connect(dbname=Config.DB_NAME,
+                            user=Config.USER,
+                            password=Config.PASSWORD,
+                            host=Config.HOST,
+                            port=Config.PORT))
 psql.p24()

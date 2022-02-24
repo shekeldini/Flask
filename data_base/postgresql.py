@@ -54,9 +54,19 @@ class Postgresql:
             return False
         return True
 
-    def get_count_students(self):
+    def get_count_students(self, year):
         try:
-            self._cur.execute(f"SELECT COUNT(*) AS count_row FROM students;")
+            self._cur.execute(f"""
+            SELECT COUNT(*) AS count_row FROM students 
+            WHERE id_oo_parallels IN 
+            (
+                SELECT id_oo_parallels FROM oo_parallels 
+                WHERE id_oo IN 
+                (
+                    SELECT id_oo FROM oo 
+                    WHERE year = '{year}'
+                )
+            );""")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -67,7 +77,7 @@ class Postgresql:
     def get_count_oo(self, year="2021"):
         try:
             self._cur.execute(f"""
-            SELECT COUNT(*) AS count_row FROM oo 
+            SELECT COUNT(*) FROM oo 
             WHERE year = '{year}';""")
             res, = self._cur.fetchone()
             if res:
@@ -588,7 +598,7 @@ class Postgresql:
         try:
             self._cur.execute(
                 f"""
-                SELECT task_number, task_number_FROM_kim FROM distributio_of_tasks_by_positions_of_codifiers 
+                SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers 
                 WHERE id_subjects = {id_subjects} 
                 AND parallel = {parallel} 
                 AND year = '{year}' 
@@ -612,7 +622,7 @@ class Postgresql:
                                                                              id_oo_parallels=id_oo_parallels)
                 self._cur.execute(
                     f"""
-                    SELECT task_number, task_number_FROM_kim FROM distributio_of_tasks_by_positions_of_codifiers 
+                    SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers 
                     WHERE id_subjects IN 
                         (
                             SELECT id_subjects FROM oo_parallels_subjects WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
@@ -629,7 +639,7 @@ class Postgresql:
             else:
                 self._cur.execute(
                     f"""
-                    SELECT task_number, task_number_FROM_kim FROM distributio_of_tasks_by_positions_of_codifiers 
+                    SELECT task_number, task_number_from_kim FROM distributio_of_tasks_by_positions_of_codifiers 
                     WHERE id_subjects = {id_subjects} 
                     AND parallel = {parallel} 
                     AND year = '{year}' 
@@ -643,21 +653,21 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_max_mark(self, subject_name, parallel, task_number_FROM_kim):
+    def get_max_mark(self, subject_name, parallel, task_number_from_kim):
         self._cur.execute(f"""
             SELECT max_mark FROM distributio_of_tasks_by_positions_of_codifiers 
             WHERE id_subjects = {self.get_subject_id(subject_name=subject_name)} 
             AND parallel = {parallel} 
-            AND task_number_FROM_kim = '{task_number_FROM_kim}';""")
+            AND task_number_from_kim = '{task_number_from_kim}';""")
         res = self._cur.fetchone()
         if res:
             return res[0]
         return
 
-    def get_task_number(self, task_number_FROM_kim, id_subjects, parallel):
+    def get_task_number(self, task_number_from_kim, id_subjects, parallel):
         self._cur.execute(f"""
             SELECT task_number FROM distributio_of_tasks_by_positions_of_codifiers 
-            WHERE task_number_FROM_kim = '{task_number_FROM_kim}' 
+            WHERE task_number_from_kim = '{task_number_from_kim}' 
             AND id_subjects = {id_subjects} 
             AND parallel = {parallel};""")
         res = self._cur.fetchone()
