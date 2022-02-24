@@ -8,23 +8,19 @@ from classReportController import ReportController
 from classUserLogin import UserLogin
 from forms import LoginForm
 from data_base.postgresql import Postgresql
-from config import *
+from config import Config
 from blueprints.api import blueprint_api
 
-DEBUG = True
-SECRET_KEY = "0ef60679aaacc60167c89fe654cc11c74920113a"
-MAX_CONTENT_LENGTH = 1024 * 1024
-
 app = Flask(__name__)
-app.register_blueprint(blueprint_api, url_prefix="/api")
+app.config.from_object(Config)
 
-app.config.from_object(__name__)
-app.config["UPLOAD_FOLDER"] = "download"
+app.register_blueprint(blueprint_api, url_prefix="/api")
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = "Авторизируйтесь для доступа к закрытым страницам"
 login_manager.login_message_category = "invalid"
+
 db_connection = None
 
 
@@ -34,7 +30,11 @@ def load_user(user_id):
 
 
 def connect_db():
-    conn = psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT)
+    conn = psycopg2.connect(dbname=app.config["DB_NAME"],
+                            user=app.config["USER"],
+                            password=app.config["PASSWORD"],
+                            host=app.config["HOST"],
+                            port=app.config["PORT"])
     return conn
 
 

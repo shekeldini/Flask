@@ -6,7 +6,7 @@ import threading
 from data_base.postgresql import Postgresql
 from werkzeug.security import generate_password_hash
 from glob import glob
-from config import *
+from config import Config
 from vpr_analysis import VPR
 
 
@@ -1211,7 +1211,12 @@ class FillDb(Postgresql):
                 files = glob(subj_in_parallel)
 
                 for file in files:
-                    psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
+                    config = Config()
+                    psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
+                                                   user=config.USER,
+                                                   password=config.PASSWORD,
+                                                   host=config.HOST,
+                                                   port=config.PORT))
                     thread_list.append(
                         threading.Thread(target=psql.thread_fill_result_for_task, args=(file, parallel,)))
             for thread in thread_list:
@@ -1429,8 +1434,12 @@ class FillDb(Postgresql):
             print("Таблица schools_in_risk заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
-
-psql = FillDb(psycopg2.connect(dbname=DB_NAME, user=USER, password=PASSWORD, host=HOST, port=PORT))
+config = Config()
+psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
+                               user=config.USER,
+                               password=config.PASSWORD,
+                               host=config.HOST,
+                               port=config.PORT))
 # psql.dropAllTables()
 # psql.createTables()
 # psql.fill_district()
