@@ -8,4 +8,4 @@ blueprint_api = Blueprint(
 )
 
 blueprint_api.register_blueprint(blueprint_select, url_prefix="/select")
-blueprint_select.register_blueprint(blueprint_export, url_prefix="/export")
+blueprint_api.register_blueprint(blueprint_export, url_prefix="/export")

@@ -31,7 +31,7 @@ class DataBaseSchoolsInRisk(Postgresql):
             res = self._cur.fetchall()
             if res:
                 return res
-            return 0
+            return []
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 

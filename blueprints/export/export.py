@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from data_base.postgresql import Postgresql
 from classReportController import ReportController
 
-dbase: Postgresql
+db_connection = None
 
 blueprint_export = Blueprint(
     'export',
@@ -16,17 +16,14 @@ blueprint_export = Blueprint(
 @blueprint_export.before_request
 def before_request():
     """Установление соединения с БД перед выполением запроса"""
-    global dbase
-    db_connect = g.get('link_db')
-    dbase = Postgresql(db_connect)
-
+    global db_connection
+    db_connection = g.get('link_db')
 
 @blueprint_export.teardown_request
 def teardown_request(request):
-    global dbase
-    dbase = None
+    global db_connection
+    db_connection = None
     return request
-
 
 @blueprint_export.route("/")
 @login_required
@@ -53,7 +50,7 @@ def export():
                             "name": request.args.get("filter_task_name")},
                    "table_type": request.args.get("filter_table_type")
                    }
-    report = ReportController(request=export_data, dbase=dbase, user=current_user)
+    report = ReportController(request=export_data, connection=db_connection, user=current_user)
     wb, name = report.export_report()
     if not wb or not name:
         return "something wrong"
