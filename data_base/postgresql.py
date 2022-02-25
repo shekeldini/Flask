@@ -198,7 +198,7 @@ class Postgresql:
             print("Ошибка получения статей из БД " + str(e))
         return []
 
-    def get_id_oo(self, oo_login, year="2021"):
+    def get_id_oo(self, oo_login, year):
         try:
             self._cur.execute(
                 f"""

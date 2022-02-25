@@ -347,7 +347,8 @@ CREATE TABLE IF NOT EXISTS "distributio_of_tasks_by_positions_of_codifiers"(
 "poop_noo" text,
 "level" text,
 "max_mark" INTEGER NOT NULL,
-UNIQUE (id_subjects, parallel, task_number, task_number_from_kim),
+year VARCHAR(4), 
+UNIQUE (id_subjects, parallel, task_number, task_number_from_kim, year),
 CONSTRAINT "K41" PRIMARY KEY ("id_distributio_of_tasks_by_positions_of_codifiers","id_subjects","parallel","task_number"),
 CONSTRAINT "C42" FOREIGN KEY ("id_subjects")
     REFERENCES "subjects" ("id_subjects"),
@@ -362,6 +363,7 @@ CREATE TABLE IF NOT EXISTS "ks"(
 "id_subjects" INTEGER NOT NULL,
 "parallel" INTEGER NOT NULL,
 "description" text,
+year VARCHAR (4),
 CONSTRAINT "K39" PRIMARY KEY ("id_ks","id_subjects","parallel"),
 CONSTRAINT "C40" FOREIGN KEY ("id_subjects")
     REFERENCES "subjects" ("id_subjects"),
@@ -375,6 +377,7 @@ CREATE TABLE IF NOT EXISTS "kt"(
 "id_subjects" INTEGER NOT NULL,
 "parallel" INTEGER NOT NULL,
 "description" text,
+year VARCHAR (4),
 CONSTRAINT "K40" PRIMARY KEY ("id_kt","id_subjects","parallel"),
 CONSTRAINT "C41" FOREIGN KEY ("id_subjects")
     REFERENCES "subjects" ("id_subjects"),
