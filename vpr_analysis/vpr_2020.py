@@ -14,13 +14,20 @@ class VPR20:
                                           "sum": "всего баллов",
                                           "klass": "класс",
                                           "code": "номер обучающегося",
-                                          "gender": "пол"})
+                                          "gender": "пол",
+                                          "otc": "отметка за предыдущую четверть/триместр"})
         # self.__add_region()
         index_first_task = self.df.columns.get_loc('a-1-grade')
         index_books = self.df.columns.get_loc('Учебник')
         column_list = self.df.columns[index_first_task: index_books]
         self.df[column_list] = self.df[column_list].apply(pd.to_numeric, errors='coerce')
         self.df[column_list] = self.df[column_list].fillna(0)
+        self.df["отметка за предыдущую четверть/триместр"] = self.df[
+            "отметка за предыдущую четверть/триместр"].apply(pd.to_numeric, errors='coerce')
+        self.df["отметка за предыдущую четверть/триместр"] = self.df[
+            "отметка за предыдущую четверть/триместр"].fillna(0)
+        self.df[["var-1", "var-2"]] = self.df[["var-1", "var-2"]].apply(pd.to_numeric, errors='coerce')
+        self.df[["var-1", "var-2"]] = self.df[["var-1", "var-2"]].fillna(0)
 
     def get_unic_schools(self) -> list:
         return [school for school in self.df["логин школы"].drop_duplicates()]
@@ -47,6 +54,10 @@ class VPR20:
                 else:
                     dictionary[row["логин школы"]][row["класс"]][row["номер обучающегося"]] = row["пол"]
         return dictionary
+
+    def df_to_list(self):
+        index_books = self.df.columns.get_loc('Учебник')
+        return self.df[self.df.columns[:index_books]].values.tolist()
 
     def get_balls(self, name, parallel):
         subtrahend = 0

@@ -26,12 +26,16 @@ class FillDb(Postgresql):
         self._cur.execute(
             "CREATE INDEX ON oo_parallels_subjects (id_subjects, id_oo_parallels);")
 
-    def get_id_kt(self, kt_key, id_subjects, parallel):
+    def get_id_kt(self, kt_key, id_subjects, parallel, year):
         try:
             if not kt_key:
                 kt_key = 'NULL'
-            self._cur.execute(
-                f"SELECT id_kt FROM kt WHERE kt_key = '{str(kt_key).strip()}' and id_subjects = {id_subjects} and parallel = {parallel}")
+            self._cur.execute(f"""
+            SELECT id_kt FROM kt 
+            WHERE kt_key = '{str(kt_key).strip()}' 
+            and id_subjects = {id_subjects} 
+            and parallel = {parallel}
+            and year = '{year}'""")
             res = self._cur.fetchone()
             if res:
                 return res[0]
@@ -40,12 +44,16 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_id_ks(self, ks_key, id_subjects, parallel):
+    def get_id_ks(self, ks_key, id_subjects, parallel, year):
         try:
             if not ks_key:
                 ks_key = 'NULL'
-            self._cur.execute(
-                f"SELECT id_ks FROM ks WHERE ks_key = '{str(ks_key).strip()}' and id_subjects = {id_subjects} and parallel = {parallel}")
+            self._cur.execute(f"""
+                SELECT id_ks FROM ks 
+                WHERE ks_key = '{str(ks_key).strip()}' 
+                and id_subjects = {id_subjects} 
+                and parallel = {parallel}
+                and year = '{year}'""")
             res = self._cur.fetchone()
             if res:
                 return res[0]
@@ -58,9 +66,9 @@ class FillDb(Postgresql):
         try:
             type_ = type_of_organizational_and_legal_form[3:].strip().replace(' ', '_') \
                 .replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_organizational_and_legal_form FROM organizational_and_legal_form WHERE "
-                f"type_of_organizational_and_legal_form = '{type_}'")
+            self._cur.execute(f"""
+            SELECT id_organizational_and_legal_form FROM organizational_and_legal_form 
+            WHERE type_of_organizational_and_legal_form = '{type_}'""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_organizational_and_legal_form не найден")
@@ -275,11 +283,15 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_id_distributio_of_tasks_by_positions_of_codifiers(self, id_subjects, parallel, task_number):
+    def get_id_distributio_of_tasks_by_positions_of_codifiers(self, id_subjects, parallel, task_number, year):
         try:
-            self._cur.execute(f" SELECT id_distributio_of_tasks_by_positions_of_codifiers "
-                              f"FROM distributio_of_tasks_by_positions_of_codifiers "
-                              f"WHERE id_subjects = {id_subjects} AND parallel = {parallel} AND task_number = {task_number}")
+            self._cur.execute(f"""
+            SELECT id_distributio_of_tasks_by_positions_of_codifiers 
+            FROM distributio_of_tasks_by_positions_of_codifiers 
+            WHERE id_subjects = {id_subjects} 
+            AND parallel = {parallel} 
+            AND task_number = {task_number}
+            AND year = '{year}';""")
             res = self._cur.fetchone()
             if res:
                 return res[0]
@@ -1180,20 +1192,32 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def thread_fill_result_for_task(self, file, parallel):
+    def thread_fill_result_for_task(self, year, file, parallel):
         try:
 
             print(file.replace("/", "/"))
-            df = VPR(file.replace("/", "/"))
+            if year == 2020:
+                df = VPR20(file.replace("/", "/"))
+            else:
+                df = VPR(file.replace("/", "/"))
             list_df = df.df_to_list()
             for row in list_df:
-                school, student_number, liter, mark_for_last_semester, variant, marks = row[0], row[2], row[6], \
-                                                                                        row[4], row[7], row[9:]
-                id_oo = self.get_id_oo(school.strip())
+                if year == 2020:
+                    school, student_number, liter, mark_for_last_semester = row[1], row[3], row[6], row[4]
+                    variant = row[7] if row[7] != "отсутствовал" else row[8]
+                    marks = row[10:]
+                    subj_name = file[file.rfind("\\") + 1:].replace(".xlsx", "")
+                    id_subjects = self.get_id_subjects(subj_name)
+
+                else:
+                    school, student_number, liter, mark_for_last_semester, variant, marks = row[0], row[2], row[6], \
+                                                                                            row[4], row[7], row[9:]
+                    id_subjects = self.get_id_subjects(df.get_subj_name())
+                id_oo = self.get_id_oo(school.strip(), year)
                 id_oo_parallels = self.get_id_oo_parallels(parallel, id_oo)
                 id_classes = self.get_id_classes(id_oo_parallels, liter)
                 id_students = self.get_id_students(id_oo_parallels, id_classes, student_number)
-                id_subjects = self.get_id_subjects(df.get_subj_name())
+
                 id_oo_parallels_subjects = self.get_id_oo_parallels_subjects(id_subjects, id_oo_parallels)
 
                 r = """
@@ -1203,10 +1227,11 @@ class FillDb(Postgresql):
                  id_distributio_of_tasks_by_positions_of_codifiers) VALUES 
                 """
                 for task_number, mark in enumerate(marks):
-                    id_distributio_of_tasks_by_positions_of_codifiers = self.get_id_distributio_of_tasks_by_positions_of_codifiers(
-                        id_subjects=id_subjects,
-                        parallel=parallel,
-                        task_number=task_number + 1)
+                    id_distributio_of_tasks_by_positions_of_codifiers = \
+                        self.get_id_distributio_of_tasks_by_positions_of_codifiers(id_subjects=id_subjects,
+                                                                                   parallel=parallel,
+                                                                                   task_number=task_number + 1,
+                                                                                   year=year)
                     s = f"""
                             ({task_number + 1}, {id_oo_parallels_subjects}, {id_students},
                             {id_oo_parallels}, {id_subjects}, {int(variant)},
@@ -1218,14 +1243,14 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def fill_result_for_task(self):
+    def fill_result_for_task(self, year):
         try:
             # self._cur.execute("TRUNCATE TABLE result_for_task RESTART IDENTITY cascade;")
-            all_parallels = glob("excel/vpr_results/*")
+            all_parallels = glob(f"excel/vpr_results/{year}/*")
             thread_list = []
             for path in all_parallels:
-                parallel = int(path[path.rindex("/") + 1:])
-                subj_in_parallel = path.replace("/", "/") + "/*"
+                parallel = int(path[path.rindex("\\") + 1:])
+                subj_in_parallel = path.replace("\\", "/") + "/*"
                 files = glob(subj_in_parallel)
 
                 for file in files:
@@ -1236,7 +1261,7 @@ class FillDb(Postgresql):
                                                    host=config.HOST,
                                                    port=config.PORT))
                     thread_list.append(
-                        threading.Thread(target=psql.thread_fill_result_for_task, args=(file, parallel,)))
+                        threading.Thread(target=psql.thread_fill_result_for_task, args=(year, file, parallel,)))
             for thread in thread_list:
                 thread.start()
 
@@ -1276,16 +1301,16 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def fill_kt(self):
+    def fill_kt(self, year):
         try:
-            self._cur.execute("TRUNCATE TABLE kt RESTART IDENTITY cascade;")
+            # self._cur.execute("TRUNCATE TABLE kt RESTART IDENTITY cascade;")
             parallels = glob("excel/Описание_работ/*")
 
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ/", ""))
+                parallel = int(p.replace("excel/Описание_работ\\", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
+                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
                     id_subjects = self.get_subject_id(subject)
                     kt_data = openpyxl.reader.excel.load_workbook(
                         filename=s + "/KT.xlsx", data_only=True)
@@ -1293,24 +1318,24 @@ class FillDb(Postgresql):
                     for row in range(2, kt_sheet.max_row + 1):
                         kt_key = kt_sheet["A" + str(row)].value
                         description = kt_sheet["B" + str(row)].value
-                        self._cur.execute(f"INSERT INTO kt (kt_key, id_subjects, parallel, description) "
-                                          f"VALUES ('{str(kt_key).strip()}', {id_subjects}, {parallel}, '{description}')")
-                    self._cur.execute(f"INSERT INTO kt (kt_key, id_subjects, parallel, description) "
-                                      f"VALUES ('NULL', {id_subjects}, {parallel}, '')")
+                        self._cur.execute(f"INSERT INTO kt (kt_key, id_subjects, parallel, description, year) "
+                                          f"VALUES ('{str(kt_key).strip()}', {id_subjects}, {parallel}, '{description}', '{year}')")
+                    self._cur.execute(f"INSERT INTO kt (kt_key, id_subjects, parallel, description, year) "
+                                      f"VALUES ('NULL', {id_subjects}, {parallel}, '', '{year}')")
             print("Таблица kt заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def fill_ks(self):
+    def fill_ks(self, year):
         try:
-            self._cur.execute("TRUNCATE TABLE ks RESTART IDENTITY cascade;")
+            # self._cur.execute("TRUNCATE TABLE ks RESTART IDENTITY cascade;")
             parallels = glob("excel/Описание_работ/*")
 
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ/", ""))
+                parallel = int(p.replace("excel/Описание_работ\\", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
+                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
                     id_subjects = self.get_subject_id(subject)
 
                     if glob(s + "/KS.xlsx"):
@@ -1320,31 +1345,35 @@ class FillDb(Postgresql):
                         for row in range(2, ks_sheet.max_row + 1):
                             ks_key = ks_sheet["A" + str(row)].value
                             description = ks_sheet["B" + str(row)].value
-                            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) "
-                                              f"VALUES ('{str(ks_key).strip()}', {id_subjects}, {parallel}, '{description}')")
-                        self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) "
-                                          f"VALUES ('NULL', {id_subjects}, {parallel}, '')")
-            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 1, 11, '')")
-
-            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 6, 7, '')")
-
-            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 6, 11, '')")
-            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 11, 7, '')")
+                            self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description, year) "
+                                              f"VALUES ('{str(ks_key).strip()}', {id_subjects}, {parallel}, '{description}', '{year}')")
+                        self._cur.execute(f"INSERT INTO ks (ks_key, id_subjects, parallel, description, year) "
+                                          f"VALUES ('NULL', {id_subjects}, {parallel}, '',  '{year}')")
             self._cur.execute(
-                f"INSERT INTO ks (ks_key, id_subjects, parallel, description) VALUES ('NULL', 11, 11, '')")
+                f"INSERT INTO ks (ks_key, id_subjects, parallel, description, year) VALUES ('NULL', 1, 11, '', '{year}')")
+
+            self._cur.execute(
+                f"INSERT INTO ks (ks_key, id_subjects, parallel, description, year) VALUES ('NULL', 6, 7, '', '{year}')")
+
+            self._cur.execute(
+                f"INSERT INTO ks (ks_key, id_subjects, parallel, description, year) VALUES ('NULL', 6, 11, '', '{year}')")
+            self._cur.execute(
+                f"INSERT INTO ks (ks_key, id_subjects, parallel, description, year) VALUES ('NULL', 11, 7, '', '{year}')")
+            self._cur.execute(
+                f"INSERT INTO ks (ks_key, id_subjects, parallel, description, year) VALUES ('NULL', 11, 11, '', '{year}')")
             print("Таблица ks заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def fill_distributio_of_tasks_by_positions_of_codifiers(self):
+    def fill_distributio_of_tasks_by_positions_of_codifiers(self, year):
         try:
-            self._cur.execute("TRUNCATE TABLE distributio_of_tasks_by_positions_of_codifiers RESTART IDENTITY cascade;")
+            # self._cur.execute("TRUNCATE TABLE distributio_of_tasks_by_positions_of_codifiers RESTART IDENTITY cascade;")
             parallels = glob("excel/Описание_работ/*")
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ/", ""))
+                parallel = int(p.replace("excel/Описание_работ\\", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
+                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
                     id_subjects = self.get_subject_id(subject)
 
                     all_data = openpyxl.reader.excel.load_workbook(
@@ -1374,22 +1403,22 @@ class FillDb(Postgresql):
                                               f"(id_subjects, parallel, task_number, task_number_from_kim, "
                                               f"fgos, poop_noo, level, max_mark, year) "
                                               f"VALUES ({id_subjects}, {parallel}, {task_number}, '{task_number_from_kim}',"
-                                              f"'{fgos}', '{poop_noo}', '{level}', {max_mark}, '{2021}')")
-                        except:
-                            pass
+                                              f"'{fgos}', '{poop_noo}', '{level}', {max_mark}, '{year}')")
+                        except psycopg2.Error as e:
+                            print("Ошибка при заполнении БД " + str(e))
             print("Таблица distributio_of_tasks_by_positions_of_codifiers заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def fill_ks_kt(self):
+    def fill_ks_kt(self, year):
         try:
-            self._cur.execute("TRUNCATE TABLE ks_kt RESTART IDENTITY cascade;")
+            # self._cur.execute("TRUNCATE TABLE ks_kt RESTART IDENTITY cascade;")
             parallels = glob("excel/Описание_работ/*")
             for p in parallels:
-                parallel = int(p.replace("excel/Описание_работ/", ""))
+                parallel = int(p.replace("excel/Описание_работ\\", ""))
                 subjects = glob(p + "/*")
                 for s in subjects:
-                    subject = s.replace("excel/Описание_работ/" + str(parallel) + "/", "")
+                    subject = s.replace("excel/Описание_работ\\" + str(parallel) + "\\", "")
                     id_subjects = self.get_subject_id(subject)
 
                     all_data = openpyxl.reader.excel.load_workbook(
@@ -1400,23 +1429,28 @@ class FillDb(Postgresql):
                         id_ks = all_sheet["F" + str(row)].value
                         id_ks = self.get_id_ks(ks_key=id_ks,
                                                id_subjects=id_subjects,
-                                               parallel=parallel)
+                                               parallel=parallel,
+                                               year=year)
                         id_kt = all_sheet["G" + str(row)].value
 
                         id_kt = self.get_id_kt(kt_key=id_kt,
                                                id_subjects=id_subjects,
-                                               parallel=parallel)
+                                               parallel=parallel,
+                                               year=year)
                         id_distributio_of_tasks_by_positions_of_codifiers = \
                             self.get_id_distributio_of_tasks_by_positions_of_codifiers(id_subjects=id_subjects,
                                                                                        parallel=parallel,
-                                                                                       task_number=task_number)
+                                                                                       task_number=task_number,
+                                                                                       year=year)
                         try:
                             self._cur.execute(f"INSERT INTO ks_kt (id_distributio_of_tasks_by_positions_of_codifiers, "
                                               f"id_subjects, parallel, id_ks, id_kt, task_number) "
                                               f"VALUES ({id_distributio_of_tasks_by_positions_of_codifiers}, "
                                               f"{id_subjects}, {parallel}, {id_ks}, {id_kt}, {task_number})")
                         except psycopg2.Error as e:
-                            pass
+                            print("Ошибка при заполнении БД " + str(e))
+                            print(id_distributio_of_tasks_by_positions_of_codifiers, id_subjects,
+                                  parallel, id_ks, id_kt, task_number)
 
             print("Таблица ks_kt заполненна")
         except psycopg2.Error as e:
@@ -1431,17 +1465,24 @@ class FillDb(Postgresql):
                                           "sch224234", "sch224235", "sch224246", "sch224259", "sch224263", "sch224268",
                                           "sch224313", "sch224332", "sch224353", "sch224361", "sch224395", "sch226062",
                                           "sch226065"],
-                           "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615", "sch223646",
-                                            "sch223687", "sch223763", "sch223953", "sch224143", "sch224188", "sch224205",
-                                            "sch224208", "sch224234", "sch224238", "sch224246", "sch224259", "sch224263",
-                                            "sch224268", "sch224286", "sch224313", "sch224332", "sch224353", "sch224361",
+                           "Русский язык": ["sch220161", "sch220175", "sch220198", "sch223197", "sch223615",
+                                            "sch223646",
+                                            "sch223687", "sch223763", "sch223953", "sch224143", "sch224188",
+                                            "sch224205",
+                                            "sch224208", "sch224234", "sch224238", "sch224246", "sch224259",
+                                            "sch224263",
+                                            "sch224268", "sch224286", "sch224313", "sch224332", "sch224353",
+                                            "sch224361",
                                             "sch224362", "sch224397", "sch226062", "sch226065"]},
                        5: {"Математика": ["sch220128", "sch220163", "sch220175", "sch223197", "sch223610", "sch223953",
                                           "sch224188", "sch224208", "sch224246", "sch224263", "sch224268", "sch224286",
                                           "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"],
-                           "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175", "sch223197",
-                                            "sch223615", "sch224208", "sch224246", "sch224263", "sch224286", "sch224313",
-                                            "sch224332", "sch224353", "sch224361", "sch226059", "sch226062", "sch226065"]}}}
+                           "Русский язык": ["sch220128", "sch220150", "sch220161", "sch220163", "sch220175",
+                                            "sch223197",
+                                            "sch223615", "sch224208", "sch224246", "sch224263", "sch224286",
+                                            "sch224313",
+                                            "sch224332", "sch224353", "sch224361", "sch226059", "sch226062",
+                                            "sch226065"]}}}
             for year in schools:
                 for parallel in schools[year]:
                     for subject in schools[year][parallel]:
@@ -1452,6 +1493,8 @@ class FillDb(Postgresql):
             print("Таблица schools_in_risk заполненна")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
+
+
 config = Config()
 psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
                                user=config.USER,
@@ -1489,15 +1532,15 @@ psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
 # psql.fill_classes(2020)
 # psql.fill_classes_textbooks()
 # psql.fill_students(2020)
-psql.fill_oo_parallels_subjects(2020)
+# psql.fill_oo_parallels_subjects(2020)
 # psql.create_index_on_oo_parallels_subjects()
 # psql.create_roles()
 # psql.create_users()
 # psql.fill_users_oo_logins()
-# psql.fill_kt()
-# psql.fill_ks()
-# psql.fill_distributio_of_tasks_by_positions_of_codifiers()
-# psql.fill_result_for_task()
+# psql.fill_kt(2020)
+# psql.fill_ks(2020)
+# psql.fill_distributio_of_tasks_by_positions_of_codifiers(2020)
+# psql.fill_result_for_task(2020)
 # psql.create_index_on_result_for_task()
-# psql.fill_ks_kt()
+# psql.fill_ks_kt(2020)
 # psql.fill_schools_in_risk()

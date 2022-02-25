@@ -35,7 +35,7 @@ def teardown_request(request):
 @blueprint_select.route("/get_year/")
 @login_required
 def api_get_year():
-    available_years = [2021]
+    available_years = [2021, 2020]
     years_array = []
     for year in available_years:
         year_obj = {'id': year, 'name': year}
