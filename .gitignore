@@ -1,6 +1,6 @@
 excel/users.xlsx
 .bashrc
-.env
+configurations/.env
 configurations/development.py
 __pycache__
 venv
