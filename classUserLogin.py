@@ -29,6 +29,18 @@ class UserLogin(UserMixin):
     def get_id_role(self):
         return self.__user[7]
 
+    def is_admin(self):
+        return self.get_id_role() == 1
+
+    def is_ministry(self):
+        return self.get_id_role() == 2
+
+    def is_municipality(self):
+        return self.get_id_role() == 3
+
+    def is_school(self):
+        return self.get_id_role() == 4
+
     def getAvatar(self, app):
         img = None
         if not self.__user[4]:
@@ -47,3 +59,4 @@ class UserLogin(UserMixin):
         if ext == "png" or ext == "PNG" or ext == "jpg" or ext == "jpeg":
             return True
         return False
+
