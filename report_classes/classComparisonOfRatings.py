@@ -15,16 +15,16 @@ class ComparisonOfRatings(BaseReport):
         if self._district["id"] != "all":
             if self._oo["id"] != "all":
                 sub_content = {"all_districts": [f"Все муниципалитеты",
-                                                 f"ВПР 2021. {self._parallel['name']} класс",
+                                                 f"ВПР {self._year['name']}. {self._parallel['name']} класс",
                                                  f"Предмет: {self._subject['name']}"],
                                "district": [f"{self._district['name']}",
-                                            f"ВПР 2021. {self._parallel['name']} класс",
+                                            f"ВПР {self._year['name']}. {self._parallel['name']} класс",
                                             f"Предмет: {self._subject['name']}"],
                                "oo": [f"{self._oo['name']}",
-                                      f"ВПР 2021. {self._parallel['name']} класс",
+                                      f"ВПР {self._year['name']}. {self._parallel['name']} класс",
                                       f"Предмет: {self._subject['name']}"],
                                "all": [f"Сравнительный анализ",
-                                       f"ВПР 2021. {self._parallel['name']} класс",
+                                       f"ВПР {self._year['name']}. {self._parallel['name']} класс",
                                        f"Предмет: {self._subject['name']}"
                                        ]}
 
