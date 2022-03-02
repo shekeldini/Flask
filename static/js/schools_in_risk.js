@@ -4,7 +4,7 @@ oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
 
-fetch('api/select/get_year/').then(function(response){
+fetch('api/select/school_in_risk/get_year/').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (year of data.year) {
@@ -23,6 +23,7 @@ fetch('api/select/get_year/').then(function(response){
                 });
 });
 year_select.onchange = function(){
+    oo_select.innerHTML = "";
     parallel_select.innerHTML = "";
     subject_select.innerHTML = "";
     year = year_select.value;
@@ -506,30 +507,31 @@ $(document).ready(function(){
         $("#clear_btn").click(function(){
                 $(".error").remove();
                 $(".TwoPage").remove();
-		district_select.style.border = "";
+		        district_select.style.border = "";
                 oo_select.style.border = "";
                 parallel_select.style.border = "";
                 subject_select.style.border = "";
                 oo_select.innerHTML = "";
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
-                district = district_select.value;
-                fetch('/api/school_in_risk/get_districts/' + year).then(function(response){
+                district_select.innerHTML = "";
+                year_select.innerHTML = "";
+
+                fetch('api/select/school_in_risk/get_year/').then(function(response){
                     response.json().then(function(data) {
-                            optionHTML = '';
-                            for (district of data.districts) {
-                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
-                            }
-                            district_select.innerHTML = optionHTML;
+                        optionHTML = '';
+                        for (year of data.year) {
+                                optionHTML += '<option value="' + year.id+'">' + year.name + '</option>'
+                        }
+                        year_select.innerHTML = optionHTML;
 
-                            if (district_select.length == 1){
-                                    district_select.defaultSelected = district_select[0];
-                                    district_select.onchange();
-                            }
-                            else{
-                                    district_select.value = "";
-                            }
-
+                        if (year_select.length == 1){
+                                year_select.defaultSelected = year_select[0];
+                                year_select.onchange();
+                        }
+                        else{
+                                year_select.value = "";
+                        }
                     });
                 });
         });

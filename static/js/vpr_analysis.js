@@ -26,6 +26,7 @@ fetch('api/select/get_year/').then(function(response){
 
 year_select.onchange = function(){
     district_select.innerHTML = "";
+    oo_select.innerHTML = "";
     parallel_select.innerHTML = "";
     subject_select.innerHTML = "";
     report_select.innerHTML = "";
@@ -984,25 +985,24 @@ $(document).ready(function(){
                 parallel_select.innerHTML = "";
                 subject_select.innerHTML = "";
                 report_select.innerHTML = "";
+                year_select.innerHTML = "";
 
-                year = year_select.value;
-                fetch('api/get_districts/' + year).then(function(response){
+                fetch('api/select/get_year/').then(function(response){
                     response.json().then(function(data) {
-                            optionHTML = '';
-                            for (district of data.districts) {
-                                    optionHTML += '<option value="' + district.id+'">' + district.name + '</option>'
-                            }
-                            district_select.innerHTML = optionHTML;
+                        optionHTML = '';
+                        for (year of data.year) {
+                                optionHTML += '<option value="' + year.id+'">' + year.name + '</option>'
+                        }
+                        year_select.innerHTML = optionHTML;
 
-                            if (district_select.length == 1){
-                                    district_select.defaultSelected = district_select[0];
-                                    district_select.onchange();
-                            }
-                            else{
-                                    district_select.value = "";
-                            }
-
+                        if (year_select.length == 1){
+                                year_select.defaultSelected = year_select[0];
+                                year_select.onchange();
+                        }
+                        else{
+                                year_select.value = "";
+                        }
                     });
-    });
+                });
         });
 });

@@ -26,6 +26,16 @@ def teardown_request(request):
     dbase = None
     return request
 
+@blueprint_school_in_risk.route("/get_year/")
+@login_required
+def api_get_year():
+    years = dbase.get_years(id_user=current_user.get_id())
+    years_array = []
+    for year in years:
+        year_obj = {'id': year, 'name': year}
+        years_array.append(year_obj)
+    return jsonify({'year': years_array})
+
 
 @blueprint_school_in_risk.route("/get_districts/<year>")
 @login_required
@@ -33,14 +43,14 @@ def api_districts_for_school_in_risk(year):
     districts = dbase.get_districts(id_user=current_user.get_id(),
                                     year=year)
     district_array = []
-    if current_user.get_id_role() in {1, 2}:
-        district_array.append({'id': "all", 'name': "Все муниципалитеты"})
+    if districts:
+        if current_user.get_id_role() in {1, 2}:
+            district_array.append({'id': "all", 'name': "Все муниципалитеты"})
 
-    for id_district, district in districts:
-        district_obj = {'id': id_district, 'name': district.replace("_", " ")}
-        district_array.append(district_obj)
+        for id_district, district in districts:
+            district_obj = {'id': id_district, 'name': district.replace("_", " ")}
+            district_array.append(district_obj)
     return jsonify({'districts': district_array})
-
 
 @blueprint_school_in_risk.route('/get_oo/<year>/<id_district>')
 @login_required

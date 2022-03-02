@@ -6,6 +6,27 @@ class DataBaseSchoolsInRisk(Postgresql):
     def __init__(self, connection):
         super().__init__(connection)
 
+    def get_years(self, id_user):
+        try:
+            self._cur.execute(f"""
+            SELECT DISTINCT year FROM schools_in_risk 
+            WHERE id_oo in 
+            (
+                SELECT id_oo FROM oo 
+                WHERE oo_login in 
+                (
+                    SELECT oo_login FROM users_oo_logins 
+                    WHERE id_user = {id_user}
+                )
+            );""")
+
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
     def get_districts(self, id_user, year):
         try:
             self._cur.execute(f"""

@@ -635,7 +635,16 @@ class Postgresql:
                                     SELECT id_oo_parallels FROM oo_parallels_subjects 
                                     WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects}
                                 )
-                        ) ORDER BY (task_number);""")
+                        ) 
+                    AND task_number in 
+                    (
+                        SELECT task_number FROM result_for_task 
+                        WHERE id_oo_parallels_subjects = {id_oo_parallels_subjects} 
+                        AND id_oo_parallels = {id_oo_parallels} 
+                        AND id_subjects = {id_subjects}
+                    )
+                    AND year = '{year}'
+                    ORDER BY (task_number);""")
             else:
                 self._cur.execute(
                     f"""
@@ -643,6 +652,36 @@ class Postgresql:
                     WHERE id_subjects = {id_subjects} 
                     AND parallel = {parallel} 
                     AND year = '{year}' 
+                    AND task_number in 
+                    (
+                        SELECT distinct task_number FROM result_for_task 
+                        WHERE id_oo_parallels_subjects IN 
+                        (
+                            SELECT id_oo_parallels_subjects FROM oo_parallels_subjects 
+                            WHERE id_subjects = {id_subjects} 
+                            AND id_oo_parallels IN 
+                            (
+                                SELECT id_oo_parallels FROM oo_parallels 
+                                WHERE parallel = {parallel} 
+                                AND id_oo IN 
+                                (
+                                    SELECT id_oo FROM oo 
+                                    WHERE year = '{year}'
+                                )
+                            )
+                        )
+                        AND id_oo_parallels IN
+                        (
+                            SELECT id_oo_parallels FROM oo_parallels 
+                            WHERE parallel = {parallel} 
+                            AND id_oo IN 
+                            (
+                                SELECT id_oo FROM oo 
+                                WHERE year = '{year}'
+                            )
+                        )
+                        AND id_subjects = {id_subjects} 
+                    )
                     ORDER BY (task_number);""")
 
             res = self._cur.fetchall()
@@ -674,3 +713,19 @@ class Postgresql:
         if res:
             return res[0]
         return
+
+    def get_years(self, id_user):
+        try:
+            self._cur.execute(f"""
+            SELECT DISTINCT year FROM oo 
+            WHERE oo_login in 
+            (
+                SELECT oo_login FROM users_oo_logins 
+                WHERE id_user = {id_user}
+            );""")
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
