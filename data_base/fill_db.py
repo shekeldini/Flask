@@ -35,7 +35,7 @@ class FillDb(Postgresql):
             WHERE kt_key = '{str(kt_key).strip()}' 
             and id_subjects = {id_subjects} 
             and parallel = {parallel}
-            and year = '{year}'""")
+            and year = '{year}';""")
             res = self._cur.fetchone()
             if res:
                 return res[0]
@@ -53,7 +53,7 @@ class FillDb(Postgresql):
                 WHERE ks_key = '{str(ks_key).strip()}' 
                 and id_subjects = {id_subjects} 
                 and parallel = {parallel}
-                and year = '{year}'""")
+                and year = '{year}';""")
             res = self._cur.fetchone()
             if res:
                 return res[0]
@@ -68,7 +68,7 @@ class FillDb(Postgresql):
                 .replace('-', '_').replace(',', '').replace('_(', '(')
             self._cur.execute(f"""
             SELECT id_organizational_and_legal_form FROM organizational_and_legal_form 
-            WHERE type_of_organizational_and_legal_form = '{type_}'""")
+            WHERE type_of_organizational_and_legal_form = '{type_}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_organizational_and_legal_form не найден")
@@ -79,10 +79,11 @@ class FillDb(Postgresql):
 
     def get_id_name_of_the_settlement(self, id_district, id_oo_location_type, name):
         try:
-            self._cur.execute(
-                f"SELECT id_name_of_the_settlement FROM name_of_the_settlement WHERE id_district = {id_district} AND"
-                f" id_oo_location_type = {id_oo_location_type} AND"
-                f" name = '{name}'")
+            self._cur.execute(f"""
+            SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+            WHERE id_district = {id_district} 
+            AND id_oo_location_type = {id_oo_location_type} 
+            AND name = '{name}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_name_of_the_settlement не найден")
@@ -93,8 +94,10 @@ class FillDb(Postgresql):
 
     def get_id_districts(self, district_name):
         try:
-            self._cur.execute(
-                f"SELECT id_district FROM district WHERE district_name = '{district_name.replace(' ', '_').replace('-', '_')}'")
+            district_name = district_name.replace(' ', '_').replace('-', '_')
+            self._cur.execute(f"""
+            SELECT id_district FROM district 
+            WHERE district_name = '{district_name}';""")
             res, = self._cur.fetchone()
             if res:
                 return res
@@ -105,8 +108,9 @@ class FillDb(Postgresql):
     def get_id_population_of_the_settlement(self, interval):
         try:
             interval = interval[3:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_population_of_the_settlement FROM population_of_the_settlement WHERE interval = '{interval}'")
+            self._cur.execute(f"""
+            SELECT id_population_of_the_settlement FROM population_of_the_settlement 
+            WHERE interval = '{interval}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_population_of_the_settlement не был найден")
@@ -118,8 +122,9 @@ class FillDb(Postgresql):
     def get_id_internet_speed(self, interval):
         try:
             interval = interval.strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_internet_speed FROM internet_speed WHERE interval = '{interval}'")
+            self._cur.execute(f"""
+            SELECT id_internet_speed FROM internet_speed 
+            WHERE interval = '{interval}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_internet_speed не был найден")
@@ -134,8 +139,9 @@ class FillDb(Postgresql):
                 description = "4.Нет_данных"
             description = description[2:].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(',
                                                                                                                '(')
-            self._cur.execute(
-                f"SELECT id_count_of_parents_attending_events FROM count_of_parents_attending_events WHERE description = '{description}'")
+            self._cur.execute(f"""
+            SELECT id_count_of_parents_attending_events FROM count_of_parents_attending_events 
+            WHERE description = '{description}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_count_of_parents_attending_events не был найден")
@@ -150,8 +156,9 @@ class FillDb(Postgresql):
                 description = "4.Нет_данных"
             description = description[2:].strip().replace(' ', '_') \
                 .replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_count_of_parents_ready_to_help FROM count_of_parents_ready_to_help WHERE description = '{description}'")
+            self._cur.execute(f"""
+            SELECT id_count_of_parents_ready_to_help FROM count_of_parents_ready_to_help 
+            WHERE description = '{description}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_count_of_parents_ready_to_help не был найден")
@@ -166,8 +173,9 @@ class FillDb(Postgresql):
                 description = "5. Нет_данных"
             description = description[3:].strip().replace(' ', '_') \
                 .replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_regular_transport_link FROM regular_transport_link WHERE description = '{description}'")
+            self._cur.execute(f"""
+            SELECT id_regular_transport_link FROM regular_transport_link 
+            WHERE description = '{description}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_regular_transport_link не был найден")
@@ -182,8 +190,9 @@ class FillDb(Postgresql):
                 description = "5. Нет_данных"
             description = description[3:].strip().replace(' ', '_') \
                 .replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_frequency_of_regular_transport_link FROM frequency_of_regular_transport_link WHERE description = '{description}'")
+            self._cur.execute(f"""
+            SELECT id_frequency_of_regular_transport_link FROM frequency_of_regular_transport_link 
+            WHERE description = '{description}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_frequency_of_regular_transport_link не был найден")
@@ -199,8 +208,9 @@ class FillDb(Postgresql):
             description = description[3:].strip().replace(' ', '_') \
                 .replace('-', '_').replace(',', '').replace('_(',
                                                             '(')
-            self._cur.execute(
-                f"SELECT id_possibility_to_get_to_the_oo_by_public_transport FROM possibility_to_get_to_the_oo_by_public_transport WHERE description = '{description}'")
+            self._cur.execute(f"""
+            SELECT id_possibility_to_get_to_the_oo_by_public_transport FROM possibility_to_get_to_the_oo_by_public_transport 
+            WHERE description = '{description}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_possibility_to_get_to_the_oo_by_public_transport не был найден")
@@ -215,8 +225,9 @@ class FillDb(Postgresql):
                 interval = "5. Нет даннных"
             interval = interval[3:].strip().replace(' ', '_') \
                 .replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_the_involvement_of_students_in_additional_education FROM the_involvement_of_students_in_additional_education WHERE interval = '{interval}'")
+            self._cur.execute(f"""
+            SELECT id_the_involvement_of_students_in_additional_education FROM the_involvement_of_students_in_additional_education 
+            WHERE interval = '{interval}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_internet_speed не был найден")
@@ -228,8 +239,9 @@ class FillDb(Postgresql):
     def get_id_subjects(self, subject_name):
         try:
             subject_name = subject_name.replace(" ", "_")
-            self._cur.execute(
-                f"SELECT id_subjects FROM subjects WHERE subject_name = '{subject_name}'")
+            self._cur.execute(f"""
+            SELECT id_subjects FROM subjects 
+            WHERE subject_name = '{subject_name}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_subjects не был найден")
@@ -240,8 +252,10 @@ class FillDb(Postgresql):
 
     def get_id_classes(self, id_oo_parallels, liter):
         try:
-            self._cur.execute(
-                f"SELECT id_classes FROM classes WHERE id_oo_parallels = {id_oo_parallels} AND liter = '{liter}'")
+            self._cur.execute(f"""
+            SELECT id_classes FROM classes 
+            WHERE id_oo_parallels = {id_oo_parallels} 
+            AND liter = '{liter}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("id_classes не был найден")
@@ -253,13 +267,19 @@ class FillDb(Postgresql):
     def get_id_textbooks(self, id_subjects, name):
         try:
             self._cur.execute(
-                f"SELECT id_textbooks FROM textbooks WHERE id_subjects = {id_subjects} AND name = '{name}'")
+                f"""
+                SELECT id_textbooks FROM textbooks 
+                WHERE id_subjects = {id_subjects} 
+                AND name = '{name}';""")
             res = self._cur.fetchone()
             if not res:
                 print("id_textbooks не был найден")
                 print(id_subjects, name)
                 self._cur.execute(
-                    f"SELECT id_textbooks FROM textbooks WHERE id_subjects = {id_subjects} AND name = '{'Нет данных'}'")
+                    f"""
+                    SELECT id_textbooks FROM textbooks 
+                    WHERE id_subjects = {id_subjects} 
+                    AND name = '{'Нет данных'}';""")
                 res = self._cur.fetchone()
             res, = res
             return res
@@ -268,7 +288,9 @@ class FillDb(Postgresql):
 
     def get_oo_login(self, id_oo):
         try:
-            self._cur.execute(f" SELECT oo_login FROM oo WHERE id_oo = {id_oo}")
+            self._cur.execute(f"""
+            SELECT oo_login FROM oo 
+            WHERE id_oo = {id_oo};""")
             res, = self._cur.fetchone()
             return res
         except psycopg2.Error as e:
@@ -276,8 +298,11 @@ class FillDb(Postgresql):
 
     def get_id_students(self, id_oo_parallels, id_classes, student_number):
         try:
-            self._cur.execute(f" SELECT id_students FROM students WHERE id_oo_parallels = {id_oo_parallels} AND"
-                              f" id_classes = {id_classes} AND student_number = '{student_number}'")
+            self._cur.execute(f"""
+            SELECT id_students FROM students 
+            WHERE id_oo_parallels = {id_oo_parallels} 
+            AND id_classes = {id_classes} 
+            AND student_number = '{student_number}';""")
             res, = self._cur.fetchone()
             return res
         except psycopg2.Error as e:
@@ -301,7 +326,9 @@ class FillDb(Postgresql):
 
     def create_roles(self):
         try:
-            self._cur.execute(f"""INSERT INTO roles (role) VALUES ('admin'),('ministry'),('municipality'),('school')""")
+            self._cur.execute(f"""
+            INSERT INTO roles (role) 
+            VALUES ('admin'), ('ministry'), ('municipality'), ('school')""")
             print("Roles created")
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
@@ -309,7 +336,7 @@ class FillDb(Postgresql):
     def create_users(self):
         try:
             users_wb = openpyxl.reader.excel.load_workbook(
-                filename="excel/users.xlsx", data_only=True)
+                filename="../excel/users.xlsx", data_only=True)
             users_sheet = users_wb.active
             for row in range(2, users_sheet.max_row + 1):
                 login = users_sheet["B" + str(row)].value
@@ -317,8 +344,9 @@ class FillDb(Postgresql):
                 hash_psw = generate_password_hash(users_sheet["F" + str(row)].value)
                 tm = math.floor(time.time())
                 id_role = int(users_sheet["H" + str(row)].value)
-                self._cur.execute(f"""INSERT INTO users (login, name, password, id_role, time) 
-                                        VALUES ('{login}', '{name}', '{hash_psw}', {id_role}, {tm})""")
+                self._cur.execute(f"""
+                INSERT INTO users (login, name, password, id_role, time) 
+                VALUES ('{login}', '{name}', '{hash_psw}', {id_role}, {tm})""")
             print("Users created")
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
@@ -333,7 +361,7 @@ class FillDb(Postgresql):
     def createTables(self):
         try:
             self._cur.execute("CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION vpr_user;")
-            self._cur.execute(open("sql/Create_Tables.sql", "r").read())
+            self._cur.execute(open("../sql/Create_Tables.sql", "r").read())
             print("Tables Created")
         except psycopg2.Error as e:
             print("Ошибка: " + str(e))
@@ -341,7 +369,7 @@ class FillDb(Postgresql):
     def fill_district(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/logins.xlsx", data_only=True)
+                filename="../excel/logins.xlsx", data_only=True)
             data_sheet = data.active
             district_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -349,8 +377,9 @@ class FillDb(Postgresql):
                 if district_value not in district_list:
                     district_list.append(district_value)
             for district_name in sorted(district_list):
-                self._cur.execute(
-                    f"INSERT INTO district (district_name) VALUES ('{district_name.replace(' ', '_').replace('-', '_')}')")
+                self._cur.execute(f"""
+                INSERT INTO district (district_name) 
+                VALUES ('{district_name.replace(' ', '_').replace('-', '_')}')""")
             print("Таблица district заполненна")
             data.close()
         except psycopg2.Error as e:
@@ -359,8 +388,9 @@ class FillDb(Postgresql):
     def find_district_id_by_district_name(self, district_name):
         try:
             district_name = district_name.replace(' ', '_').replace('-', '_')
-            self._cur.execute(
-                f"SELECT id_district FROM district WHERE district_name = '{district_name}'")
+            self._cur.execute(f"""
+            SELECT id_district FROM district 
+            WHERE district_name = '{district_name}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("Район не найден")
@@ -372,7 +402,7 @@ class FillDb(Postgresql):
     def fill_oo_location_type(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             oo_location_type_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -381,9 +411,10 @@ class FillDb(Postgresql):
                 if add_list not in oo_location_type_list:
                     oo_location_type_list.append(add_list)
             for location_type in sorted(oo_location_type_list, key=lambda x: x[0]):
-                self._cur.execute(
-                    f"INSERT INTO oo_location_type (location_type) VALUES ('"
-                    f"{location_type[1].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')}')")
+                location_type = location_type[1].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
+                self._cur.execute(f"""
+                INSERT INTO oo_location_type (location_type) 
+                VALUES ('{location_type}')""")
             print("Таблица oo_location_type заполненна")
             data.close()
         except psycopg2.Error as e:
@@ -394,8 +425,9 @@ class FillDb(Postgresql):
             location_type = location_type[2:]
             location_type = location_type.strip().replace(' ', '_') \
                 .replace('-', '_').replace(',', '').replace('_(', '(')
-            self._cur.execute(
-                f"SELECT id_oo_location_type FROM oo_location_type WHERE location_type = '{location_type}'")
+            self._cur.execute(f"""
+            SELECT id_oo_location_type FROM oo_location_type 
+            WHERE location_type = '{location_type}';""")
             res, = self._cur.fetchone()
             if not res:
                 print("Не найден тип расположения ОО")
@@ -407,11 +439,11 @@ class FillDb(Postgresql):
     def fill_name_of_the_settlement(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
 
             login_data = openpyxl.reader.excel.load_workbook(
-                filename="excel/logins.xlsx", data_only=True)
+                filename="../excel/logins.xlsx", data_only=True)
             login_data_sheet = login_data.active
             data_list = []
             for data_row in range(2, data_sheet.max_row + 1):
@@ -428,8 +460,9 @@ class FillDb(Postgresql):
                             data_list.append(add_list)
             for lst in data_list:
                 id_district, id_oo_location_type, name = lst
-                self._cur.execute(
-                    f"INSERT INTO name_of_the_settlement (id_district, id_oo_location_type, name) VALUES ({id_district}, {id_oo_location_type}, '{name}')")
+                self._cur.execute(f"""
+                INSERT INTO name_of_the_settlement (id_district, id_oo_location_type, name) 
+                VALUES ({id_district}, {id_oo_location_type}, '{name}');""")
             data.close()
             login_data.close()
             print("Таблица name_of_the_settlement заполненна ")
@@ -439,7 +472,7 @@ class FillDb(Postgresql):
     def fill_organizational_and_legal_form(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             organizational_and_legal_form_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -448,9 +481,10 @@ class FillDb(Postgresql):
                 if add_list not in organizational_and_legal_form_list:
                     organizational_and_legal_form_list.append(add_list)
             for type_of_organizational_and_legal_form in sorted(organizational_and_legal_form_list, key=lambda x: x[0]):
-                self._cur.execute(
-                    f"INSERT INTO organizational_and_legal_form (type_of_organizational_and_legal_form) VALUES ('"
-                    f"{type_of_organizational_and_legal_form[1].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')}')")
+                type_of_organizational_and_legal_form = type_of_organizational_and_legal_form[1].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
+                self._cur.execute(f"""
+                INSERT INTO organizational_and_legal_form (type_of_organizational_and_legal_form) 
+                VALUES ('{type_of_organizational_and_legal_form}');""")
             print("Таблица organizational_and_legal_form заполненна")
             data.close()
         except psycopg2.Error as e:
@@ -459,7 +493,7 @@ class FillDb(Postgresql):
     def fill_oo_logins(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             oo_logins_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -467,8 +501,9 @@ class FillDb(Postgresql):
                 if oo_logins not in oo_logins_list:
                     oo_logins_list.append(oo_logins)
             for login in oo_logins_list:
-                self._cur.execute(
-                    f"INSERT INTO oo_logins (oo_login) VALUES ('{login.strip()}')")
+                self._cur.execute(f"""
+                INSERT INTO oo_logins (oo_login) 
+                VALUES ('{login.strip()}');""")
             print("Таблица oo_logins заполненна")
             data.close()
         except psycopg2.Error as e:
@@ -477,7 +512,7 @@ class FillDb(Postgresql):
     def fill_population_of_the_settlement(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             population_of_the_settlement_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -497,7 +532,7 @@ class FillDb(Postgresql):
     def fill_internet_speed(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             internet_speed_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -519,7 +554,7 @@ class FillDb(Postgresql):
     def fill_the_involvement_of_students_in_additional_education(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             the_involvement_of_students_in_additional_education_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -542,7 +577,7 @@ class FillDb(Postgresql):
     def fill_count_of_parents_attending_events(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             count_of_parents_attending_events_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -564,7 +599,7 @@ class FillDb(Postgresql):
     def fill_count_of_parents_ready_to_help(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             count_of_parents_ready_to_help_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -586,7 +621,7 @@ class FillDb(Postgresql):
     def fill_regular_transport_link(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             regular_transport_link_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -608,7 +643,7 @@ class FillDb(Postgresql):
     def fill_frequency_of_regular_transport_link(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             frequency_of_regular_transport_link_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -630,7 +665,7 @@ class FillDb(Postgresql):
     def fill_possibility_to_get_to_the_oo_by_public_transport(self):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             possibility_to_get_to_the_oo_by_public_transport_list = []
             for row in range(2, data_sheet.max_row + 1):
@@ -653,11 +688,11 @@ class FillDb(Postgresql):
     def fill_oo(self, year):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
 
             login_data = openpyxl.reader.excel.load_workbook(
-                filename="excel/logins.xlsx", data_only=True)
+                filename="../excel/logins.xlsx", data_only=True)
             login_data_sheet = login_data.active
             login_region = {}
             for row in range(2, login_data_sheet.max_row + 1):
@@ -808,7 +843,7 @@ class FillDb(Postgresql):
     def fill_completed_advanced_training_courses_for_teachers(self, year):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             for row in range(2, data_sheet.max_row + 1):
                 count_of_teachers_36h = data_sheet["BE" + str(row)].value if data_sheet["BE" + str(row)].value else 0
@@ -845,7 +880,7 @@ class FillDb(Postgresql):
     def fill_work_with_teachers_taking_advanced_training_courses(self, year):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             for row in range(2, data_sheet.max_row + 1):
                 description_1 = data_sheet["BH" + str(row)].value if data_sheet["BH" + str(row)].value else "Нет_данных"
@@ -883,7 +918,7 @@ class FillDb(Postgresql):
     def fill_oo_description_of_career_guidance(self, year):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             for row in range(2, data_sheet.max_row + 1):
                 description_1 = data_sheet["BU" + str(row)].value if data_sheet["BU" + str(row)].value else "Нет_данных"
@@ -923,7 +958,7 @@ class FillDb(Postgresql):
     def fill_oo_levels_of_the_educational_program(self, year):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             for row in range(2, data_sheet.max_row + 1):
                 lvl1 = data_sheet["J" + str(row)].value if data_sheet["J" + str(row)].value else "Нет_данных"
@@ -946,7 +981,7 @@ class FillDb(Postgresql):
     def fill_percentage_of_parents_attending_parentteacher_meeting(self, year):
         try:
             data = openpyxl.reader.excel.load_workbook(
-                filename="excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
             data_sheet = data.active
             for row in range(2, data_sheet.max_row + 1):
                 lvl1 = data_sheet["CB" + str(row)].value if data_sheet["CB" + str(row)].value else 0
@@ -1015,7 +1050,7 @@ class FillDb(Postgresql):
     def fill_textbooks(self):
         try:
             books_data = openpyxl.reader.excel.load_workbook(
-                filename="excel/books.xlsx", data_only=True)
+                filename="../excel/books.xlsx", data_only=True)
             books_sheet = books_data.active
             subj_dict = {"bio": "Биология", "de": "Немецкий_язык", "en": "Английский_язык", "fi": "Физика",
                          "fr": "Французский_язык", "geo": "География", "hi": "Химия", "him": "Химия", "is": "История",

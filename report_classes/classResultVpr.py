@@ -8,7 +8,7 @@ class ResultVpr(BaseReport):
 
     def get_report(self):
         content = self._report_type["name"]
-        sub_content = [f"ВПР 2021. {self._parallel['name']} класс",
+        sub_content = [f"ВПР {self._year['name']}. {self._parallel['name']} класс",
                        f"Предмет: {self._subject['name']}"]
         if self._district["id"] != "all":
             if self._oo["id"] != "all":

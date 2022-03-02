@@ -19,11 +19,13 @@ def before_request():
     global db_connection
     db_connection = g.get('link_db')
 
+
 @blueprint_export.teardown_request
 def teardown_request(request):
     global db_connection
     db_connection = None
     return request
+
 
 @blueprint_export.route("/")
 @login_required

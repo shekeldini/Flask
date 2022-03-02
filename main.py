@@ -8,7 +8,7 @@ from classReportController import ReportController
 from classUserLogin import UserLogin
 from forms import LoginForm
 from data_base.postgresql import Postgresql
-from configurations.production import Config
+from configurations.development import Config
 from blueprints.api import blueprint_api
 
 app = Flask(__name__)
