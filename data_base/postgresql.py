@@ -729,3 +729,23 @@ class Postgresql:
             return []
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
+
+    def school_in_risk_access(self, id_user):
+        try:
+            self._cur.execute(f"""
+            SELECT COUNT(*) FROM users_oo_logins 
+            WHERE id_user = {id_user} 
+            AND oo_login IN 
+            (
+                SELECT oo_login FROM oo 
+                WHERE id_oo IN 
+                (
+                    SELECT id_oo FROM schools_in_risk
+                )
+            );""")
+            res, = self._cur.fetchone()
+            if res:
+                return True
+            return False
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))

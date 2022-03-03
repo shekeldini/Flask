@@ -84,7 +84,13 @@ oo_select.onchange = function(){
                             optionHTML += '<option value="' + parallel.id+'">' + parallel.name + '</option>'
                     }
                     parallel_select.innerHTML = optionHTML;
-                    parallel_select.value = "";
+                    if (parallel_select.length == 1){
+                        parallel_select.defaultSelected = parallel_select[0];
+                        parallel_select.onchange();
+                    }
+                    else{
+                        parallel_select.value = "";
+                    }
             });
     });
         
@@ -103,7 +109,13 @@ parallel_select.onchange = function(){
                             optionHTML += '<option value="' + subject.id+'">' + subject.name + '</option>'
                     }
                     subject_select.innerHTML = optionHTML;
-                    subject_select.value = "";
+                    if (subject_select.length == 1){
+                        subject_select.defaultSelected = subject_select[0];
+                        subject_select.onchange();
+                    }
+                    else{
+                        subject_select.value = "";
+                    }
             });
     });
         

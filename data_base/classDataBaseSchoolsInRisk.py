@@ -193,24 +193,20 @@ class DataBaseSchoolsInRisk(Postgresql):
                 WHERE year = '{year}' 
                 AND parallel = {parallel} 
                 AND id_subjects = {id_subjects}  
-                AND id_oo in 
-                (
-                    SELECT id_oo FROM oo 
-                    WHERE id_name_of_the_settlement in 
-                    (
-                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                        WHERE id_district = {id_district}
-                    )
-                )
+            )
+            AND id_name_of_the_settlement in 
+            (
+                SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                WHERE id_district = {id_district}
             );""")
             res = self._cur.fetchall()
-
             schools_array = {}
             if res:
                 for id_oo, oo_name in res:
                     district_name = self.get_district_name(id_district)
+                    district_name = district_name.replace("_", " ")
                     if district_name not in schools_array:
-                        schools_array[district_name.replace("_", " ")] = [oo_name]
+                        schools_array[district_name] = [oo_name]
                     else:
                         schools_array[district_name.replace("_", " ")].append(oo_name)
 

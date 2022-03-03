@@ -86,7 +86,7 @@ def task_description():
 @app.route("/school_in_risk", methods=["POST", "GET"])
 @login_required
 def school_in_risk():
-    if current_user.get_id_role() not in (1, 2, 3):
+    if not current_user.school_in_risk_access():
         return abort(403)
     if request.method == "POST":
         report = ReportController(request=request.get_json(), connection=db_connection, user=current_user)

@@ -1,5 +1,6 @@
 from flask_login import UserMixin
-from flask import url_for
+from flask import url_for, g
+from data_base.postgresql import Postgresql
 
 
 class UserLogin(UserMixin):
@@ -40,6 +41,10 @@ class UserLogin(UserMixin):
 
     def is_school(self):
         return self.get_id_role() == 4
+
+    def school_in_risk_access(self):
+        db = Postgresql(g.link_db)
+        return db.school_in_risk_access(self.get_id())
 
     def getAvatar(self, app):
         img = None

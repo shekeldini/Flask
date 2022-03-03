@@ -28,7 +28,7 @@
                                                         Описание заданий
                                                 </a>
                                         </li>
-					{% if  current_user.is_admin or current_user.is_ministry() or current_user.is_municipality() %}
+					{% if  current_user.school_in_risk_access() %}
 					 <li class="other__accordion accordion__wrapper_item">
                                                 <a class="accordion__wrapper_item_link" href="{{url_for('school_in_risk')}}">
                                                         <i class="mdi mdi-school"></i>

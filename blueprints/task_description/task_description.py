@@ -52,4 +52,4 @@ def api_task_description_get_reports():
     if task_number == "all":
         return jsonify({'reports': [{'id': 4, 'name': "Описание работы"}]})
     else:
-        return jsonify({'reports': [{'id': 5, 'name': "Распределение задания по позициям кодификаторов"}]})
+        return jsonify({'reports': [{'id': 5, 'name': "Распределение заданий по позициям кодификаторов"}]})
