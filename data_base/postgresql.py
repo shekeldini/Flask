@@ -722,6 +722,10 @@ class Postgresql:
             (
                 SELECT oo_login FROM users_oo_logins 
                 WHERE id_user = {id_user}
+            )
+            AND id_oo IN 
+            (
+               SELECT id_oo FROM oo_parallels
             );""")
             res = self._cur.fetchall()
             if res:

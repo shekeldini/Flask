@@ -36,11 +36,11 @@ def teardown_request(request):
 @login_required
 def api_get_year():
     years = dbase.get_years(id_user=current_user.get_id())
-    # years = [2020, 2021]
     years_array = []
-    for year in years:
-        year_obj = {'id': year, 'name': year}
-        years_array.append(year_obj)
+    if years:
+        for year in years:
+            year_obj = {'id': year, 'name': year}
+            years_array.append(year_obj)
     return jsonify({'year': years_array})
 
 @blueprint_select.route("/get_districts/")
