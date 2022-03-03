@@ -174,10 +174,11 @@ class DataBaseSchoolsInRisk(Postgresql):
             if res:
                 for id_oo, oo_name in res:
                     district_name = self.get_district_by_id_oo(id_oo)
+                    district_name = district_name.replace("_", " ")
                     if district_name not in schools_array:
-                        schools_array[district_name.replace("_", " ")] = [oo_name]
+                        schools_array[district_name] = [oo_name]
                     else:
-                        schools_array[district_name.replace("_", " ")].append(oo_name)
+                        schools_array[district_name].append(oo_name)
 
             return schools_array
         except psycopg2.Error as e:
