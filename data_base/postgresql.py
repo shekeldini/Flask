@@ -106,9 +106,10 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_all_parallels(self, year):
+    def get_all_parallels(self, years):
         try:
-            self._cur.execute(f"""
+            last_year = years.pop()
+            query = f"""
             SELECT parallel FROM parallels 
             WHERE parallel in 
             (
@@ -116,9 +117,25 @@ class Postgresql:
                 WHERE id_oo in 
                 (
                     SELECT id_oo FROM oo 
-                    WHERE year = '{year}'
+                    WHERE year = '{last_year}'
                 )
-            );""")
+            ) """
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT
+                    SELECT parallel FROM parallels 
+                    WHERE parallel in 
+                    (
+                        SELECT DISTINCT parallel FROM oo_parallels 
+                        WHERE id_oo in 
+                        (
+                            SELECT id_oo FROM oo 
+                            WHERE year = '{year}'
+                        )
+                    ) """
+            query += ";"
+            self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return res
@@ -127,11 +144,30 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_parallels_for_oo(self, id_oo):
+    def get_parallels_for_oo(self, oo_login, years):
         try:
-            self._cur.execute(f"""
+            last_year = years.pop()
+            query = f"""
             SELECT parallel FROM oo_parallels 
-            WHERE id_oo = {id_oo};""")
+            WHERE id_oo IN 
+            (
+                SELECT id_oo FROM oo 
+                WHERE oo_login = '{oo_login}'
+                AND year = '{last_year}'
+            ) """
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT 
+                    SELECT parallel FROM oo_parallels 
+                    WHERE id_oo IN 
+                    (
+                        SELECT id_oo FROM oo 
+                        WHERE oo_login = '{oo_login}' 
+                        AND year = '{year}'
+                    ) """
+            query += ";"
+            self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return res
@@ -166,9 +202,10 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения статей из БД " + str(e))
 
-    def get_subjects_for_oo(self, oo_login, parallel, id_user, year):
+    def get_subjects_for_oo(self, oo_login, parallel, id_user, years):
         try:
-            self._cur.execute(f"""
+            last_year = years.pop()
+            query = f"""
             SELECT id_subjects, subject_name FROM subjects 
             WHERE id_subjects in 
             (
@@ -180,7 +217,7 @@ class Postgresql:
                     AND id_oo in 
                     (
                         SELECT id_oo FROM oo 
-                        WHERE year='{year}' 
+                        WHERE year='{last_year}' 
                         AND oo_login = '{oo_login}'
                         AND oo_login in 
                         (
@@ -189,14 +226,41 @@ class Postgresql:
                         )
                     )
                 )
-            );""")
+            ) """
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT 
+                    SELECT id_subjects, subject_name FROM subjects 
+                    WHERE id_subjects in 
+                    (
+                        SELECT id_subjects FROM oo_parallels_subjects 
+                        WHERE id_oo_parallels in 
+                        (
+                            SELECT id_oo_parallels FROM oo_parallels 
+                            WHERE parallel = {parallel} 
+                            AND id_oo in 
+                            (
+                                SELECT id_oo FROM oo 
+                                WHERE year='{year}' 
+                                AND oo_login = '{oo_login}'
+                                AND oo_login in 
+                                (
+                                    SELECT oo_login FROM users_oo_logins 
+                                    WHERE id_user = {id_user}
+                                )
+                            )
+                        )
+                    ) """
+            query += ";"
+            self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return [[id_subjects, subject_name.replace("_", " ")] for id_subjects, subject_name in res]
             return []
         except psycopg2.Error as e:
             print("Ошибка получения статей из БД " + str(e))
-        return []
+            return []
 
     def get_id_oo(self, oo_login, year):
         try:
@@ -270,25 +334,46 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения муниципалитетов из БД " + str(e))
 
-    def get_districts(self, id_user, year):
+    def get_districts(self, id_user, years: list):
         try:
-            self._cur.execute(
-                f"""
-                SELECT id_district, district_name FROM district 
-                WHERE id_district IN 
+            last_year = years.pop()
+            query = f"""
+            SELECT id_district, district_name FROM district 
+            WHERE id_district IN 
+            (
+                SELECT DISTINCT id_district FROM name_of_the_settlement 
+                WHERE id_name_of_the_settlement IN 
                 (
-                    SELECT DISTINCT id_district FROM name_of_the_settlement 
-                    WHERE id_name_of_the_settlement IN 
+                    SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                    WHERE year = '{last_year}'
+                    AND oo_login in 
                     (
-                        SELECT DISTINCT id_name_of_the_settlement FROM oo 
-                        WHERE year = '{year}'
-                        AND oo_login in 
-                        (
-                            SELECT oo_login FROM users_oo_logins 
-                            WHERE id_user = {id_user}
-                        )
+                        SELECT oo_login FROM users_oo_logins 
+                        WHERE id_user = {id_user}
                     )
-                );""")
+                )
+            ) """
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT 
+                    SELECT id_district, district_name FROM district 
+                    WHERE id_district IN 
+                    (
+                        SELECT DISTINCT id_district FROM name_of_the_settlement 
+                        WHERE id_name_of_the_settlement IN 
+                        (
+                            SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                            WHERE year = '{year}'
+                            AND oo_login in 
+                            (
+                                SELECT oo_login FROM users_oo_logins 
+                                WHERE id_user = {id_user}
+                            )
+                        )
+                    ) """
+            query += ";"
+            self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return res
@@ -296,10 +381,11 @@ class Postgresql:
             print("Ошибка получения муниципалитетов из БД " + str(e))
         return []
 
-    def get_subjects(self, parallel, id_user, id_district, year):
+    def get_subjects(self, parallel, id_user, id_district, years):
         try:
             if id_district != "all":
-                self._cur.execute(f"""
+                last_year = years.pop()
+                query = f"""
                 SELECT id_subjects, subject_name FROM subjects 
                 WHERE id_subjects in 
                 (
@@ -321,7 +407,7 @@ class Postgresql:
                             (
                                 (
                                     SELECT id_oo FROM oo 
-                                    WHERE year='{year}' 
+                                    WHERE year='{last_year}' 
                                     AND oo_login in 
                                     (
                                         SELECT oo_login FROM users_oo_logins 
@@ -330,9 +416,45 @@ class Postgresql:
                                 )
                             )
                         )
-                );""")
+                ) """
+                if years:
+                    for year in years:
+                        query += f"""
+                        INTERSECT 
+                        SELECT id_subjects, subject_name FROM subjects 
+                        WHERE id_subjects in 
+                        (
+                            SELECT id_subjects FROM oo_parallels_subjects 
+                            WHERE id_oo_parallels in 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels 
+                                    WHERE id_oo in 
+                                    (
+                                        SELECT id_oo FROM oo 
+                                        WHERE id_name_of_the_settlement in 
+                                            (
+                                                SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                                WHERE id_district = {id_district}
+                                            )
+                                        )
+                                    AND parallel = {parallel} 
+                                    AND id_oo in 
+                                    (
+                                        (
+                                            SELECT id_oo FROM oo 
+                                            WHERE year='{year}' 
+                                            AND oo_login in 
+                                            (
+                                                SELECT oo_login FROM users_oo_logins 
+                                                WHERE id_user = {id_user}
+                                            )
+                                        )
+                                    )
+                                )
+                        ) """
             else:
-                self._cur.execute(f"""
+                last_year = years.pop()
+                query = f"""
                 SELECT id_subjects, subject_name FROM subjects 
                 WHERE id_subjects IN 
                 (
@@ -344,7 +466,7 @@ class Postgresql:
                         AND id_oo in 
                         (
                             SELECT id_oo FROM oo 
-                            WHERE year='{year}' 
+                            WHERE year='{last_year}' 
                             AND oo_login in 
                             (
                                 SELECT oo_login FROM users_oo_logins 
@@ -352,7 +474,33 @@ class Postgresql:
                             )
                         )
                     )
-                );""")
+                ) """
+                if years:
+                    for year in years:
+                        query += f"""
+                        INTERSECT 
+                        SELECT id_subjects, subject_name FROM subjects 
+                        WHERE id_subjects IN 
+                        (
+                            SELECT DISTINCT id_subjects FROM oo_parallels_subjects 
+                            WHERE id_oo_parallels IN 
+                            (
+                                SELECT id_oo_parallels FROM oo_parallels 
+                                WHERE parallel={parallel} 
+                                AND id_oo in 
+                                (
+                                    SELECT id_oo FROM oo 
+                                    WHERE year='{year}' 
+                                    AND oo_login in 
+                                    (
+                                        SELECT oo_login FROM users_oo_logins 
+                                        WHERE id_user = {id_user}
+                                    )
+                                )
+                            )
+                        ) """
+            query += ";"
+            self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return [[x[0], x[1].replace("_", " ")] for x in res]
@@ -360,13 +508,14 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_parallels(self, id_user, id_district, year):
+    def get_parallels(self, id_user: int, id_district: int, years: list):
         try:
-            self._cur.execute(f"""
+            last_year = years.pop()
+            query = f"""
             SELECT DISTINCT parallel FROM oo_parallels WHERE id_oo in 
             (
                 SELECT id_oo FROM oo 
-                WHERE year = '{year}' 
+                WHERE year = '{last_year}' 
                 AND oo_login in 
                 (
                     SELECT oo_login FROM users_oo_logins 
@@ -377,7 +526,28 @@ class Postgresql:
                     SELECT id_name_of_the_settlement FROM name_of_the_settlement 
                     WHERE id_district = {id_district}
                 ) 
-            );""")
+            ) """
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT
+                    SELECT DISTINCT parallel FROM oo_parallels WHERE id_oo in 
+                    (
+                        SELECT id_oo FROM oo 
+                        WHERE year = '{year}' 
+                        AND oo_login in 
+                        (
+                            SELECT oo_login FROM users_oo_logins 
+                            WHERE id_user = {id_user}
+                        )
+                        AND id_name_of_the_settlement IN 
+                        (
+                            SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                            WHERE id_district = {id_district}
+                        ) 
+                    ) """
+            query += ";"
+            self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return res
@@ -385,11 +555,13 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_oo_from_district(self, id_district, id_user, year):
+    def get_oo_from_district(self, id_district, id_user, years):
         try:
-            self._cur.execute(f"""
+            last_year = years.pop()
+
+            query = f"""
             SELECT id_oo, oo_name FROM oo 
-            WHERE year = '{year}' 
+            WHERE year = '{last_year}' 
             AND id_oo NOT IN 
             (
                 SELECT id_oo FROM oo_levels_of_the_educational_program 
@@ -408,7 +580,34 @@ class Postgresql:
             (
                 SELECT oo_login FROM users_oo_logins 
                 WHERE id_user = {id_user}
-            );""")
+            ) """
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT
+                    SELECT id_oo, oo_name FROM oo 
+                    WHERE year = '{year}' 
+                    AND id_oo NOT IN 
+                    (
+                        SELECT id_oo FROM oo_levels_of_the_educational_program 
+                        WHERE id_levels_of_the_educational_program = 4 AND value = 'Да'
+                    ) 
+                    AND id_name_of_the_settlement IN 
+                    (
+                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                        WHERE id_district = {id_district}
+                    ) 
+                    AND id_oo IN 
+                    (
+                        SELECT id_oo FROM oo_parallels
+                    )
+                    AND oo_login in 
+                    (
+                        SELECT oo_login FROM users_oo_logins 
+                        WHERE id_user = {id_user}
+                    ) """
+            query += ";"
+            self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return res
