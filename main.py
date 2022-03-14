@@ -114,6 +114,18 @@ def index():
                            title="Главная страница")
 
 
+@app.route("/test", methods=["POST", "GET"])
+@login_required
+def test():
+    if not current_user.is_admin():
+        abort(404)
+    if request.method == "POST":
+        report = ReportController(request=request.get_json(), connection=db_connection, user=current_user)
+        return jsonify(report.get_report())
+
+    return render_template('test.html', title="test")
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template("page404.html", title="Страница не найдена"), 404
