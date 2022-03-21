@@ -39,8 +39,9 @@ def api_get_year():
     years_array = []
     if years:
         for year in years:
-            year_obj = {'id': year, 'name': year}
-            years_array.append(year_obj)
+            if int(year) != 2022:
+                year_obj = {'id': year, 'name': year}
+                years_array.append(year_obj)
     return jsonify({'year': years_array})
 
 

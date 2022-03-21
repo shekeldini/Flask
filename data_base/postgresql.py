@@ -269,11 +269,12 @@ class Postgresql:
                 SELECT id_oo FROM oo 
                 WHERE oo_login = '{oo_login}' 
                 AND year = '{year}';""")
-            res, = self._cur.fetchone()
+            res = self._cur.fetchone()
             if not res:
+                print(oo_login, year)
                 print("id_oo не был найден")
                 return None
-            return res
+            return res[0]
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
