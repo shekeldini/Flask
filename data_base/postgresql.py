@@ -1,6 +1,8 @@
+from typing import Optional
+
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from typing import Optional
+
 from configurations.development import Config
 
 
@@ -309,37 +311,6 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_district_for_report_type_2(self, parallel, id_subjects, year):
-        try:
-            self._cur.execute(f"""
-            SELECT id_district, district_name FROM district 
-            WHERE id_district IN 
-            (
-                SELECT DISTINCT id_district FROM name_of_the_settlement 
-                WHERE id_name_of_the_settlement IN 
-                (
-                    SELECT DISTINCT id_name_of_the_settlement FROM oo 
-                    WHERE year = '{year}' 
-                    AND id_oo in 
-                    (
-                        SELECT id_oo FROM oo_parallels 
-                        WHERE parallel = {parallel} 
-                        AND id_oo_parallels in 
-                        (
-                            SELECT id_oo_parallels FROM oo_parallels_subjects 
-                            WHERE id_subjects = {id_subjects}
-                        )
-                    )
-                )
-            );""")
-
-            res = self._cur.fetchall()
-            if res:
-                return res
-            return []
-        except psycopg2.Error as e:
-            print("Ошибка получения муниципалитетов из БД " + str(e))
-
     def get_districts(self, id_user, years: list):
         try:
             last_year = years.pop()
@@ -514,7 +485,7 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_parallels(self, id_user: int, id_district: int, years: list):
+    def get_parallels(self, id_user: int, id_district, years: list):
         try:
             last_year = years.pop()
             query = f"""
@@ -632,39 +603,6 @@ class Postgresql:
             if res:
                 return res[0]
             return ""
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
-    def get_oo_from_id_oo_parallels_subjects(self, id_district, id_user, parallel, id_subjects, year):
-        try:
-            self._cur.execute(f"""
-            SELECT id_oo_parallels_subjects, id_oo_parallels FROM oo_parallels_subjects 
-            WHERE id_subjects = {id_subjects} 
-            AND id_oo_parallels in 
-            (
-                SELECT id_oo_parallels FROM oo_parallels 
-                WHERE parallel = {parallel} 
-                AND id_oo in 
-                (
-                    SELECT id_oo FROM oo 
-                    WHERE year = '{year}'
-                    AND id_name_of_the_settlement IN 
-                    (
-                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
-                        WHERE id_district = {id_district}
-                    ) 
-                    AND oo_login in 
-                    (
-                        SELECT oo_login FROM users_oo_logins 
-                        WHERE id_user = {id_user}
-                    )
-                )
-            );""")
-            res = self._cur.fetchall()
-            if res:
-                return res
-            return []
-
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -927,6 +865,21 @@ class Postgresql:
             return res[0]
         return
 
+    def get_all_years(self):
+        try:
+            self._cur.execute(f"""
+            SELECT DISTINCT year FROM oo 
+            WHERE id_oo IN 
+            (
+               SELECT id_oo FROM oo_parallels
+            );""")
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
     def get_years(self, id_user):
         try:
             self._cur.execute(f"""
@@ -967,25 +920,13 @@ class Postgresql:
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_oo_name_by_oo_login(self, oo_login, year):
-        try:
-            self._cur.execute(f"""
-            SELECT oo_name FROM oo 
-            WHERE oo_login = '{oo_login}' 
-            AND year = '{year}';""")
-            res = self._cur.fetchone()
-            if res:
-                return res[0]
-            return ""
-        except psycopg2.Error as e:
-            print("Ошибка получения данных из ДБ " + str(e))
-
     def get_id_district_by_name(self, district_name: str) -> Optional[int]:
         try:
             district_name = district_name.replace(" ", "_")
-            self._cur.execute(f"""
+            query = f"""
             SELECT id_district FROM district 
-            WHERE district_name = '{district_name}';""")
+            WHERE district_name = '{district_name}';"""
+            self._cur.execute(query)
             res = self._cur.fetchone()
             if res:
                 return res[0]
@@ -994,25 +935,6 @@ class Postgresql:
             district_name = district_name.replace(" ", "_")
             query = f"""SELECT id_district FROM district 
                         WHERE district_name = '{district_name}';"""
-            self.retry_execute_query(query)
-
-    def get_coordinates_for_oo(self, oo_login: str, year: int):
-        try:
-            self._cur.execute(f"""
-            SELECT coordinates FROM oo 
-            WHERE oo_login = '{oo_login}'
-            AND year = '{year}'
-            """)
-            res = self._cur.fetchone()
-            if res[0]:
-                return list(map(float, res[0].split(";")))
-            return []
-        except psycopg2.InterfaceError as exc:
-            query = f"""
-            SELECT coordinates FROM oo 
-            WHERE oo_login = '{oo_login}'
-            AND year = '{year}'
-            """
             self.retry_execute_query(query)
 
     def retry_execute_query(self, query, fetchone=True):
@@ -1039,6 +961,25 @@ class Postgresql:
             if res:
                 return res
             return
+
+    def get_coordinates_for_oo(self, oo_login: str, year: int):
+        try:
+            self._cur.execute(f"""
+            SELECT coordinates FROM oo 
+            WHERE oo_login = '{oo_login}' 
+            AND year = '{year}';""")
+            res = self._cur.fetchone()
+            if res[0]:
+                return list(map(float, res[0].split(";")))
+            return []
+        except psycopg2.InterfaceError as exc:
+
+            query = f"""
+            SELECT coordinates FROM oo 
+            WHERE oo_login = '{oo_login}'
+            AND year = '{year}'
+            """
+            self.retry_execute_query(query)
 
     def reconnect(self):
         config = Config()

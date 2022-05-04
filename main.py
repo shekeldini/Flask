@@ -203,32 +203,14 @@ def upload():
 @app.route('/map', methods=["POST", "GET"])
 @login_required
 def map():
-    if current_user.is_admin():
-        if request.method == "POST":
-            report = ReportController(
-                request=request.get_json(),
-                connection=db_connection,
-                user=current_user)
-            return jsonify(report.get_report())
+    if request.method == "POST":
+        report = ReportController(
+            request=request.get_json(),
+            connection=db_connection,
+            user=current_user)
+        return jsonify(report.get_report())
 
-        return render_template('map.html', title="Интерактивная карта")
-    abort(404)
-
-
-def choice_color(value: float) -> str:
-    if value:
-        if value >= 4.5:
-            color = "#49006a"
-        elif 3.5 <= value < 4.5:
-            color = "#ae017e"
-        elif 2.5 <= value < 3.4:
-            color = "#f768a1"
-        else:
-            color = "#fcc5c0"
-    else:
-        color = 'white'
-    return color
-
+    return render_template('map.html', title="Интерактивная карта")
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

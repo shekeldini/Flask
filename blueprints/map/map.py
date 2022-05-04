@@ -3,7 +3,6 @@ from flask_login import login_required, current_user
 
 from data_base.map import Map
 
-
 dbase: Map
 
 blueprint_map = Blueprint(
@@ -30,7 +29,7 @@ def teardown_request(request):
 @blueprint_map.route("/get_year/")
 @login_required
 def api_get_year():
-    years = dbase.get_years(id_user=current_user.get_id())
+    years = dbase.get_all_years()
     years_array = []
     if years:
         for year in sorted(years, key=lambda x: int(x[0])):
@@ -44,10 +43,9 @@ def api_get_year():
 def api_get_parallels():
     years = request.args.get("filter_year_id").split(",")
 
-    parallels = dbase.get_parallels_by_year(id_user=current_user.get_id(),
-                                            years=years)
+    parallels = dbase.get_parallels_by_year(years=years)
     parallels_array = []
-    for parallel in sorted(parallels,key=lambda x: int(x[0])):
+    for parallel in sorted(parallels, key=lambda x: int(x[0])):
         parallels_array.append({'id': parallel, 'name': parallel})
     return jsonify({'parallels': parallels_array})
 
@@ -58,10 +56,11 @@ def api_get_subjects():
     years = request.args.get("filter_year_id").split(",")
     parallel = request.args.get("filter_parallel_id")
     subjects_array = []
-    subjects = dbase.get_subjects(parallel=parallel,
-                                  id_user=current_user.get_id(),
-                                  id_district="all",
-                                  years=years)
+    subjects = dbase.get_all_subjects(
+        parallel=parallel,
+        id_district="all",
+        years=years
+    )
     for id_subject, subject_name in sorted(subjects, key=lambda x: x[1]):
         subjects_obj = {'id': id_subject, 'name': subject_name}
         subjects_array.append(subjects_obj)
@@ -114,9 +113,9 @@ def api_get_schools_coordinates():
                 schools.append(
                     {
                         "name": oo_name,
+                        "value": oo_value,
                         "coordinates": coordinates,
                         "oo_login": oo_login,
-                        "value": oo_value,
                         "text": "Средняя по ВПР: ",
                         "district": district_name
                     }

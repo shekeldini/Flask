@@ -183,7 +183,7 @@ class Map(DataBaseResultVpr):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_parallels_by_year(self, id_user: int, years: list):
+    def get_parallels_by_year(self, years: list):
         try:
             last_year = years.pop()
             query = f"""
@@ -191,11 +191,6 @@ class Map(DataBaseResultVpr):
             (
                 SELECT id_oo FROM oo 
                 WHERE year = '{last_year}' 
-                AND oo_login in 
-                (
-                    SELECT oo_login FROM users_oo_logins 
-                    WHERE id_user = {id_user}
-                )
             ) """
             if years:
                 for year in years:
@@ -205,17 +200,119 @@ class Map(DataBaseResultVpr):
                     (
                         SELECT id_oo FROM oo 
                         WHERE year = '{year}' 
-                        AND oo_login in 
-                        (
-                            SELECT oo_login FROM users_oo_logins 
-                            WHERE id_user = {id_user}
-                        )
                     ) """
             query += ";"
             self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
                 return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_all_subjects(self, parallel, id_district, years):
+        try:
+            if id_district != "all":
+                last_year = years.pop()
+                query = f"""
+                SELECT id_subjects, subject_name FROM subjects 
+                WHERE id_subjects in 
+                (
+                    SELECT id_subjects FROM oo_parallels_subjects 
+                    WHERE id_oo_parallels in 
+                        (
+                            SELECT id_oo_parallels FROM oo_parallels 
+                            WHERE id_oo in 
+                            (
+                                SELECT id_oo FROM oo 
+                                WHERE id_name_of_the_settlement in 
+                                    (
+                                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                        WHERE id_district = {id_district}
+                                    )
+                                )
+                            AND parallel = {parallel} 
+                            AND id_oo in 
+                            (
+                                (
+                                    SELECT id_oo FROM oo 
+                                    WHERE year='{last_year}' 
+                                )
+                            )
+                        )
+                ) """
+                if years:
+                    for year in years:
+                        query += f"""
+                        INTERSECT 
+                        SELECT id_subjects, subject_name FROM subjects 
+                        WHERE id_subjects in 
+                        (
+                            SELECT id_subjects FROM oo_parallels_subjects 
+                            WHERE id_oo_parallels in 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels 
+                                    WHERE id_oo in 
+                                    (
+                                        SELECT id_oo FROM oo 
+                                        WHERE id_name_of_the_settlement in 
+                                            (
+                                                SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                                                WHERE id_district = {id_district}
+                                            )
+                                        )
+                                    AND parallel = {parallel} 
+                                    AND id_oo in 
+                                    (
+                                        (
+                                            SELECT id_oo FROM oo 
+                                            WHERE year='{year}' 
+                                        )
+                                    )
+                                )
+                        ) """
+            else:
+                last_year = years.pop()
+                query = f"""
+                SELECT id_subjects, subject_name FROM subjects 
+                WHERE id_subjects IN 
+                (
+                    SELECT DISTINCT id_subjects FROM oo_parallels_subjects 
+                    WHERE id_oo_parallels IN 
+                    (
+                        SELECT id_oo_parallels FROM oo_parallels 
+                        WHERE parallel={parallel} 
+                        AND id_oo in 
+                        (
+                            SELECT id_oo FROM oo 
+                            WHERE year='{last_year}' 
+                        )
+                    )
+                ) """
+                if years:
+                    for year in years:
+                        query += f"""
+                        INTERSECT 
+                        SELECT id_subjects, subject_name FROM subjects 
+                        WHERE id_subjects IN 
+                        (
+                            SELECT DISTINCT id_subjects FROM oo_parallels_subjects 
+                            WHERE id_oo_parallels IN 
+                            (
+                                SELECT id_oo_parallels FROM oo_parallels 
+                                WHERE parallel={parallel} 
+                                AND id_oo in 
+                                (
+                                    SELECT id_oo FROM oo 
+                                    WHERE year='{year}' 
+                                )
+                            )
+                        ) """
+            query += ";"
+            self._cur.execute(query)
+            res = self._cur.fetchall()
+            if res:
+                return [[x[0], x[1].replace("_", " ")] for x in res]
             return []
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
