@@ -4,6 +4,7 @@ from flask import Blueprint, request, g, Response
 from flask_login import login_required, current_user
 from data_base.postgresql import Postgresql
 from classReportController import ReportController
+from classNEWReportController import NEWReportController
 
 db_connection = None
 
@@ -50,9 +51,13 @@ def export():
 
                    "task": {"id": request.args.get("filter_task_id"),
                             "name": request.args.get("filter_task_name")},
-                   "table_type": request.args.get("filter_table_type")
+                   "table_type": request.args.get("filter_table_type"),
+                   "test": request.args.get("filter_test")
                    }
-    report = ReportController(request=export_data, connection=db_connection, user=current_user)
+    if not export_data['test']:
+        report = ReportController(request=export_data, connection=db_connection, user=current_user)
+    else:
+        report = NEWReportController(request=export_data, connection=db_connection, user=current_user)
     wb, name = report.export_report()
     if not wb or not name:
         return "something wrong"

@@ -531,9 +531,13 @@ h1 {
 }
 
 .steps {
-  padding-left: 80px;
-  padding-bottom: 10px;
+ /* padding-left: 80px; */
+ /*  padding-bottom: 10px; */ 
   padding-top: 7px;
+  display: flex;
+
+  justify-content: space-between;
+    max-width: 1000px;
 }
 
 .steps:nth-child(5) {
@@ -545,6 +549,10 @@ h1 {
   justify-content: flex-end;
   margin-top: 20px;
   margin-bottom: 30px;
+}
+
+.steps__btns_map {
+  justify-content: center;
 }
 
 .steps__btns input {
@@ -627,6 +635,8 @@ form label {
  font-family: 'Roboto', sans-serif;
 }
 
+
+
 .TwoPage__wrapper table td {
   padding-left: 5px;
   text-align: center;
@@ -641,6 +651,9 @@ form label {
   text-align: left;
   padding-left: 20px;
 }
+
+.TwoPage__wrapper_comparison table tr:nth-child(2) td:nth-child(1) {
+  text-align: center;
 }
 
 .TwoPage__wrapper table tr {
@@ -725,11 +738,140 @@ form label {
     display: none;
 }
 
-.header__hamburger span {
+.wrapper-center__map {
+  position: relative;
+  max-width: 100%;
+  margin-top: 0px;
+}
+
+.wrapper-center__map_accordion {
+ /* width: 400px; */
+  display: block;
+    transition: all 0.9s;
+    width: 340px;
+    padding-top: 80px;
+    z-index: -1;
+    position: absolute;
+    left: -400px;
+    background: rgba(255,255,255,0.4);
+    box-sizing: border-box;
+    align-self: stretch;
+    height: 100%;
+}
+
+.wrapper__left_map {
+  width: 250px;
+  z-index: 500;
+}
+
+.map-hamburger {
+  position: absolute;
+    z-index: 500;
+    top: 30px;
+  left: 2%;
+ cursor: pointer;
+
+}
+
+.active_map {
+  display:block;
+  width: 340px;
+  padding-top: 80px;
+  z-index: 500;
+  position: absolute;
+  left: 0;
+  background: rgba(255,255,255,0.4);
+  box-sizing: border-box;
+  align-self: stretch;
+  height: 100%;
+  
+}
+
+.active_map form {
+  width: 300px;
+  margin: 0 auto;
+  height: 50%;
+  padding-top: 40px;
+  background: #e6ecec;
+  border-radius: 15px;
+}
+
+.hideB {
+  display: none;
+}
+.wrapper-center__map_accordion_close {
+    width: 25px;
+    height: 30px;
+    cursor: pointer;
+    top: 30px;
+    right: 25px;
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+}
+
+.wrapper-center__map_accordion_close span {
+    display: block;
+    height: 40px;
+    width: 5px;
+    background: black;
+}
+
+.steps-map {
+  display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+.district-info {
+   width: 300px;
+   background: #e6ecec;
+   border-radius: 15px;
+   position: absolute;
+   z-index: 500;
+   right: 4%;
+   top: 50%;
+   transform: translateY(-50%);
+   padding: 10px;
+   box-sizing: border-box;
+   height: 300px;
+   display: none;
+}
+
+.district-info__title {
+   text-align: center;
+   margin-top: 35px;
+}
+
+.active_mapMenu {
+ display:block;
+}
+
+.district-info__text {
+   text-align: center;
+   margin-top: 30px;
+}
+
+.steps-map label {
+  width: unset;
+}
+
+.header__hamburger span, .map-hamburger span {
   display: block;
   width: 30px;
   height: 3px;
   background: #151812;
+}
+
+.map-hamburger span {
+  margin-bottom: 5px;
+  width: 40px;
+  height: 5px;
+}
+
+.map-hamburger span:last-shild {
+  margin-bottom: 0;
 }
 
 .accordion-mobile__close {
@@ -744,6 +886,18 @@ form label {
   position: absolute;
   overflow: hidden;
  }
+
+.district-info__close {
+  width: 22px;
+    height: 22px;
+    font-size: 50px;
+    cursor: pointer;
+    line-height: 5px;
+    font-weight: 100;
+    top: 25px;
+    right: 25px;
+    position: absolute;
+}
 
 .notification-message {
   border: 1px solid #cebbbd;
@@ -968,7 +1122,6 @@ border: 1px solid #cebbbd;
 .scroll tbody tr:first-child td {
   text-align: center !important;
 }
-
 
 @media (max-width: 1800px) {
   .wrapper__center {
@@ -1677,6 +1830,79 @@ border: 1px solid #cebbbd;
     font-size: 30px;
   }
 
+}
+
+.multiselect-selected-text{
+  display: inline-block;
+  max-width: 100%;
+  word-break: break-all;
+  white-space: normal;
+}
+
+/*
+.multiselect {
+  width: 200px;
+}
+*/
+
+.selectBox {
+  position: relative;
+}
+
+.selectBox select {
+ /* width: 100%;*/
+ /* font-weight: bold; */
+}
+
+/*
+.yearSelect {
+  margin-bottom: 10px;
+}
+
+*/
+
+/*.yearSelectDel {
+  margin-bottom: 0 !important;
+}
+
+*/
+
+.overSelect {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.yearWrapper {
+ /* margin-left: 80px;*/
+  width: 238px;
+  background: white;
+  border-radius: 0 0 5px 5px;
+      margin-left: auto;
+ /* margin: 0px 78px 0px auto;*/
+}
+
+.yearWrapper label {
+  width: 100%;
+}
+
+.labelYear {
+  font-size: 15px;
+}
+
+#checkboxes {
+  display: none;
+  border: 1px #dadada solid;
+}
+
+#checkboxes label {
+  display: block;
+}
+
+#checkboxes label:hover {
+  background-color: #1e90ff;
 }
 
 

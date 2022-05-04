@@ -1,12 +1,17 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from typing import Optional
+from configurations.development import Config
 
 
 class Postgresql:
     def __init__(self, connection):
         self.connection = connection
-        self.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        self._cur = self.connection.cursor()
+        try:
+            self.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            self._cur = self.connection.cursor()
+        except psycopg2.InterfaceError:
+            self.reconnect()
 
     def get_user(self, id_user):
         try:
@@ -269,11 +274,12 @@ class Postgresql:
                 SELECT id_oo FROM oo 
                 WHERE oo_login = '{oo_login}' 
                 AND year = '{year}';""")
-            res, = self._cur.fetchone()
+            res = self._cur.fetchone()
             if not res:
+                print(oo_login, year)
                 print("id_oo не был найден")
                 return None
-            return res
+            return res[0]
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -560,7 +566,7 @@ class Postgresql:
             last_year = years.pop()
 
             query = f"""
-            SELECT id_oo, oo_name FROM oo 
+            SELECT oo_login FROM oo 
             WHERE year = '{last_year}' 
             AND id_oo NOT IN 
             (
@@ -585,7 +591,7 @@ class Postgresql:
                 for year in years:
                     query += f"""
                     INTERSECT
-                    SELECT id_oo, oo_name FROM oo 
+                    SELECT oo_login FROM oo 
                     WHERE year = '{year}' 
                     AND id_oo NOT IN 
                     (
@@ -610,13 +616,26 @@ class Postgresql:
             self._cur.execute(query)
             res = self._cur.fetchall()
             if res:
-                return res
+                return [(x[0], self.get_oo_name_by_oo_login(x[0], last_year)) for x in res]
             return []
 
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def get_oo_from_id_oo_parallels_subjects(self, id_district, id_user, parallel, id_subjects):
+    def get_oo_name_by_oo_login(self, oo_login, year):
+        try:
+            self._cur.execute(f"""
+            SELECT oo_name FROM oo 
+            WHERE oo_login = '{oo_login}' 
+            AND year = '{year}';""")
+            res = self._cur.fetchone()
+            if res:
+                return res[0]
+            return ""
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_oo_from_id_oo_parallels_subjects(self, id_district, id_user, parallel, id_subjects, year):
         try:
             self._cur.execute(f"""
             SELECT id_oo_parallels_subjects, id_oo_parallels FROM oo_parallels_subjects 
@@ -628,12 +647,7 @@ class Postgresql:
                 AND id_oo in 
                 (
                     SELECT id_oo FROM oo 
-                    WHERE id_oo NOT IN 
-                    (
-                        SELECT id_oo FROM oo_levels_of_the_educational_program 
-                        WHERE id_levels_of_the_educational_program = 4 
-                        AND value = 'Да'
-                    ) 
+                    WHERE year = '{year}'
                     AND id_name_of_the_settlement IN 
                     (
                         SELECT id_name_of_the_settlement FROM name_of_the_settlement 
@@ -952,3 +966,86 @@ class Postgresql:
             return False
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_oo_name_by_oo_login(self, oo_login, year):
+        try:
+            self._cur.execute(f"""
+            SELECT oo_name FROM oo 
+            WHERE oo_login = '{oo_login}' 
+            AND year = '{year}';""")
+            res = self._cur.fetchone()
+            if res:
+                return res[0]
+            return ""
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
+    def get_id_district_by_name(self, district_name: str) -> Optional[int]:
+        try:
+            district_name = district_name.replace(" ", "_")
+            self._cur.execute(f"""
+            SELECT id_district FROM district 
+            WHERE district_name = '{district_name}';""")
+            res = self._cur.fetchone()
+            if res:
+                return res[0]
+            return
+        except psycopg2.InterfaceError as exc:
+            district_name = district_name.replace(" ", "_")
+            query = f"""SELECT id_district FROM district 
+                        WHERE district_name = '{district_name}';"""
+            self.retry_execute_query(query)
+
+    def get_coordinates_for_oo(self, oo_login: str, year: int):
+        try:
+            self._cur.execute(f"""
+            SELECT coordinates FROM oo 
+            WHERE oo_login = '{oo_login}'
+            AND year = '{year}'
+            """)
+            res = self._cur.fetchone()
+            if res[0]:
+                return list(map(float, res[0].split(";")))
+            return []
+        except psycopg2.InterfaceError as exc:
+            query = f"""
+            SELECT coordinates FROM oo 
+            WHERE oo_login = '{oo_login}'
+            AND year = '{year}'
+            """
+            self.retry_execute_query(query)
+
+    def retry_execute_query(self, query, fetchone=True):
+
+        config = Config()
+        self.connection = psycopg2.connect(dbname=config.DB_NAME,
+                                           user=config.USER,
+                                           password=config.PASSWORD,
+                                           host=config.HOST,
+                                           port=config.PORT)
+        self.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        self._cur = self.connection.cursor()
+
+        self._cur.execute(query)
+        if fetchone:
+            res = self._cur.fetchone()
+            self.connection.close()
+            if res:
+                return res[0]
+            return
+        else:
+            res = self._cur.fetchall()
+            self.connection.close()
+            if res:
+                return res
+            return
+
+    def reconnect(self):
+        config = Config()
+        self.connection = psycopg2.connect(dbname=config.DB_NAME,
+                                           user=config.USER,
+                                           password=config.PASSWORD,
+                                           host=config.HOST,
+                                           port=config.PORT)
+        self.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        self._cur = self.connection.cursor()

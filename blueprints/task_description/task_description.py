@@ -1,5 +1,5 @@
 from flask import Blueprint, g, jsonify, request
-from flask_login import login_required
+from flask_login import login_required, current_user
 from data_base.postgresql import Postgresql
 
 dbase: Postgresql
@@ -23,6 +23,19 @@ def teardown_request(request):
     global dbase
     dbase = None
     return request
+
+
+@blueprint_task_description.route("/get_year/")
+@login_required
+def api_get_year():
+    years = dbase.get_years(id_user=current_user.get_id())
+    years_array = []
+    if years:
+        for year in sorted(years, key=lambda x: int(x[0])):
+            if int(year[0]) != 2022:
+                year_obj = {'id': year, 'name': year}
+                years_array.append(year_obj)
+    return jsonify({'year': years_array})
 
 
 @blueprint_task_description.route("/get_task_numbers/")

@@ -4,12 +4,15 @@ from flask import Flask, render_template, url_for, request, flash, redirect, abo
     send_from_directory
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from classNEWReportController import NEWReportController
 from classReportController import ReportController
 from classUserLogin import UserLogin
 from forms import LoginForm
 from data_base.postgresql import Postgresql
-from configurations.development import Config
+from configurations.production import Config
 from blueprints.api import blueprint_api
+from data_base.map import Map
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -120,7 +123,7 @@ def test():
     if not current_user.is_admin():
         abort(404)
     if request.method == "POST":
-        report = ReportController(request=request.get_json(), connection=db_connection, user=current_user)
+        report = NEWReportController(request=request.get_json(), connection=db_connection, user=current_user)
         return jsonify(report.get_report())
 
     return render_template('test.html', title="test")
@@ -194,6 +197,37 @@ def upload():
         else:
             flash("Ошибка обновления аватара", "success")
     return redirect(url_for('profile'))
+
+
+
+@app.route('/map', methods=["POST", "GET"])
+@login_required
+def map():
+    if current_user.is_admin():
+        if request.method == "POST":
+            report = ReportController(
+                request=request.get_json(),
+                connection=db_connection,
+                user=current_user)
+            return jsonify(report.get_report())
+
+        return render_template('map.html', title="Интерактивная карта")
+    abort(404)
+
+
+def choice_color(value: float) -> str:
+    if value:
+        if value >= 4.5:
+            color = "#49006a"
+        elif 3.5 <= value < 4.5:
+            color = "#ae017e"
+        elif 2.5 <= value < 3.4:
+            color = "#f768a1"
+        else:
+            color = "#fcc5c0"
+    else:
+        color = 'white'
+    return color
 
 
 if __name__ == "__main__":

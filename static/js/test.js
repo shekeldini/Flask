@@ -1,36 +1,61 @@
-year_select = document.getElementById('year');
+first_option =  document.getElementById('first_option');
+year_select = document.getElementById('checkboxes');
 district_select = document.getElementById('district');
 oo_select = document.getElementById('oo');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
 report_select = document.getElementById('report');
 
+
+var expanded = false;
+
+function showCheckboxes() {
+  var checkboxes = document.getElementById("checkboxes");
+  if (!expanded) {
+    checkboxes.style.display = "block";
+    expanded = true;
+  } else {
+    checkboxes.style.display = "none";
+    expanded = false;
+  }
+
+}
+
+function qwe(e) {
+  e.preventDefault();
+}
+
+function hide_years_checkboxes() {
+    checkboxes.style.display = "none";
+    expanded = false;
+}
+
+
 fetch('api/select/get_year/').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (year of data.year) {
-                                optionHTML += '<option value="' + year.id+'">' + year.name + '</option>'
+				optionHTML += '<label class="labelYear" for="' + year.name + '">' + '<input type="checkbox" id="' + year.id+ '"/>' + year.name + '</label>'
                         }
                         year_select.innerHTML = optionHTML;
-
-                        if (year_select.length == 1){
-                                year_select.defaultSelected = year_select[0];
-                                year_select.onchange();
-                        }
-                        else{
-                                year_select.value = "";
-                        }
-
                 });
 });
 
+
+
 year_select.onchange = function(){
+    first_oprion.innerHTML = "";
     district_select.innerHTML = "";
     oo_select.innerHTML = "";
     parallel_select.innerHTML = "";
     subject_select.innerHTML = "";
     report_select.innerHTML = "";
-    year = year_select.value;
+    var checkboxes = [];
+    $('input:checkbox:checked').each(function(){
+    //добавляем значение каждого флажка в этот массив
+     checkboxes.push(this.id);
+    });
+    year = checkboxes.join(',');
     fetch('api/select/get_districts/?filter_year_id=' + year).then(function(response){
                     response.json().then(function(data) {
                             optionHTML = '';
@@ -49,6 +74,7 @@ year_select.onchange = function(){
 
                     });
     });
+    first_oprion.innerHTML = year
 };
 
 
@@ -56,7 +82,12 @@ district_select.onchange = function(){
         parallel_select.innerHTML = "";
         subject_select.innerHTML = "";
         report_select.innerHTML = "";
-        year = year_select.value;
+    var checkboxes = [];
+    $('input:checkbox:checked').each(function(){
+    //добавляем значение каждого флажка в этот массив
+     checkboxes.push(this.id);
+    });
+    year = checkboxes.join(',');
         district = district_select.value;
         fetch('api/select/get_oo/?filter_year_id=' + year + "&filter_district_id=" + district).then(function(response){
                 response.json().then(function(data) {
@@ -81,7 +112,12 @@ oo_select.onchange = function(){
 
         subject_select.innerHTML = "";
         report_select.innerHTML = "";
-        year = year_select.value;
+    var checkboxes = [];
+    $('input:checkbox:checked').each(function(){
+    //добавляем значение каждого флажка в этот массив
+     checkboxes.push(this.id);
+    });
+    year = checkboxes.join(',');
         district = district_select.value;
         oo = oo_select.value;
         fetch('api/select/get_parallels/?filter_year_id='+ year + "&filter_district_id="+ district + "&filter_oo_id=" + oo).then(function(response){
@@ -101,7 +137,12 @@ oo_select.onchange = function(){
 
 parallel_select.onchange = function(){
         report_select.innerHTML = "";
-        year = year_select.value;
+    var checkboxes = [];
+    $('input:checkbox:checked').each(function(){
+    //добавляем значение каждого флажка в этот массив
+     checkboxes.push(this.id);
+    });
+    year = checkboxes.join(',');
         district = district_select.value;
         oo = oo_select.value;
         parallel = parallel_select.value;
@@ -135,190 +176,225 @@ fetch('api/select/vpr_analysis/get_reports').then(function(response){
 
 
 
-function draw_report_type_0(json_data){
-        let content_text = json_data.plot_settings.content;
-        let sub_content_list = json_data.plot_settings.sub_content;
-        let title_text = json_data.plot_settings.title;
-        let x_axis = json_data.plot_settings.x_axis;
-        let y_axis = json_data.plot_settings.y_axis;
+function draw_report_statistics_of_marks(json_data){
+    let content_text = json_data.plot_settings.content;
+    let sub_content_list = json_data.plot_settings.sub_content;
+    let title_text = json_data.plot_settings.title;
+    let x_axis = json_data.plot_settings.x_axis;
+    let y_axis = json_data.plot_settings.y_axis;
 
-  let body = document.getElementById('report_place');
-  let section = document.createElement('section');
-  section.className = "TwoPage";
-  section.id = "report_section";
-  let container = document.createElement('div');
-  container.className = "container_report";
-  container.id = "report_container";
-  let div =  document.createElement('div');
-  div.className = "report_place_border";
-  let div_title = document.createElement('div');
-  div_title.className = "wrapper__center_low_title";
-  let div_subtitle = document.createElement('div');
-  div_subtitle.className = "wrapper__center_low_subtitle";
+    let body = document.getElementById('report_place');
+    let section = document.createElement('section');
+    section.className = "TwoPage";
+    section.id = "report_section";
+    let container = document.createElement('div');
+    container.className = "container_report";
+    container.id = "report_container";
+    let div =  document.createElement('div');
+    div.className = "report_place_border";
+    let div_title = document.createElement('div');
+    div_title.className = "wrapper__center_low_title";
+    let div_subtitle = document.createElement('div');
+    div_subtitle.className = "wrapper__center_low_subtitle";
 
-  let canvas = document.createElement('canvas');
-        var plot = new Chart(canvas, {
-          plugins: [ChartDataLabels],
-                type: 'bar',
-                data: {
-                  labels: [],
-                  datasets: [],
+    let canvas = document.createElement('canvas');
+    var plot = new Chart(canvas, {
+        plugins: [ChartDataLabels],
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [],
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        color: '#1F1F1F',
+                        display: true,
+                        text: x_axis,
+                        font: {
+                            size: 15
+                        },
+                        align: 'center'
+                    }
                 },
-                options: {
-                        scales: {
-                           x: {
-                               title: {
-                                   color: '#1F1F1F',
-                                   display: true,
-                                   text: x_axis,
-                                   font: {
-                                       size: 15
-                                   },
-                                   align: 'center'
-                               }
-                           },
-                           y: {
-                               title: {
-                                   color: '#1F1F1F',
-                                   display: true,
-                                   text: y_axis,
-                                   font: {
-                                       size: 15
-                                   },
-                                   align: 'center'
-                               }
-                           },
-
+                y: {
+                    title: {
+                        color: '#1F1F1F',
+                        display: true,
+                        text: y_axis,
+                        font: {
+                            size: 15
                         },
-                        plugins: {
-                                legend: {
-                                        display: true,
-                        position: "bottom"
-                                },
-                    datalabels: {
-                        color: "#000000",
-                        anchor: "end",
-                        align: "end"
-                    },
-                                title: {
-                                    display: true,
-                                    text: title_text,
-                                    color: '#1F1F1F',
-                                    font: {
-                                      size: 15
-                                    }
-                                }
-                        },
-                        layout: {
-                            padding: {
-                                top: 30
-                            }
-                        },
+                        align: 'center'
+                    }
+                },
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: "bottom"
+                },
+                datalabels: {
+                    color: "#000000",
+                    anchor: "end",
+                    align: "end"
+                },
+                title: {
+                    display: true,
+                    text: title_text,
+                    color: '#1F1F1F',
+                    font: {
+                      size: 15
+                    }
                 }
-
-                });
-                let colors = [  'rgba(243, 121, 126, 0.7)',
-                                'rgba(237, 216, 26, 0.7)',
-                                'rgba(125, 160, 250, 0.7)'];
-                let lables_list = json_data.plot_settings.lables;
-                for (let lable in lables_list){
-                        plot.data.labels.push(lables_list[lable]);
+            },
+            layout: {
+                padding: {
+                    top: 30
                 }
-          for(let i = 0; i < Object.keys(json_data.percents).length; i++) {
-                let keys = Object.keys(json_data.percents);
-                key = json_data.percents[keys[i]];
-                plot.data.datasets[i] = {};
-                plot.data.datasets[i].data = [];
-                plot.data.datasets[i].backgroundColor = [];
-                plot.data.datasets[i].label = key.name;
+            },
+        }
+    });
+    let colors = [  'rgba(243, 121, 126, 0.7)',
+                    'rgba(237, 216, 26, 0.7)',
+                    'rgba(125, 160, 250, 0.7)'];
+    let lables_list = json_data.plot_settings.lables;
+	console.log(lables_list);
+    for (let lable in lables_list){
+            plot.data.labels.push(lables_list[lable]);
+    }
+    for (var year of Object.keys(json_data.percents)){
+        for(let i = 0; i < Object.keys(json_data.percents[year]).length; i++) {
+        let keys = Object.keys(json_data.percents[year]);
+	console.log(keys);
+        key = json_data.percents[year][keys[i]];
+        plot.data.datasets[i] = {};
+        plot.data.datasets[i].data = [];
+        plot.data.datasets[i].backgroundColor = [];
+        plot.data.datasets[i].label = key.name;
 
-                for (let mark in key.value){
-                        plot.data.datasets[i].data.push(key.value[mark]);
-                        plot.data.datasets[i].backgroundColor.push(colors[i]);
+        for (let mark in key.value){
+                plot.data.datasets[i].data.push(key.value[mark]);
+                plot.data.datasets[i].backgroundColor.push(colors[i]);
 
-                }
+        }
 
-                plot.data.datasets[i].borderColor = [
-                    'rgba(255, 0, 0, 1);'
-                    ];
-                 plot.data.datasets[i].borderWidth = 1
-                }
-  plot.update();
-  div_title.innerHTML += content_text;
-  for(let i in sub_content_list){
+        plot.data.datasets[i].borderColor = [
+            'rgba(255, 0, 0, 1);'
+            ];
+         plot.data.datasets[i].borderWidth = 1
+        }
+    }
+
+    plot.update();
+    div_title.innerHTML += content_text;
+    for(let i in sub_content_list){
         sub_content = sub_content_list[i];
         let h3 = document.createElement('h3');
         let text = document.createTextNode(sub_content);
         h3.appendChild(text);
         div_subtitle.appendChild(h3);
-  }
-  div.appendChild(div_title);
-  div.appendChild(div_subtitle);
-  div.appendChild(canvas);
-  container.appendChild(div);
-  section.appendChild(container);
-  body.appendChild(section);
-  return plot;
+    }
+    div.appendChild(div_title);
+    div.appendChild(div_subtitle);
+    div.appendChild(canvas);
+    container.appendChild(div);
+    section.appendChild(container);
+    body.appendChild(section);
+    return plot;
 };
 
-
-function createTable_type_0(jsonObj) {
+function create_table_statistics_of_marks(jsonObj) {
   let fieldTitles = jsonObj.table_settings.titles;
   let fields = jsonObj.table_settings.fields;
   let objectArray = jsonObj.table_settings.values;
   let body = document.getElementById('report_container');
   let div = document.createElement('div');
-  div.className = "TwoPage__wrapper";
+  div.className = "TwoPage__wrapper TwoPage__wrapper_comparison";
   let title = document.createElement('h3');
   title.className = "TwoPage__wrapper_title";
 
   let btn = document.createElement('a');
   btn.className = "upload mdi mdi-download";
+    var checkboxes = [];
+    $('input:checkbox:checked').each(function(){
+    //добавляем значение каждого флажка в этот массив
+     checkboxes.push(this.id);
+    });
+    year = checkboxes.join(',');
+    let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
+    "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
+    "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + 
+    "&filter_year_id=" + year + "&filter_year_name=" + year + "&filter_test=True";
 
-  let btn_url = "/api/export/?" + "filter_report_id=" + report_select.value  + "&filter_report_name=" + $( "#report option:selected" ).text() + "&filter_district_id=" + district_select.value +
-  "&filter_district_name=" + $( "#district option:selected" ).text() + "&filter_oo_id=" + oo_select.value + "&filter_oo_name=" + $( "#oo option:selected" ).text() + "&filter_parallel_id=" + parallel_select.value +
-  "&filter_parallel_name=" +  $( "#parallel option:selected" ).text() + "&filter_subject_id=" + subject_select.value + "&filter_subject_name=" + $( "#subject option:selected" ).text() + 
-  "&filter_year_id=" + year_select.value + "&filter_year_name=" + $( "#year option:selected" ).text();
+    btn.setAttribute("href", btn_url);
+    var count_row = objectArray[Object.keys(objectArray)[0]].groups.length
 
-  btn.setAttribute("href", btn_url);
-  let text = document.createTextNode('Таблица результатов:');
-  let tbl = document.createElement('table');
-  let thr = document.createElement('tr');
-  let tbdy = document.createElement('tbody');
+    let text = document.createTextNode('Таблица результатов:');
+    let tbl = document.createElement('table');
+    let first_row = document.createElement('tr');
+    let tbdy = document.createElement('tbody');
 
-  fieldTitles.forEach((fieldTitle) => {
-    let th = document.createElement('td');
-    th.appendChild(document.createTextNode(fieldTitle));
-    thr.appendChild(th);
-  });
-  tbdy.appendChild(thr);
-  for(let i = 0; i < objectArray.groups.length; i++){
-  let tr = document.createElement('tr');
-  for (field of fields){
-        {
-                var td = document.createElement('td');
-                td.appendChild(document.createTextNode(objectArray[field][i]));
-                tr.appendChild(td);
+    var td = document.createElement('td');
+    td.appendChild(document.createTextNode(fieldTitles[0]));
+    td.rowSpan = '2'
+    first_row.appendChild(td);
+
+    for (var year of Object.keys(objectArray)){
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode(year));
+        td.colSpan = '5'
+        first_row.appendChild(td);
+    }
+    tbdy.appendChild(first_row);
+    
+    second_row = document.createElement('tr');
+    for (var year of Object.keys(objectArray)){
+        for(var i = 1; i < fieldTitles.length; i++){
+            var td = document.createElement('td');
+            td.appendChild(document.createTextNode(fieldTitles[i]));
+            second_row.appendChild(td);
         }
-        tbdy.appendChild(tr);
-  }
+    }
+    tbdy.appendChild(second_row);
 
-}
-  title.appendChild(text);
-  div.appendChild(title);
-  tbl.appendChild(tbdy);
-  div.appendChild(tbl);
-  div.appendChild(btn);
-  body.appendChild(div);
-  window.getComputedStyle(div).opacity;
-  div.className +=" in";
-  return tbl;
+    for(var i = 0; i < count_row; i++){
+        row = document.createElement('tr');
+
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode(objectArray[Object.keys(objectArray)[0]].groups[i]));
+        row.appendChild(td);
+        for([year, values_obj] of Object.entries(objectArray)){
+            for (field of fields){
+                var td = document.createElement('td');
+                td.appendChild(document.createTextNode(values_obj[field][i]));
+                row.appendChild(td);
+            }
+        }
+        tbdy.appendChild(row);
+    }
+  
+    title.appendChild(text);
+    div.appendChild(title);
+    tbl.appendChild(tbdy);
+    div.appendChild(tbl);
+    div.appendChild(btn);
+    body.appendChild(div);
+    window.getComputedStyle(div).opacity;
+    div.className +=" in";
+    return tbl;
 };
 
 function draw_report(report_type, json_data){
         if (report_type == 0){
-                draw_report_type_0(json_data);
-                createTable_type_0(json_data);
+	    if (Object.keys(json_data.table_settings.values).length == 1){
+                draw_report_statistics_of_marks(json_data);
+	    }
+            if (Object.keys(json_data.table_settings.values).length > 1){
+                draw_report_statistics_of_marks(json_data);
+            }
+           create_table_statistics_of_marks(json_data);
         }
         if (report_type == 1){
 	        let content_text = json_data.plot_settings.content;
@@ -865,7 +941,12 @@ let dict_values = jsonObj.table_settings.values.all_districts.districts[key];
 
 $(document).ready(function(){
         $("#submit_btn").click(function(){
-                var id_year = $('#year').val();
+                var checkboxes = [];
+                $('input:checkbox:checked').each(function(){
+                //добавляем значение каждого флажка в этот массив
+                 checkboxes.push(this.id);
+                });
+                var id_year = checkboxes.join(',');
                 var id_district = $('#district').val();
                 var id_oo = $('#oo').val();
                 var id_oo_parallels = $('#parallel').val();
@@ -875,8 +956,8 @@ $(document).ready(function(){
 
                 var sendInfo = {
                 year: {
-                        'id': year,
-                        "name": $( "#year option:selected" ).text()
+                        'id': id_year,
+                        "name": id_year
                         },
                 district: {
                         'id': id_district,
@@ -950,7 +1031,7 @@ $(document).ready(function(){
                 $("#submit_btn").attr("disabled", true);
                 $.ajax({
                 type : 'POST',
-                url : "/vpr_analysis",
+                url : "/test",
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify(sendInfo),
 
@@ -987,22 +1068,16 @@ $(document).ready(function(){
                 report_select.innerHTML = "";
                 year_select.innerHTML = "";
 
-                fetch('api/select/get_year/').then(function(response){
+		fetch('api/select/get_year/').then(function(response){
                     response.json().then(function(data) {
-                        optionHTML = '';
-                        for (year of data.year) {
-                                optionHTML += '<option value="' + year.id+'">' + year.name + '</option>'
-                        }
-                        year_select.innerHTML = optionHTML;
+                            optionHTML = '';
+                            for (year of data.year) {
+                                    optionHTML += '<label for="year">' + '<input type="checkbox" id="'+year.id+'"/>' + year.name + '</label>'
+                            }
+                            year_select.innerHTML = optionHTML;
 
-                        if (year_select.length == 1){
-                                year_select.defaultSelected = year_select[0];
-                                year_select.onchange();
-                        }
-                        else{
-                                year_select.value = "";
-                        }
                     });
                 });
         });
 });
+

@@ -6,7 +6,7 @@ subject_select = document.getElementById('subject');
 task_select = document.getElementById('task');
 report_select = document.getElementById('report');
 
-fetch('api/select/get_year/').then(function(response){
+fetch('/api/select/task_description/get_year/').then(function(response){
                 response.json().then(function(data) {
                         optionHTML = '';
                         for (year of data.year) {

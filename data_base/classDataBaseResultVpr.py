@@ -7,6 +7,121 @@ class DataBaseResultVpr(Postgresql):
     def __init__(self, connection):
         super().__init__(connection)
 
+    def get_district_list(self, parallel: int, id_subjects: int, years: list) -> list:
+        try:
+            last_year = years.pop()
+            query = f"""
+            SELECT id_district, district_name FROM district 
+            WHERE id_district IN 
+            (
+                SELECT DISTINCT id_district FROM name_of_the_settlement 
+                WHERE id_name_of_the_settlement IN 
+                (
+                    SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                    WHERE year = '{last_year}' 
+                    AND id_oo in 
+                    (
+                        SELECT id_oo FROM oo_parallels 
+                        WHERE parallel = {parallel} 
+                        AND id_oo_parallels in 
+                        (
+                            SELECT id_oo_parallels FROM oo_parallels_subjects 
+                            WHERE id_subjects = {id_subjects}
+                        )
+                    )
+                )
+            ) """
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT
+                    SELECT id_district, district_name FROM district 
+                    WHERE id_district IN 
+                    (
+                        SELECT DISTINCT id_district FROM name_of_the_settlement 
+                        WHERE id_name_of_the_settlement IN 
+                        (
+                            SELECT DISTINCT id_name_of_the_settlement FROM oo 
+                            WHERE year = '{year}' 
+                            AND id_oo in 
+                            (
+                                SELECT id_oo FROM oo_parallels 
+                                WHERE parallel = {parallel} 
+                                AND id_oo_parallels in 
+                                (
+                                    SELECT id_oo_parallels FROM oo_parallels_subjects 
+                                    WHERE id_subjects = {id_subjects}
+                                )
+                            )
+                        )
+                    ) """
+            query += ';'
+            self._cur.execute(query)
+
+            res = self._cur.fetchall()
+            if res:
+                return res
+            return []
+        except psycopg2.Error as e:
+            print("Ошибка получения муниципалитетов из БД " + str(e))
+
+    def get_oo(self,
+               id_district: int,
+               parallel: int,
+               id_subjects: int,
+               years: list):
+        try:
+            last_year = years.pop()
+            query = f"""
+            SELECT oo_login from oo 
+            WHERE year = '{last_year}' 
+            AND id_name_of_the_settlement IN 
+            (
+                SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                WHERE id_district = {id_district}
+            ) 
+            AND id_oo IN 
+            (
+                SELECT id_oo FROM oo_parallels 
+                WHERE parallel = {parallel} 
+                AND id_oo_parallels IN 
+                (
+                    SELECT id_oo_parallels FROM oo_parallels_subjects 
+                    WHERE id_subjects = {id_subjects} 
+                )
+            ) """
+
+            if years:
+                for year in years:
+                    query += f"""
+                    INTERSECT
+                    SELECT oo_login from oo 
+                    WHERE year = '{year}' 
+                    AND id_name_of_the_settlement IN 
+                    (
+                        SELECT id_name_of_the_settlement FROM name_of_the_settlement 
+                        WHERE id_district = {id_district}
+                    ) 
+                    AND id_oo IN 
+                    (
+                        SELECT id_oo FROM oo_parallels 
+                        WHERE parallel = {parallel} 
+                        AND id_oo_parallels IN 
+                        (
+                            SELECT id_oo_parallels FROM oo_parallels_subjects 
+                            WHERE id_subjects = {id_subjects} 
+                        )
+                    ) """
+            query += ";"
+            self._cur.execute(query)
+            res = self._cur.fetchall()
+            if res:
+                return [x[0] for x in res]
+            return []
+
+        except psycopg2.Error as e:
+            print("Ошибка получения данных из ДБ " + str(e))
+
     def get_result_vpr_for_all_districts(self, id_subjects, parallel, year):
         try:
             self._cur.execute(f"""
