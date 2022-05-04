@@ -29,7 +29,7 @@ class VPR20:
         self.df[["var-1", "var-2"]] = self.df[["var-1", "var-2"]].apply(pd.to_numeric, errors='coerce')
         self.df[["var-1", "var-2"]] = self.df[["var-1", "var-2"]].fillna(0)
 
-    def get_unic_schools(self) -> list:
+    def get_unique_schools(self) -> list:
         return [school for school in self.df["логин школы"].drop_duplicates()]
 
     def get_dict_schools_liters(self) -> dict:

@@ -69,7 +69,7 @@ class VPR:
     def get_subj_name(self):
         return self.subj_name
 
-    def get_unic_schools(self) -> list:
+    def get_unique_schools(self) -> list:
         return [school for school in self.df["логин школы"].drop_duplicates()]
 
     def get_dict_schools_liters_books(self) -> dict:

@@ -7,6 +7,7 @@ from data_base.postgresql import Postgresql
 from werkzeug.security import generate_password_hash
 from glob import glob
 from configurations.development import Config
+from vpr_analysis.vpr_2022 import VPR22
 from vpr_analysis.vpr_analysis import VPR
 from vpr_analysis.vpr_2020 import VPR20
 
@@ -69,11 +70,12 @@ class FillDb(Postgresql):
             self._cur.execute(f"""
             SELECT id_organizational_and_legal_form FROM organizational_and_legal_form 
             WHERE type_of_organizational_and_legal_form = '{type_}';""")
-            res, = self._cur.fetchone()
+            res = self._cur.fetchone()
             if not res:
+                print(type_)
                 print("id_organizational_and_legal_form не найден")
                 return []
-            return res
+            return res[0]
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -111,11 +113,13 @@ class FillDb(Postgresql):
             self._cur.execute(f"""
             SELECT id_population_of_the_settlement FROM population_of_the_settlement 
             WHERE interval = '{interval}';""")
-            res, = self._cur.fetchone()
+
+            res = self._cur.fetchone()
             if not res:
+                print(interval)
                 print("id_population_of_the_settlement не был найден")
                 return []
-            return res
+            return res[0]
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
@@ -411,7 +415,8 @@ class FillDb(Postgresql):
                 if add_list not in oo_location_type_list:
                     oo_location_type_list.append(add_list)
             for location_type in sorted(oo_location_type_list, key=lambda x: x[0]):
-                location_type = location_type[1].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
+                location_type = location_type[1].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace(
+                    '_(', '(')
                 self._cur.execute(f"""
                 INSERT INTO oo_location_type (location_type) 
                 VALUES ('{location_type}')""")
@@ -436,35 +441,53 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка получения данных из ДБ " + str(e))
 
-    def fill_name_of_the_settlement(self):
+    def fill_name_of_the_settlement(self, year):
         try:
-            data = openpyxl.reader.excel.load_workbook(
-                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
-            data_sheet = data.active
+            if year == 2021:
+                data = openpyxl.reader.excel.load_workbook(
+                    filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                data_sheet = data.active
 
-            login_data = openpyxl.reader.excel.load_workbook(
-                filename="../excel/logins.xlsx", data_only=True)
-            login_data_sheet = login_data.active
-            data_list = []
-            for data_row in range(2, data_sheet.max_row + 1):
-                login_value = data_sheet["A" + str(data_row)].value
-                for login_row in range(2, login_data_sheet.max_row + 1):
-                    if login_data_sheet["A" + str(login_row)].value == login_value:
-                        district_id = self.find_district_id_by_district_name(
-                            login_data_sheet["C" + str(login_row)].value)
-                        oo_location_type_id = self.find_oo_location_type_id_by_location_type(
-                            data_sheet["N" + str(data_row)].value)
-                        name = data_sheet["O" + str(data_row)].value
-                        add_list = [district_id, oo_location_type_id, name]
-                        if add_list not in data_list:
-                            data_list.append(add_list)
-            for lst in data_list:
-                id_district, id_oo_location_type, name = lst
+                login_data = openpyxl.reader.excel.load_workbook(
+                    filename="../excel/logins.xlsx", data_only=True)
+                login_data_sheet = login_data.active
+                data_list = []
+                for data_row in range(2, data_sheet.max_row + 1):
+                    login_value = data_sheet["A" + str(data_row)].value
+                    for login_row in range(2, login_data_sheet.max_row + 1):
+                        if login_data_sheet["A" + str(login_row)].value == login_value:
+                            district_id = self.find_district_id_by_district_name(
+                                login_data_sheet["C" + str(login_row)].value)
+                            oo_location_type_id = self.find_oo_location_type_id_by_location_type(
+                                data_sheet["N" + str(data_row)].value)
+                            name = data_sheet["O" + str(data_row)].value
+                            add_list = [district_id, oo_location_type_id, name]
+                            if add_list not in data_list:
+                                data_list.append(add_list)
+                for lst in data_list:
+                    id_district, id_oo_location_type, name = lst
+                    self._cur.execute(f"""
+                    INSERT INTO name_of_the_settlement (id_district, id_oo_location_type, name) 
+                    VALUES ({id_district}, {id_oo_location_type}, '{name}');""")
+                data.close()
+                login_data.close()
+            if year == 2022:
+                # sch526312
+                id_district = self.get_id_districts("Павловский район")
+                id_oo_location_type = 2
+                name = "г.Павлово"
                 self._cur.execute(f"""
-                INSERT INTO name_of_the_settlement (id_district, id_oo_location_type, name) 
-                VALUES ({id_district}, {id_oo_location_type}, '{name}');""")
-            data.close()
-            login_data.close()
+                insert into name_of_the_settlement (id_district, id_oo_location_type, name) 
+                values ({id_district}, {id_oo_location_type}, '{name}')
+                """)
+                # sch526312
+                id_district = 3
+                id_oo_location_type = 2
+                name = "г. Камень-на-Оби"
+                self._cur.execute(f"""
+                                insert into name_of_the_settlement (id_district, id_oo_location_type, name) 
+                                values ({id_district}, {id_oo_location_type}, '{name}')
+                                """)
             print("Таблица name_of_the_settlement заполненна ")
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
@@ -481,7 +504,9 @@ class FillDb(Postgresql):
                 if add_list not in organizational_and_legal_form_list:
                     organizational_and_legal_form_list.append(add_list)
             for type_of_organizational_and_legal_form in sorted(organizational_and_legal_form_list, key=lambda x: x[0]):
-                type_of_organizational_and_legal_form = type_of_organizational_and_legal_form[1].strip().replace(' ', '_').replace('-', '_').replace(',', '').replace('_(', '(')
+                type_of_organizational_and_legal_form = type_of_organizational_and_legal_form[1].strip().replace(' ',
+                                                                                                                 '_').replace(
+                    '-', '_').replace(',', '').replace('_(', '(')
                 self._cur.execute(f"""
                 INSERT INTO organizational_and_legal_form (type_of_organizational_and_legal_form) 
                 VALUES ('{type_of_organizational_and_legal_form}');""")
@@ -490,22 +515,45 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
-    def fill_oo_logins(self):
+    def fill_oo_logins(self, year):
         try:
-            data = openpyxl.reader.excel.load_workbook(
-                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
-            data_sheet = data.active
-            oo_logins_list = []
-            for row in range(2, data_sheet.max_row + 1):
-                oo_logins = data_sheet["A" + str(row)].value
-                if oo_logins not in oo_logins_list:
-                    oo_logins_list.append(oo_logins)
-            for login in oo_logins_list:
-                self._cur.execute(f"""
-                INSERT INTO oo_logins (oo_login) 
-                VALUES ('{login.strip()}');""")
-            print("Таблица oo_logins заполненна")
-            data.close()
+            if year == 2021:
+                data = openpyxl.reader.excel.load_workbook(
+                    filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                data_sheet = data.active
+                oo_logins_list = []
+                for row in range(2, data_sheet.max_row + 1):
+                    oo_logins = data_sheet["A" + str(row)].value
+                    if oo_logins not in oo_logins_list:
+                        oo_logins_list.append(oo_logins)
+                for login in oo_logins_list:
+                    self._cur.execute(f"""
+                    INSERT INTO oo_logins (oo_login) 
+                    VALUES ('{login.strip()}');""")
+                print("Таблица oo_logins заполненна")
+                data.close()
+            if year == 2022:
+                data = openpyxl.reader.excel.load_workbook(
+                    filename="../excel/vpr_results/2022/Сбор контекстных данных об ОО (2022).xlsx", data_only=True)
+                sheet_1 = data.active
+                oo_logins_list = []
+                for row in range(2, sheet_1.max_row + 1):
+                    oo_logins: str = sheet_1["A" + str(row)].value
+                    oo_logins = oo_logins.replace("edu", "sch")
+                    if oo_logins not in oo_logins_list:
+                        oo_logins_list.append(oo_logins)
+                for login in oo_logins_list:
+                    try:
+                        self._cur.execute(f"select oo_login from oo_logins where oo_login = '{login}';")
+                        res = self._cur.fetchone()
+                        if not res:
+                            self._cur.execute(f"insert into oo_logins (oo_login) values ('{login}')")
+                            print(f"add {login}")
+                            # sch526312
+                            # ksh220032
+                    except psycopg2.Error as e:
+                        print("Ошибка при заполнении БД " + str(e))
+
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
@@ -685,148 +733,197 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
+    def fill_organisation_status(self):
+        statuses = ["1) Самостоятельное юридическое лицо (или головная ОО при наличии филиалов)",
+                    "2) Филиал юридического лица, головной ОО"]
+        for status in statuses:
+            self._cur.execute(f"insert into organisation_status (status) values ('{status}');")
+    def get_id_organisation_status(self, status):
+        self._cur.execute(f"""
+        select id_organisation_status from organisation_status 
+        where status = '{status}';""")
+        res = self._cur.fetchone()
+        if res:
+            return res[0]
+        return None
+
     def fill_oo(self, year):
         try:
-            data = openpyxl.reader.excel.load_workbook(
-                filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
-            data_sheet = data.active
+            if year in (2020, 2021):
+                data = openpyxl.reader.excel.load_workbook(
+                    filename="../excel/Сбор контекстных данных об ОО и участниках ВПР 2021.xlsx", data_only=True)
+                data_sheet = data.active
 
-            login_data = openpyxl.reader.excel.load_workbook(
-                filename="../excel/logins.xlsx", data_only=True)
-            login_data_sheet = login_data.active
-            login_region = {}
-            for row in range(2, login_data_sheet.max_row + 1):
-                login = login_data_sheet["A" + str(row)].value
-                region = login_data_sheet["C" + str(row)].value
+                login_data = openpyxl.reader.excel.load_workbook(
+                    filename="../excel/logins.xlsx", data_only=True)
+                login_data_sheet = login_data.active
+                login_region = {}
+                for row in range(2, login_data_sheet.max_row + 1):
+                    login = login_data_sheet["A" + str(row)].value
+                    region = login_data_sheet["C" + str(row)].value
 
-                if login_region.get(region) is None:
-                    login_region[region] = [login]
-                else:
-                    login_region[region].append(login)
-            for row in range(2, data_sheet.max_row + 1):
-                oo_login = data_sheet["A" + str(row)].value
-                for region_d, login_d in login_region.items():
-                    if oo_login in login_d:
-                        id_name_of_the_settlement = self.get_id_name_of_the_settlement(
-                            self.get_id_districts(region_d),
-                            self.find_oo_location_type_id_by_location_type(data_sheet["N" + str(row)].value),
-                            data_sheet["O" + str(row)].value)
-                id_organizational_and_legal_form = self.get_id_organizational_and_legal_form(
-                    data_sheet["I" + str(row)].value)
-                id_population_of_the_settlement = self.get_id_population_of_the_settlement(
-                    data_sheet["P" + str(row)].value)
-                id_internet_speed = self.get_id_internet_speed(data_sheet["BR" + str(row)].value)
-                id_the_involvement_of_students_in_additional_education = self.get_id_the_involvement_of_students_in_additional_education(
-                    data_sheet["BS" + str(row)].value)
-                id_count_of_parents_attending_events = self.get_id_count_of_parents_attending_events(
-                    data_sheet["CD" + str(row)].value)
-                id_count_of_parents_ready_to_help = self.get_id_count_of_parents_ready_to_help(
-                    data_sheet["CE" + str(row)].value)
-                id_regular_transport_link = self.get_id_regular_transport_link(data_sheet["Q" + str(row)].value)
-                id_frequency_of_regular_transport_link = self.get_id_frequency_of_regular_transport_link(
-                    data_sheet["R" + str(row)].value)
-                id_possibility_to_get_to_the_oo_by_public_transport = self.get_id_possibility_to_get_to_the_oo_by_public_transport(
-                    data_sheet["S" + str(row)].value)
-                oo_name = data_sheet["C" + str(row)].value
-                oo_full_name = data_sheet["D" + str(row)].value
-                oo_address = data_sheet["E" + str(row)].value
-                full_name_of_the_director = data_sheet["F" + str(row)].value
-                email_oo = data_sheet["H" + str(row)].value
-                phone_number = str(data_sheet["G" + str(row)].value).replace("(", "").replace(")", "").replace("-", "")
-                oo_is_corrective = True if data_sheet["T" + str(row)].value == "Да" else False
-                oo_is_night = True if data_sheet["U" + str(row)].value == "Да" else False
-                oo_is_special_educational_institution_of_a_closed_type = True if data_sheet["V" + str(
-                    row)].value == "Да" else False
-                oo_attached_to_an_organization_executing_a_sentence_of_imprisonment = True if data_sheet["W" + str(
-                    row)].value == "Да" else False
-                oo_is_a_boarding = True if data_sheet["X" + str(row)].value == "Да" else False
-                count_of_teachers = data_sheet["BA" + str(row)].value if data_sheet["BA" + str(row)].value else 0
-                count_of_teachers_of_the_highest_category = data_sheet["BB" + str(row)].value if data_sheet[
-                    "BB" + str(row)].value else 0
-                count_of_teachers_not_older_than_30_years = data_sheet["BC" + str(row)].value if data_sheet[
-                    "BC" + str(row)].value else 0
-                count_of_teachers_reached_retirement_age = data_sheet["BD" + str(row)].value if data_sheet[
-                    "BD" + str(row)].value else 0
-                count_of_classrooms_in_which_classes_are_held = data_sheet["BL" + str(row)].value if data_sheet[
-                    "BL" + str(row)].value else 0
-                count_of_classrooms_in_which_the_teacher_place_is_equipped_with_a_computer = data_sheet[
-                    "BM" + str(row)].value if data_sheet["BM" + str(row)].value else 0
-                count_of_cabinets_with_a_projector_or_interactive_whiteboard = data_sheet["BN" + str(row)].value if \
-                    data_sheet["BN" + str(row)].value else 0
-                count_of_computers_that_students_can_use_in_the_learning_process = data_sheet["BO" + str(row)].value if \
-                    data_sheet["BO" + str(row)].value else 0
-                count_of_old_computers = data_sheet["BP" + str(row)].value if data_sheet["BP" + str(row)].value else 0
-                count_of_computers_with_internet_access = data_sheet["BQ" + str(row)].value if data_sheet[
-                    "BQ" + str(row)].value else 0
-                self._cur.execute(
-                    f"INSERT INTO oo (oo_login,"
-                    f" year,"
-                    f"id_name_of_the_settlement,"
-                    f"id_organizational_and_legal_form,"
-                    f"id_population_of_the_settlement,"
-                    f"id_internet_speed,"
-                    f"id_the_involvement_of_students_in_additional_education,"
-                    f"id_count_of_parents_attending_events,"
-                    f"id_count_of_parents_ready_to_help,"
-                    f"id_regular_transport_link,"
-                    f"id_frequency_of_regular_transport_link,"
-                    f"id_possibility_to_get_to_the_oo_by_public_transport,"
-                    f"oo_name,"
-                    f"oo_full_name,"
-                    f"oo_address,"
-                    f"full_name_of_the_director,"
-                    f"email_oo,"
-                    f"phone_number,"
-                    f"oo_is_corrective,"
-                    f"oo_is_night,"
-                    f"oo_is_special_educational_institution_of_a_closed_type,"
-                    f"oo_attached_to_an_organization_executing_a_sentence_of_imprisonment,"
-                    f"oo_is_a_boarding,"
-                    f"count_of_teachers,"
-                    f"count_of_teachers_of_the_highest_category,"
-                    f"count_of_teachers_not_older_than_30_years,"
-                    f"count_of_teachers_reached_retirement_age,"
-                    f"count_of_classrooms_in_which_classes_are_held,"
-                    f"count_of_classrooms_in_which_the_teacher_place_is_equipped_with_a_computer,"
-                    f"count_of_cabinets_with_a_projector_or_interactive_whiteboard,"
-                    f"count_of_computers_that_students_can_use_in_the_learning_process,"
-                    f"count_of_old_computers,"
-                    f"count_of_computers_with_internet_access) VALUES ('{oo_login}',"
-                    f"'{year}',"
-                    f"{id_name_of_the_settlement},"
-                    f"{id_organizational_and_legal_form},"
-                    f"{id_population_of_the_settlement},"
-                    f"{id_internet_speed},"
-                    f"{id_the_involvement_of_students_in_additional_education},"
-                    f"{id_count_of_parents_attending_events},"
-                    f"{id_count_of_parents_ready_to_help},"
-                    f" {id_regular_transport_link},"
-                    f" {id_frequency_of_regular_transport_link},"
-                    f" {id_possibility_to_get_to_the_oo_by_public_transport},"
-                    f" '{oo_name}',"
-                    f" '{oo_full_name}',"
-                    f" '{oo_address}',"
-                    f" '{full_name_of_the_director}',"
-                    f" '{email_oo}',"
-                    f" '{phone_number}',"
-                    f" {oo_is_corrective},"
-                    f" {oo_is_night},"
-                    f" {oo_is_special_educational_institution_of_a_closed_type},"
-                    f" {oo_attached_to_an_organization_executing_a_sentence_of_imprisonment},"
-                    f" {oo_is_a_boarding},"
-                    f" {count_of_teachers},"
-                    f" {count_of_teachers_of_the_highest_category},"
-                    f" {count_of_teachers_not_older_than_30_years},"
-                    f" {count_of_teachers_reached_retirement_age},"
-                    f" {count_of_classrooms_in_which_classes_are_held},"
-                    f" {count_of_classrooms_in_which_the_teacher_place_is_equipped_with_a_computer},"
-                    f" {count_of_cabinets_with_a_projector_or_interactive_whiteboard},"
-                    f" {count_of_computers_that_students_can_use_in_the_learning_process},"
-                    f" {count_of_old_computers},"
-                    f" {count_of_computers_with_internet_access})")
+                    if login_region.get(region) is None:
+                        login_region[region] = [login]
+                    else:
+                        login_region[region].append(login)
+                for row in range(2, data_sheet.max_row + 1):
+                    oo_login = data_sheet["A" + str(row)].value
+                    for region_d, login_d in login_region.items():
+                        if oo_login in login_d:
+                            id_name_of_the_settlement = self.get_id_name_of_the_settlement(
+                                self.get_id_districts(region_d),
+                                self.find_oo_location_type_id_by_location_type(data_sheet["N" + str(row)].value),
+                                data_sheet["O" + str(row)].value)
+                    id_organizational_and_legal_form = self.get_id_organizational_and_legal_form(
+                        data_sheet["I" + str(row)].value)
+                    id_population_of_the_settlement = self.get_id_population_of_the_settlement(
+                        data_sheet["P" + str(row)].value)
+                    id_internet_speed = self.get_id_internet_speed(data_sheet["BR" + str(row)].value)
+                    id_the_involvement_of_students_in_additional_education = self.get_id_the_involvement_of_students_in_additional_education(
+                        data_sheet["BS" + str(row)].value)
+                    id_count_of_parents_attending_events = self.get_id_count_of_parents_attending_events(
+                        data_sheet["CD" + str(row)].value)
+                    id_count_of_parents_ready_to_help = self.get_id_count_of_parents_ready_to_help(
+                        data_sheet["CE" + str(row)].value)
+                    id_regular_transport_link = self.get_id_regular_transport_link(data_sheet["Q" + str(row)].value)
+                    id_frequency_of_regular_transport_link = self.get_id_frequency_of_regular_transport_link(
+                        data_sheet["R" + str(row)].value)
+                    id_possibility_to_get_to_the_oo_by_public_transport = self.get_id_possibility_to_get_to_the_oo_by_public_transport(
+                        data_sheet["S" + str(row)].value)
+                    oo_name = data_sheet["C" + str(row)].value
+                    oo_full_name = data_sheet["D" + str(row)].value
+                    oo_address = data_sheet["E" + str(row)].value
+                    full_name_of_the_director = data_sheet["F" + str(row)].value
+                    email_oo = data_sheet["H" + str(row)].value
+                    phone_number = str(data_sheet["G" + str(row)].value).replace("(", "").replace(")", "").replace("-",
+                                                                                                                   "")
+                    self._cur.execute(
+                        f"INSERT INTO oo (oo_login,"
+                        f" year,"
+                        f"id_name_of_the_settlement,"
+                        f"id_organizational_and_legal_form,"
+                        f"id_population_of_the_settlement,"
+                        f"id_internet_speed,"
+                        f"id_the_involvement_of_students_in_additional_education,"
+                        f"id_count_of_parents_attending_events,"
+                        f"id_count_of_parents_ready_to_help,"
+                        f"id_regular_transport_link,"
+                        f"id_frequency_of_regular_transport_link,"
+                        f"id_possibility_to_get_to_the_oo_by_public_transport,"
+                        f"oo_name,"
+                        f"oo_full_name,"
+                        f"oo_address,"
+                        f"full_name_of_the_director,"
+                        f"email_oo,"
+                        f"phone_number) "
+                        f"VALUES ('{oo_login}',"
+                        f"'{year}',"
+                        f"{id_name_of_the_settlement},"
+                        f"{id_organizational_and_legal_form},"
+                        f"{id_population_of_the_settlement},"
+                        f"{id_internet_speed},"
+                        f"{id_the_involvement_of_students_in_additional_education},"
+                        f"{id_count_of_parents_attending_events},"
+                        f"{id_count_of_parents_ready_to_help},"
+                        f" {id_regular_transport_link},"
+                        f" {id_frequency_of_regular_transport_link},"
+                        f" {id_possibility_to_get_to_the_oo_by_public_transport},"
+                        f" '{oo_name}',"
+                        f" '{oo_full_name}',"
+                        f" '{oo_address}',"
+                        f" '{full_name_of_the_director}',"
+                        f" '{email_oo}',"
+                        f" '{phone_number}')")
+                data.close()
+                login_data.close()
+            if year == 2022:
+                # data = openpyxl.reader.excel.load_workbook(
+                #     filename="../excel/vpr_results/2022/Сбор контекстных данных об ОО (2022).xlsx", data_only=True)
+                # data_sheet = data.active
+                #
+                # login_data = openpyxl.reader.excel.load_workbook(
+                #     filename="../excel/logins.xlsx", data_only=True)
+                # login_data_sheet = login_data.active
+                # login_region = {}
+                # for row in range(2, login_data_sheet.max_row + 1):
+                #     login = login_data_sheet["A" + str(row)].value
+                #     region = login_data_sheet["C" + str(row)].value
+                #
+                #     if login_region.get(region) is None:
+                #         login_region[region] = [login]
+                #     else:
+                #         login_region[region].append(login)
+                # for row in range(2, data_sheet.max_row + 1):
+                #     oo_login: str = data_sheet["A" + str(row)].value
+                #     oo_login = oo_login.replace("edu", "sch")
+                #     for region_d, login_d in login_region.items():
+                #         if oo_login in login_d:
+                #             self._cur.execute(f"""
+                #             select id_name_of_the_settlement from oo
+                #             where oo_login = '{oo_login}'
+                #             and year = '{2021}';""")
+                #             id_name_of_the_settlement = self._cur.fetchone()
+                #             if not id_name_of_the_settlement:
+                #                 if oo_login == "sch526312":
+                #                     id_name_of_the_settlement = 459
+                #                 elif oo_login == "ksh220032":
+                #                     id_name_of_the_settlement = 460
+                #                 else:
+                #                     print(oo_login)
+                #             else:
+                #                 id_name_of_the_settlement = id_name_of_the_settlement[0]
+                #     id_organizational_and_legal_form = self.get_id_organizational_and_legal_form(
+                #         data_sheet["R" + str(row)].value)
+                #     id_population_of_the_settlement = self.get_id_population_of_the_settlement(
+                #         data_sheet["V" + str(row)].value)
+                #
+                #     id_possibility_to_get_to_the_oo_by_public_transport = self.get_id_possibility_to_get_to_the_oo_by_public_transport(
+                #         data_sheet["W" + str(row)].value)
+                #     oo_name = data_sheet["I" + str(row)].value
+                #     oo_full_name = data_sheet["H" + str(row)].value
+                #     oo_address = data_sheet["T" + str(row)].value
+                #     full_name_of_the_director = data_sheet["J" + str(row)].value
+                #     email_oo = data_sheet["L" + str(row)].value
+                #     phone_number = str(data_sheet["K" + str(row)].value).replace("(", "").replace(")", "").replace("-","")
+                #     inn = data_sheet["M" + str(row)].value
+                #     key_oge = data_sheet["N" + str(row)].value
+                #     key_ege = data_sheet["O" + str(row)].value
+                #     place_index = data_sheet["S" + str(row)].value
+                #     id_organisation_status = self.get_id_organisation_status(data_sheet["P" + str(row)].value)
+                #     if not id_organisation_status:
+                #         print(row, data_sheet["P" + str(row)].value)
+                #         continue
+                #     try:
+                #         self._cur.execute(f"""
+                #             INSERT INTO oo (oo_login, year, id_name_of_the_settlement, id_organizational_and_legal_form,
+                #             id_population_of_the_settlement, id_possibility_to_get_to_the_oo_by_public_transport,
+                #             oo_name, oo_full_name, oo_address, full_name_of_the_director, email_oo, phone_number,
+                #             inn, key_oge, key_ege, id_organisation_status, place_index)
+                #             VALUES ('{oo_login}', '{year}', {id_name_of_the_settlement}, {id_organizational_and_legal_form},
+                #             {id_population_of_the_settlement}, {id_possibility_to_get_to_the_oo_by_public_transport},
+                #              '{oo_name}', '{oo_full_name}', '{oo_address}', '{full_name_of_the_director}', '{email_oo}',
+                #              '{phone_number}', '{inn}', '{key_oge}', '{key_ege}', {id_organisation_status}, '{place_index}')""")
+                #     except psycopg2.Error as e:
+                #         print("Ошибка при заполнении БД " + str(e))
+                self._cur.execute("""select * from oo where oo_login = 'sch226047' and year= '2021';""")
+                res = self._cur.fetchone()
+                print(len(res))
+                id_oo, oo_login,year,id_name_of_the_settlement, id_organizational_and_legal_form, id_population_of_the_settlement , \
+                id_internet_speed, id_the_involvement_of_students_in_additional_education, id_count_of_parents_attending_events, id_count_of_parents_ready_to_help,\
+                id_regular_transport_link, id_frequency_of_regular_transport_link, id_possibility_to_get_to_the_oo_by_public_transport, oo_name, \
+                oo_full_name, oo_address, full_name_of_the_director, email_oo, phone_number, inn, key_oge, key_ege, id_organisation_status, place_index = res
+
+                self._cur.execute(f"""
+                                            INSERT INTO oo (oo_login, year, id_name_of_the_settlement, id_organizational_and_legal_form,
+                                            id_population_of_the_settlement, id_possibility_to_get_to_the_oo_by_public_transport,
+                                            oo_name, oo_full_name, oo_address, full_name_of_the_director, email_oo, phone_number
+                                            )
+                                            VALUES ('{oo_login}', '{2022}', {id_name_of_the_settlement}, {id_organizational_and_legal_form},
+                                            {id_population_of_the_settlement}, {id_possibility_to_get_to_the_oo_by_public_transport},
+                                             '{oo_name}', '{oo_full_name}', '{oo_address}', '{full_name_of_the_director}', '{email_oo}',
+                                             '{phone_number}')""")
             print("Таблица ОО заполненна")
-            data.close()
-            login_data.close()
+
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
@@ -1011,20 +1108,24 @@ class FillDb(Postgresql):
 
     def fill_oo_parallels(self, year):
         try:
-
-            all_parallels = glob(f"excel/vpr_results/{year}/*")
+            all_parallels = glob(f"../excel/vpr_results/{year}/*")
             parallels_schools = {}
             for path in all_parallels:
                 parallel = path[path.rfind("\\") + 1:]
+                if parallel == "Сбор контекстных данных об ОО (2022).xlsx":
+                    continue
                 parallels_schools[int(parallel)] = set()
                 subj_in_parallel = path.replace("\\", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
                     if year == 2020:
                         df = VPR20(file)
+                    elif year == 2022:
+                        print(file)
+                        df = VPR22(file)
                     else:
                         df = VPR(file)
-                    parallels_schools[int(parallel)] |= set(df.get_unic_schools())
+                    parallels_schools[int(parallel)] |= set(df.get_unique_schools())
             for parallel in parallels_schools:
                 for login in parallels_schools[parallel]:
                     id_oo = self.get_id_oo(login, year)
@@ -1075,15 +1176,20 @@ class FillDb(Postgresql):
 
     def fill_classes(self, year):
         try:
-            all_parallels = glob(f"excel/vpr_results/{year}/*")
+            all_parallels = glob(f"../excel/vpr_results/{year}/*")
             for path in all_parallels:
                 result_dict = {}
-                parallel = int(path[path.rfind("\\") + 1:])
+                parallel = path[path.rfind("\\") + 1:]
+                if parallel == "Сбор контекстных данных об ОО (2022).xlsx":
+                    continue
+                parallel = int(parallel)
                 subj_in_parallel = path.replace("\\", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
                     if year == 2020:
                         df = VPR20(file)
+                    elif year == 2022:
+                        df = VPR22(file)
                     else:
                         df = VPR(file)
                     dict_schools_and_liters = df.get_dict_schools_liters()
@@ -1152,16 +1258,21 @@ class FillDb(Postgresql):
 
     def fill_students(self, year):
         try:
-            all_parallels = glob(f"excel/vpr_results/{year}/*")
+            all_parallels = glob(f"../excel/vpr_results/{year}/*")
             result_dict = {}  # {parallel: {school: {liter: {students: gender}}}}
             for path in all_parallels:
-                parallel = int(path[path.rfind("\\") + 1:])
+                parallel = path[path.rfind("\\") + 1:]
+                if parallel == "Сбор контекстных данных об ОО (2022).xlsx":
+                    continue
+                parallel = int(parallel)
                 subj_in_parallel = path.replace("\\", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
                     print(file.replace("\\", "/"))
                     if year == 2020:
                         df = VPR20(file.replace("\\", "/"))
+                    elif year == 2022:
+                        df = VPR22(file.replace("\\", "/"))
                     else:
                         df = VPR(file.replace("\\", "/"))
                     dict_schools_liters_students = df.get_dict_schools_liters_students()  # {school: {liter: {students: gender}}}
@@ -1201,7 +1312,10 @@ class FillDb(Postgresql):
         try:
             all_parallels = glob(f"excel/vpr_results/{year}/*")
             for path in all_parallels:
-                parallel = int(path[path.rfind("\\") + 1:])
+                parallel = path[path.rfind("\\") + 1:]
+                if parallel == "Сбор контекстных данных об ОО (2022).xlsx":
+                    continue
+                parallel = int(parallel)
                 subj_in_parallel = path.replace("\\", "/") + "/*"
                 files = glob(subj_in_parallel)
                 for file in files:
@@ -1529,6 +1643,49 @@ class FillDb(Postgresql):
         except psycopg2.Error as e:
             print("Ошибка при заполнении БД " + str(e))
 
+    def fill_properties(self):
+        try:
+            properties = [
+                "17.1. Организация осуществляет образовательную деятельность по адаптированным образовательным программам (АОП)?",
+                "17.2. ОО является отдельной организацией, осуществляющей образовательную деятельность по АОП (например, специальной (коррекционной) ОО?",
+                "17.3. Образование обучающихся по АОП организовано в отдельных классах/группах?",
+                "17.4. Образование обучающихся по АОП организовано совместно с другими обучающимися?",
+                "18. На каких языках осуществляется образовательная деятельность в организации?",
+                "19.1. Ведется ли в ОО углубленное изучение отдельных предметов?",
+                "19.2. Есть ли предметы, углубленное изучение которых начинается с классов начальной школы (1–4 классов)?",
+                "19.3. Есть ли предметы, углубленное изучение которых начинается с классов основной школы (5–9 классов)?",
+                "19.4. Есть ли предметы, углубленное изучение которых начинается с классов средней школы (10–11 классов)?",
+                "20. Укажите количество обучающихся в ОО в 2021/2022 учебном году (в сумме по всем классам/курсам)",
+                "21. Общее количество обучающихся в 2021/2022 учебном году 2006 года рождения",
+                "22. Количество обучающихся в 2021/2022 учебном году 2006 г. р., обучающихся по АОП, с ограниченными возможностями здоровья и/или инвалидов (всего)",
+                "23. Общее количество обучающихся в 2021/2022 учебном году 2007 года рождения",
+                "24. Количество обучающихся в 2021/2022 учебном году 2007 г. р., обучающихся по АОП, с ограниченными возможностями здоровья и/или инвалидов (всего)",
+                "25. Сколько всего в ОО учителей/преподавателей?",
+                "26. Сколько в ОО учителей, преподающих в 5–9 классах?",
+                "27. Сколько всего в ОО учителей/преподавателей первой и высшей категорий?"]
+            for property in properties:
+                self._cur.execute(f"INSERT INTO properties (name) VALUES ('{property}');")
+            print("Таблица properties заполненна")
+        except psycopg2.Error as e:
+            print("Ошибка при заполнении БД " + str(e))
+
+    def delete_students(self):
+        self._cur.execute(f"""
+        select id_oo_parallels from oo_parallels 
+        where id_oo in 
+        (
+            select id_oo from oo 
+            where year = '2022'
+        );""")
+        id_oo_parallels_list =self._cur.fetchall()
+        for id_oo_parallels, in id_oo_parallels_list:
+            print(id_oo_parallels)
+            self._cur.execute(f"""
+            delete from students 
+            where id_oo_parallels = {id_oo_parallels};
+            """)
+
+
 
 config = Config()
 psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
@@ -1536,13 +1693,16 @@ psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
                                password=config.PASSWORD,
                                host=config.HOST,
                                port=config.PORT))
+# psql.delete_students()
+# psql.fill_organisation_status()
+# psql.fill_properties()
 # psql.dropAllTables()
 # psql.createTables()
 # psql.fill_district()
 # psql.fill_oo_location_type()
-# psql.fill_name_of_the_settlement()
+# psql.fill_name_of_the_settlement(2022)
 # psql.fill_organizational_and_legal_form()
-# psql.fill_oo_logins()
+# psql.fill_oo_logins(2022)
 # psql.fill_population_of_the_settlement()
 # psql.fill_internet_speed()
 # psql.fill_the_involvement_of_students_in_additional_education()
@@ -1551,7 +1711,7 @@ psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
 # psql.fill_regular_transport_link()
 # psql.fill_frequency_of_regular_transport_link()
 # psql.fill_possibility_to_get_to_the_oo_by_public_transport()
-# psql.fill_oo(2020)
+# psql.fill_oo(2022)
 # psql.fill_duration_of_refresher_courses()
 # psql.fill_completed_advanced_training_courses_for_teachers(2020)
 # psql.fill_description_of_work_with_teachers_taking_advanced_training_courses()
@@ -1561,12 +1721,12 @@ psql = FillDb(psycopg2.connect(dbname=config.DB_NAME,
 # psql.fill_oo_levels_of_the_educational_program(2020)
 # psql.fill_percentage_of_parents_attending_parentteacher_meeting(2020)
 # psql.fill_parallels()
-# psql.fill_oo_parallels(2020)
+# psql.fill_oo_parallels(2022)
 # psql.fill_subjects()
 # psql.fill_textbooks()
-# psql.fill_classes(2020)
+# psql.fill_classes(2022)
 # psql.fill_classes_textbooks()
-# psql.fill_students(2020)
+psql.fill_students(2022)
 # psql.fill_oo_parallels_subjects(2020)
 # psql.create_index_on_oo_parallels_subjects()
 # psql.create_roles()

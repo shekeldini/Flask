@@ -82,11 +82,17 @@ CREATE TABLE IF NOT EXISTS "oo_logins"(
 CONSTRAINT "K2" PRIMARY KEY ("oo_login")
 );
 
+CREATE TABLE IF NOT EXISTS "organisation_status"(
+id_organisation_status SERIAL,
+status text,
+CONSTRAINT "K46" PRIMARY KEY (id_organisation_status)
+);
+
 CREATE TABLE IF NOT EXISTS "oo"(
 "id_oo" SERIAL,
 "oo_login" VARCHAR(20) NOT NULL,
 "year" VARCHAR(4) NOT NULL,
-"id_name_of_the_settlement"INTEGER,
+"id_name_of_the_settlement" INTEGER,
 "id_organizational_and_legal_form" INTEGER,
 "id_population_of_the_settlement" INTEGER,
 "id_internet_speed" INTEGER,
@@ -101,22 +107,12 @@ CREATE TABLE IF NOT EXISTS "oo"(
 "oo_address" VARCHAR(300),
 "full_name_of_the_director" VARCHAR(60),
 "email_oo" VARCHAR(40),
-"phone_number" VARCHAR(20),
-"oo_is_corrective" boolean,
-"oo_is_night" boolean,
-"oo_is_special_educational_institution_of_a_closed_type" boolean,
-"oo_attached_to_an_organization_executing_a_sentence_of_imprisonment" boolean,
-"oo_is_a_boarding" boolean,
-"count_of_teachers" INTEGER,
-"count_of_teachers_of_the_highest_category" INTEGER,
-"count_of_teachers_not_older_than_30_years" INTEGER,
-"count_of_teachers_reached_retirement_age" INTEGER,
-"count_of_classrooms_in_which_classes_are_held" INTEGER,
-"count_of_classrooms_in_which_the_teacher_place_is_equipped_with_a_computer" INTEGER,
-"count_of_cabinets_with_a_projector_or_interactive_whiteboard" INTEGER,
-"count_of_computers_that_students_can_use_in_the_learning_process" INTEGER, 
-"count_of_old_computers" INTEGER,
-"count_of_computers_with_internet_access" INTEGER,
+"phone_number" text,
+inn VARCHAR(12),
+key_oge VARCHAR(12),
+key_ege VARCHAR(12),
+id_organisation_status INTEGER,
+place_index VARCHAR (7),
 CONSTRAINT "K1" PRIMARY KEY ("id_oo"),
 CONSTRAINT "C1" FOREIGN KEY ("oo_login")
     REFERENCES "oo_logins" ("oo_login"),
@@ -140,18 +136,20 @@ CONSTRAINT "C44" FOREIGN KEY ("id_frequency_of_regular_transport_link")
     REFERENCES "frequency_of_regular_transport_link" ("id_frequency_of_regular_transport_link"),
 CONSTRAINT "C45" FOREIGN KEY ("id_possibility_to_get_to_the_oo_by_public_transport")
     REFERENCES "possibility_to_get_to_the_oo_by_public_transport" ("id_possibility_to_get_to_the_oo_by_public_transport")
+CONSTRAINT "C55" FOREIGN KEY (id_organisation_status)
+    REFERENCES organisation_status (id_organisation_status)
 );
 
 CREATE TABLE IF NOT EXISTS "properties"(
 "id_properties" SERIAL,
-"name" VARCHAR(30) NOT NULL,
+"name" text,
 CONSTRAINT "K4" PRIMARY KEY ("id_properties")
 );
 
 CREATE TABLE IF NOT EXISTS "oo_properties"(
 "id_properties" INTEGER NOT NULL,
 "id_oo" INTEGER NOT NULL,
-"Value" VARCHAR (20) NOT NULL,
+"value" text,
 CONSTRAINT "K5" PRIMARY KEY ("id_properties", "id_oo"),
 CONSTRAINT "C3" FOREIGN KEY ("id_oo")
     REFERENCES "oo" ("id_oo"),
