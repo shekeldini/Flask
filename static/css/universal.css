@@ -9,6 +9,36 @@
   right: 10px;
 }
 
+.leaflet-popup-content p:first-child {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.leaflet-popup-content p:last-child {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.leaflet-popup-content p {
+ margin: 0;
+ margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.leaflet-popup-content p:nth-child(2) {
+  font-size: 14px;
+  
+}
+
+.leaflet-popup {
+  width: 270px;
+}
+
+.leaflet-container {
+ font-size: 14px;
+font-weight: 600;
+}
+
 @media (max-width: 1800px) {
   .wrapper__center {
      max-width: 100%;

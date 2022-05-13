@@ -1,9 +1,13 @@
+
 year_select = document.getElementById('year');
 parallel_select = document.getElementById('parallel');
 subject_select = document.getElementById('subject');
 report_select = document.getElementById('report');
 var map = L.map('map').fitWorld();
 var report_was_created = false;
+
+//var markers = L.markerClusterGroup();
+
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -14,6 +18,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 //    subdomains:['mt0','mt1','mt2','mt3']
 //});
 //googleStreets.addTo(map);
+
+
 map.setView(new L.LatLng(52.61558902526749, 83.57275390625), 7);
 
 
@@ -22,7 +28,7 @@ $.getJSON("static/js/districts.json", function(json) {
         var name = district.name
         var coordinates = district.coordinates
         for (coord of coordinates){
-            var polygon = L.polygon(coord, {color: "green", "name": name});
+            var polygon = L.polygon(coord, {color: "#4747A1", "name": name});
             polygon.bindTooltip(name,
                {permanent: false, direction: "center"}
             ).openTooltip()
@@ -59,7 +65,7 @@ function getSchoolsCoordinates(polygon){
         }
     return $.ajax({
         type : 'GET',
-        url :"api/select/map/get_schools_coordinates/",
+        url :"api/select/map/get_oo_info/",
         data: send_data
     });
 };
@@ -142,7 +148,7 @@ $(document).ready(function(){
                         id_report
                     );
                     if (data.status == 200){
-                        layer.setStyle({color: data.color});
+                        layer.setStyle({color: "#449ff0"});
                         layer.options.id_year = id_year;
                         layer.options.id_parallels = id_parallels;
                         layer.options.id_subjects = id_subjects;
@@ -179,6 +185,12 @@ $(document).ready(function(){
 
 
 function create_marker(name, value, color, oo_login, coordinates, district, text){
+    var iconOptions = {
+            iconUrl: '/static/images/school.png',
+            iconSize: [50, 50]
+         }
+    var customIcon = L.icon(iconOptions);
+
     var marker = L.marker(coordinates, {
         "name": name,
         "value": value,
@@ -186,7 +198,8 @@ function create_marker(name, value, color, oo_login, coordinates, district, text
         "oo_login": oo_login,
         "coordinates": coordinates,
         "district": district,
-        "text": text
+        "text": text,
+        "icon": customIcon
     });
     if (marker.options.value == "Не участвовал"){
         var text = "<p>" + marker.options.district + "</p>" + 
@@ -204,6 +217,7 @@ function create_marker(name, value, color, oo_login, coordinates, district, text
         // console.log(this.options);
         marker.openPopup();
     });
+   // markers.addLayer(marker);
     marker.addTo(map);
 };
 

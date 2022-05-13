@@ -935,9 +935,12 @@ class Postgresql:
             district_name = district_name.replace(" ", "_")
             query = f"""SELECT id_district FROM district 
                         WHERE district_name = '{district_name}';"""
-            self.retry_execute_query(query)
 
-    def retry_execute_query(self, query, fetchone=True):
+            def model(res):
+                return res[0]
+            self.retry_execute_query(query, model)
+
+    def retry_execute_query(self, query, response_model, fetchone=True):
 
         config = Config()
         self.connection = psycopg2.connect(dbname=config.DB_NAME,
@@ -953,7 +956,7 @@ class Postgresql:
             res = self._cur.fetchone()
             self.connection.close()
             if res:
-                return res[0]
+                return response_model(res)
             return
         else:
             res = self._cur.fetchall()
@@ -962,24 +965,44 @@ class Postgresql:
                 return res
             return
 
-    def get_coordinates_for_oo(self, oo_login: str, year: int):
+    def get_oo_info(self, oo_login: str, year: int):
         try:
             self._cur.execute(f"""
-            SELECT coordinates FROM oo 
+            SELECT id_oo, oo_name, oo_address, full_name_of_the_director, email_oo, phone_number, coordinates, url FROM oo 
             WHERE oo_login = '{oo_login}' 
             AND year = '{year}';""")
             res = self._cur.fetchone()
-            if res[0]:
-                return list(map(float, res[0].split(";")))
-            return []
+            if res:
+                return {
+                    "id_oo": res[0],
+                    "oo_name": res[1],
+                    "oo_address": res[2],
+                    "full_name_of_the_director": res[3],
+                    "email_oo": res[4],
+                    "phone_number": res[5],
+                    "coordinates": list(map(float, res[6].split(";"))),
+                    "url": res[7]
+                }
+            return {}
         except psycopg2.InterfaceError as exc:
 
             query = f"""
-            SELECT coordinates FROM oo 
-            WHERE oo_login = '{oo_login}'
-            AND year = '{year}'
-            """
-            self.retry_execute_query(query)
+            SELECT id_oo, oo_name, oo_address, full_name_of_the_director, email_oo, phone_number, coordinates, url FROM oo 
+            WHERE oo_login = '{oo_login}' 
+            AND year = '{year}';"""
+
+            def model(res):
+                return {
+                    "id_oo": res[0],
+                    "oo_name": res[1],
+                    "oo_address": res[2],
+                    "full_name_of_the_director": res[3],
+                    "email_oo": res[4],
+                    "phone_number": res[5],
+                    "coordinates": list(map(float, res[6].split(";"))),
+                    "url": res[7]
+                }
+            self.retry_execute_query(query, model)
 
     def reconnect(self):
         config = Config()

@@ -79,9 +79,9 @@ def api_get_reports():
     return jsonify({'reports': reports_array})
 
 
-@blueprint_map.route("/get_schools_coordinates/")
+@blueprint_map.route("/get_oo_info/")
 @login_required
-def api_get_schools_coordinates():
+def api_get_oo_info():
     id_year = request.args.get("id_year")
     district_name = request.args.get("district_name")
     id_subjects = int(request.args.get("id_subjects"))
@@ -101,23 +101,26 @@ def api_get_schools_coordinates():
                 parallel=id_parallels,
                 year=id_year
             )
-            oo_name = dbase.get_oo_name_by_oo_login(
-                oo_login=oo_login,
-                year=id_year
-            )
-            coordinates = dbase.get_coordinates_for_oo(
+            info = dbase.get_oo_info(
                 year=id_year,
                 oo_login=oo_login
             )
-            if coordinates:
+            if info:
                 schools.append(
                     {
-                        "name": oo_name,
+                        "id_oo": info["id_oo"],
+                        "name": info["oo_name"],
                         "value": oo_value,
-                        "coordinates": coordinates,
+                        "coordinates": info["coordinates"],
                         "oo_login": oo_login,
                         "text": "Средняя по ВПР: ",
-                        "district": district_name
+                        "district": district_name,
+                        "oo_address": info["oo_address"],
+                        "director": info["full_name_of_the_director"],
+                        "email_oo": info["email_oo"],
+                        "phone_number": info["phone_number"],
+                        "url": info["url"]
+
                     }
                 )
 

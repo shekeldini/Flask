@@ -882,7 +882,7 @@ form label {
   line-height: 5px;
   font-weight: 100;
   top: 50px;
-  right: 25px;
+  left: 150px;
   position: absolute;
   overflow: hidden;
  }
@@ -1122,6 +1122,7 @@ border: 1px solid #cebbbd;
 .scroll tbody tr:first-child td {
   text-align: center !important;
 }
+
 
 @media (max-width: 1800px) {
   .wrapper__center {
@@ -1381,6 +1382,12 @@ border: 1px solid #cebbbd;
   }
 }
 
+@media (min-width: 725px) {
+ .accordion-mobile__close {
+    display: none;
+ }
+}
+
 @media (min-width: 800px) and (max-width: 970px) {
   .other__wrapper .accordion__wrapper_item_link {
     font-size: 12px;
@@ -1487,6 +1494,8 @@ border: 1px solid #cebbbd;
   .accordion-mobile__close {
        overflow: visible;
   }
+
+
   .activeme {
     left: 0;
     visibility: visible;
@@ -1502,9 +1511,9 @@ border: 1px solid #cebbbd;
   .wrapper-error__shell {
     margin-top: 340px;
   }
-
 }
 
+ 
 @media (min-width: 800px) and (max-width: 1099px) {
   .TwoPage__wrapper table td {
     padding-left: 0px;
